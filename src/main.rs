@@ -1,4 +1,3 @@
-use std::error::Error;
 use std::io::{stdin, stdout, Write};
 use std::thread::sleep;
 use std::time::Duration;
@@ -6,19 +5,16 @@ use std::time::Duration;
 use midir::{MidiOutput, MidiOutputPort};
 
 fn main() {
-    match run() {
-        Ok(_) => (),
-        Err(err) => println!("Error: {}", err),
-    }
-}
-
-fn run() -> Result<(), Box<dyn Error>> {
-    let midi_out = MidiOutput::new("My Test Output")?;
+    let midi_out = MidiOutput::new("My Test Output").unwrap();
 
     // Get an output port (read from console if multiple are available)
     let out_ports = midi_out.ports();
     let out_port: &MidiOutputPort = match out_ports.len() {
-        0 => return Err("no output port found".into()),
+        0 => {
+            println!("no output port found");
+            // TODO: Handle error better
+            std::process::exit(1);
+        }
         1 => {
             println!(
                 "Choosing the only available output port: {}",
@@ -32,17 +28,19 @@ fn run() -> Result<(), Box<dyn Error>> {
                 println!("{}: {}", i, midi_out.port_name(p).unwrap());
             }
             print!("Please select output port: ");
-            stdout().flush()?;
+            stdout().flush().unwrap();
             let mut input = String::new();
-            stdin().read_line(&mut input)?;
+            stdin().read_line(&mut input).unwrap();
+            let int_port = input.trim().parse::<usize>().unwrap();
             out_ports
-                .get(input.trim().parse::<usize>()?)
-                .ok_or("invalid output port selected")?
+                .get(int_port)
+                .ok_or("invalid output port selected")
+                .unwrap()
         }
     };
 
     println!("\nOpening connection");
-    let mut conn_out = midi_out.connect(out_port, "midir-test")?;
+    let mut conn_out = midi_out.connect(out_port, "midir-test").unwrap();
     println!("Connection open. Listen!");
     {
         // Durations
@@ -91,5 +89,4 @@ fn run() -> Result<(), Box<dyn Error>> {
     // This is optional, the connection would automatically be closed as soon as it goes out of scope
     conn_out.close();
     println!("Connection closed");
-    Ok(())
 }
