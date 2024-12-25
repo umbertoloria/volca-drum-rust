@@ -1,46 +1,17 @@
-use std::io::{stdin, stdout, Write};
+use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
-use midir::{MidiOutput, MidiOutputPort};
+use crate::midi_controller::init_midi;
+
+mod midi_controller;
 
 fn main() {
-    let midi_out = MidiOutput::new("My Test Output").unwrap();
-
-    // Get an output port (read from console if multiple are available)
-    let out_ports = midi_out.ports();
-    let out_port: &MidiOutputPort = match out_ports.len() {
-        0 => {
-            println!("no output port found");
-            // TODO: Handle error better
-            std::process::exit(1);
-        }
-        1 => {
-            println!(
-                "Choosing the only available output port: {}",
-                midi_out.port_name(&out_ports[0]).unwrap()
-            );
-            &out_ports[0]
-        }
-        _ => {
-            println!("\nAvailable output ports:");
-            for (i, p) in out_ports.iter().enumerate() {
-                println!("{}: {}", i, midi_out.port_name(p).unwrap());
-            }
-            print!("Please select output port: ");
-            stdout().flush().unwrap();
-            let mut input = String::new();
-            stdin().read_line(&mut input).unwrap();
-            let int_port = input.trim().parse::<usize>().unwrap();
-            out_ports
-                .get(int_port)
-                .ok_or("invalid output port selected")
-                .unwrap()
-        }
-    };
+    let controller = init_midi().expect("Unable to create midi controller");
+    let out_port = &controller.midi_port;
 
     println!("\nOpening connection");
-    let mut conn_out = midi_out.connect(out_port, "midir-test").unwrap();
+    let mut conn_out = controller.midi_output.connect(&out_port, "midir-test").unwrap();
     println!("Connection open. Listen!");
     {
         // Durations
