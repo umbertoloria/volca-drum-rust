@@ -114,7 +114,7 @@ impl Drummer<'_> {
             value & 0x7f,
         ];
         let _ = self.conn.send(&message);
-        println!("Send msg -> {:?}", message);
+        // println!("Send msg -> {:?}", message);
     }
 }
 

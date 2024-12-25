@@ -1,11 +1,10 @@
 use crate::drummer::{Drummer, ParamSoundType};
+use crate::input::get_console_int_input;
 use crate::midi_controller::init_midi_controller;
-use std::f64::consts::PI;
 use std::io::Write;
-use std::thread::sleep;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 mod drummer;
+mod input;
 mod midi_controller;
 
 fn main() {
@@ -35,37 +34,18 @@ fn main() {
     drummer.hit(7, DRUM_HH, DUR_1_8);
     */
 
+    // SOUND SETTING
     drummer.set_param_level(0, ParamSoundType::Level, 127);
-
-    let time_chunk = 1000 * 5;
-
     loop {
-        let millis_this_very_second = get_now() % time_chunk;
-        let from_0_to_1 = millis_this_very_second as f64 / time_chunk as f64;
-
-        let sine_val = ((from_0_to_1 * 2.0 * PI).sin() + 1.0) / 2.0;
-        let sine_val_u8 = (sine_val * 127.0) as u8;
+        let value = get_console_int_input("Give me pitch value: ", 0, 127);
+        if value == 0 {
+            break;
+        }
 
         // Before, it was: "drummer.send_cc_message(0, 26, sine_val_u8);"
-        drummer.set_param_level(0, ParamSoundType::Pitch, sine_val_u8);
-        show_progress(sine_val);
-
-        sleep(Duration::from_millis(149));
+        drummer.set_param_level(0, ParamSoundType::Pitch, value);
     }
 
     // MIDI CONNECTION: SHUT-DOWN
     conn.close();
-}
-
-fn get_now() -> u128 {
-    let start = SystemTime::now();
-    let since_the_epoch = start
-        .duration_since(UNIX_EPOCH)
-        .expect("Time went backwards");
-    since_the_epoch.as_millis()
-}
-
-pub fn show_progress(val: f64) {
-    let times = (val * 20.0) as usize;
-    println!("{}", "#".repeat(times));
 }
