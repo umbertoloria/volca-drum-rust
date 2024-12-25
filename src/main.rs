@@ -2,20 +2,13 @@ use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
 
-use crate::midi_controller::init_midi;
+use crate::midi_controller::init_midi_controller;
 
 mod midi_controller;
 
 fn main() {
-    let controller = init_midi(Some(1)).expect("Unable to create midi controller");
-    let midi_output_port = &controller.output_port;
-
-    println!("\nOpening connection");
-    let mut conn_out = controller
-        .output
-        .connect(&midi_output_port, "midir-test")
-        .unwrap();
-    println!("Connection open. Listen!");
+    let midi_controller = init_midi_controller(Some(1)).expect("Unable to create midi controller");
+    let mut conn = midi_controller.connect_and_get();
     {
         // Durations
         const DUR_1_4: Duration = Duration::from_millis(1000);
@@ -39,10 +32,10 @@ fn main() {
             const PROGRAM_CHANGE: u8 = 0xC0;
             const VELOCITY: u8 = 0x70;
             // We're ignoring errors in here
-            let _ = conn_out.send(&[PROGRAM_CHANGE, instr]);
-            let _ = conn_out.send(&[NOTE_ON_MSG, note, VELOCITY]);
+            let _ = conn.send(&[PROGRAM_CHANGE, instr]);
+            let _ = conn.send(&[NOTE_ON_MSG, note, VELOCITY]);
             sleep(duration.mul_f64(BPM_DEFAULT).div_f64(bpm));
-            let _ = conn_out.send(&[NOTE_OFF_MSG, note, VELOCITY]);
+            let _ = conn.send(&[NOTE_OFF_MSG, note, VELOCITY]);
         };
 
         // First bar
@@ -61,6 +54,6 @@ fn main() {
     }
     println!("\nClosing connection");
     // This is optional, the connection would automatically be closed as soon as it goes out of scope
-    conn_out.close();
+    conn.close();
     println!("Connection closed");
 }

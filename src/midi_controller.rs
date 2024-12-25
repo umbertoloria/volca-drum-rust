@@ -1,12 +1,21 @@
-use midir::{MidiOutput, MidiOutputPort};
+use midir::{MidiOutput, MidiOutputConnection, MidiOutputPort};
 use std::io::{stdin, stdout, Write};
 
 pub struct MidiController {
     pub output: MidiOutput,
     pub output_port: MidiOutputPort,
 }
+impl MidiController {
+    pub fn connect_and_get(self) -> MidiOutputConnection {
+        self.output
+            .connect(&self.output_port, "rust-midi-volca-drum")
+            .unwrap()
+    }
+}
 
-pub fn init_midi(preferred_output_port_index: Option<usize>) -> Result<MidiController, String> {
+pub fn init_midi_controller(
+    preferred_output_port_index: Option<usize>,
+) -> Result<MidiController, String> {
     let midi_output = MidiOutput::new("RUST Volca Drum MIDI Output").unwrap();
 
     let mut midi_output_ports = midi_output.ports();
