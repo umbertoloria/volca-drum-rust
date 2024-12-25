@@ -7,11 +7,14 @@ use crate::midi_controller::init_midi;
 mod midi_controller;
 
 fn main() {
-    let controller = init_midi().expect("Unable to create midi controller");
-    let out_port = &controller.midi_port;
+    let controller = init_midi(Some(1)).expect("Unable to create midi controller");
+    let midi_output_port = &controller.output_port;
 
     println!("\nOpening connection");
-    let mut conn_out = controller.midi_output.connect(&out_port, "midir-test").unwrap();
+    let mut conn_out = controller
+        .output
+        .connect(&midi_output_port, "midir-test")
+        .unwrap();
     println!("Connection open. Listen!");
     {
         // Durations
