@@ -45,29 +45,48 @@ fn run() -> Result<(), Box<dyn Error>> {
     let mut conn_out = midi_out.connect(out_port, "midir-test")?;
     println!("Connection open. Listen!");
     {
+        // Durations
+        const DUR_1_4: Duration = Duration::from_millis(1000);
+        const DUR_1_8: Duration = Duration::from_millis(500);
+        const DUR_1_16: Duration = Duration::from_millis(250);
+        const DUR_1_32: Duration = Duration::from_millis(125);
+
+        // Drum parts
+        const DRUM_KICK: u8 = 1;
+        const DRUM_HH: u8 = 2;
+        const DRUM_SNARE: u8 = 4;
+
+        // BPM config
+        const BPM_DEFAULT: f64 = 60.0;
+        let bpm: f64 = 120.0;
+
         // Define a new scope in which the closure `play_note` borrows conn_out, so it can be called easily
-        let mut play_note = |note: u8, duration: u64| {
+        let mut play_note = |note: u8, instr: u8, duration: Duration| {
             const NOTE_ON_MSG: u8 = 0x90;
             const NOTE_OFF_MSG: u8 = 0x80;
-            const VELOCITY: u8 = 0x64;
+            const PROGRAM_CHANGE: u8 = 0xC0;
+            const VELOCITY: u8 = 0x70;
             // We're ignoring errors in here
+            let _ = conn_out.send(&[PROGRAM_CHANGE, instr]);
             let _ = conn_out.send(&[NOTE_ON_MSG, note, VELOCITY]);
-            sleep(Duration::from_millis(duration * 150));
+            sleep(duration.mul_f64(BPM_DEFAULT).div_f64(bpm));
             let _ = conn_out.send(&[NOTE_OFF_MSG, note, VELOCITY]);
         };
 
-        sleep(Duration::from_millis(4 * 150));
-
-        play_note(66, 4);
-        play_note(65, 3);
-        play_note(63, 1);
-        play_note(61, 6);
-        play_note(59, 2);
-        play_note(58, 4);
-        play_note(56, 4);
-        play_note(54, 4);
+        // First bar
+        for _ in 0..(2 * 4) {
+            play_note(7, DRUM_HH, DUR_1_8);
+        }
+        // Second bar
+        play_note(7, DRUM_KICK, DUR_1_8);
+        play_note(7, DRUM_HH, DUR_1_8);
+        play_note(7, DRUM_SNARE, DUR_1_8);
+        play_note(7, DRUM_HH, DUR_1_8);
+        play_note(7, DRUM_KICK, DUR_1_8);
+        play_note(7, DRUM_KICK, DUR_1_8);
+        play_note(7, DRUM_SNARE, DUR_1_8);
+        play_note(7, DRUM_HH, DUR_1_8);
     }
-    sleep(Duration::from_millis(150));
     println!("\nClosing connection");
     // This is optional, the connection would automatically be closed as soon as it goes out of scope
     conn_out.close();
