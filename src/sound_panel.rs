@@ -116,48 +116,32 @@ impl SoundPanel<'_> {
     }
 
     // Manual set
-    pub fn set_sound_source_type(&mut self, channel: u8, sound_source_type: SoundSourceType) {
-        match sound_source_type {
-            SoundSourceType::WaveSine => {
-                self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 24)
-            }
-            SoundSourceType::WaveSaw => self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 50),
-            SoundSourceType::WaveNoiseHPF => {
-                self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 76)
-            }
-            SoundSourceType::WaveNoiseLPF => {
-                self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 101)
-            }
-            SoundSourceType::WaveNoiseBPF => {
-                self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 127)
-            }
-        }
+    fn set_sound_source_type(&mut self, channel: u8, sound_source_type: SoundSourceType) {
+        self.send_cc_message(
+            channel,
+            CC_NUMBER_LAYOUT_1_SOUND,
+            from_sound_source_type_to_value(sound_source_type),
+        );
     }
-    pub fn set_modulation_type(&mut self, channel: u8, modulation_type: ModulationType) {
-        match modulation_type {
-            ModulationType::ModExp => self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 109),
-            ModulationType::ModTri => self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 118),
-            ModulationType::ModRand => self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 127),
-        }
+    fn set_modulation_type(&mut self, channel: u8, modulation_type: ModulationType) {
+        self.send_cc_message(
+            channel,
+            CC_NUMBER_LAYOUT_1_SOUND,
+            from_modulation_type_to_value(modulation_type),
+        );
     }
-    pub fn set_amp_eg(&mut self, channel: u8, amp_eg: AmpEg) {
-        match amp_eg {
-            AmpEg::EnvAd => self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 121),
-            AmpEg::EnvExp => self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 124),
-            AmpEg::EnvMul => self.send_cc_message(channel, CC_NUMBER_LAYOUT_1_SOUND, 127),
-        }
+    fn set_amp_eg(&mut self, channel: u8, amp_eg: AmpEg) {
+        self.send_cc_message(
+            channel,
+            CC_NUMBER_LAYOUT_1_SOUND,
+            from_amp_eg_to_value(amp_eg),
+        );
     }
-    pub fn set_param_level(&mut self, channel: u8, param: ParamSoundType, value: u8) {
-        match param {
-            ParamSoundType::Level => self.send_cc_message(channel, 17, value),
-            ParamSoundType::Pitch => self.send_cc_message(channel, 26, value),
-            ParamSoundType::EgAttack => self.send_cc_message(channel, 20, value),
-            ParamSoundType::EgRelease => self.send_cc_message(channel, 23, value),
-            ParamSoundType::ModAmount => self.send_cc_message(channel, 29, value),
-            ParamSoundType::ModRate => self.send_cc_message(channel, 46, value),
-        }
+    fn set_param_level(&mut self, channel: u8, param: ParamSoundType, value: u8) {
+        self.send_cc_message(channel, from_param_to_cc_number(param), value);
     }
 
+    // MIDI communication
     fn send_cc_message(&mut self, channel: u8, cc_number: u8, value: u8) {
         bridge_send_message(
             self.conn,
@@ -165,6 +149,40 @@ impl SoundPanel<'_> {
             cc_number & 0x7f,
             value & 0x7f,
         );
+    }
+}
+
+fn from_sound_source_type_to_value(sound_source_type: SoundSourceType) -> u8 {
+    match sound_source_type {
+        SoundSourceType::WaveSine => 24,
+        SoundSourceType::WaveSaw => 50,
+        SoundSourceType::WaveNoiseHPF => 76,
+        SoundSourceType::WaveNoiseLPF => 101,
+        SoundSourceType::WaveNoiseBPF => 127,
+    }
+}
+fn from_modulation_type_to_value(modulation_type: ModulationType::ModExp) -> u8 {
+    match modulation_type {
+        ModulationType::ModExp => 109,
+        ModulationType::ModTri => 118,
+        ModulationType::ModRand => 127,
+    }
+}
+fn from_amp_eg_to_value(amp_eg: AmpEg) -> u8 {
+    match amp_eg {
+        AmpEg::EnvAd => 121,
+        AmpEg::EnvExp => 124,
+        AmpEg::EnvMul => 127,
+    }
+}
+fn from_param_to_cc_number(param: ParamSoundType) -> u8 {
+    match param {
+        ParamSoundType::Level => 17,
+        ParamSoundType::Pitch => 26,
+        ParamSoundType::EgAttack => 20,
+        ParamSoundType::EgRelease => 23,
+        ParamSoundType::ModAmount => 29,
+        ParamSoundType::ModRate => 46,
     }
 }
 
