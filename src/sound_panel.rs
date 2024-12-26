@@ -12,7 +12,6 @@ pub const DRUM_CH_SNARE: u8 = 2;
 
 // CC NUMBERS
 const CC_NUMBER_LAYOUT_1_SOUND: u8 = 14;
-const CC_NUMBER_LAYOUT_2_LEVEL: u8 = 18; // Used for disabling layout 2 sounds (for now).
 
 pub struct SoundPanel<'a> {
     pub conn: &'a mut MidiOutputConnection,
@@ -101,7 +100,7 @@ impl SoundPanel<'_> {
         );
     }
     fn disable_layout_2_sounds(&mut self, channel: u8) {
-        self.send_cc_message(channel, CC_NUMBER_LAYOUT_2_LEVEL, 0)
+        self.set_param_level(channel, ParamSoundType::Level2, 0);
     }
 
     // Manual set
@@ -144,12 +143,15 @@ impl SoundPanel<'_> {
         self.send_cc_message(
             channel,
             match param {
+                // Layout 1
                 ParamSoundType::Level1 => 17,
                 ParamSoundType::Pitch1 => 26,
                 ParamSoundType::EgAttack1 => 20,
                 ParamSoundType::EgRelease1 => 23,
                 ParamSoundType::ModAmount1 => 29,
                 ParamSoundType::ModRate1 => 46,
+                // Layout 2
+                ParamSoundType::Level2 => 18, // Used for disabling layout 2 sounds (for now).
             },
             value,
         );
@@ -184,10 +186,13 @@ enum AmpEg {
     EnvMul,
 }
 pub enum ParamSoundType {
+    // Layout 1
     Level1,
     Pitch1,
     EgAttack1,
     EgRelease1,
     ModAmount1,
     ModRate1,
+    // Layout 2
+    Level2,
 }
