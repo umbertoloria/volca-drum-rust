@@ -13,7 +13,6 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
-
     let mut player = Player::new(song.tempo.bpm);
 
     for section in &song.sections {

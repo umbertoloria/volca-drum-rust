@@ -1,3 +1,4 @@
+use crate::input::get_console_int_input;
 use crate::midi_controller::init_midi_controller;
 use crate::player::play_song;
 use crate::song::get_dummy_song;
@@ -26,8 +27,16 @@ fn main() {
         conn: &mut volca_drum,
     };
     let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
-    volca_drum_sound_panel.set_from_patch(patch1);
     // TODO: Make sure it always sounds ok from the first hit
+    volca_drum_sound_panel.set_from_patch(patch1);
+    while {
+        let num = get_console_int_input("1 per sound refresh, 0 per uscire", 0, 1);
+
+        let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
+        volca_drum_sound_panel.set_from_patch(patch1);
+
+        num > 0
+    } {}
 
     // SONG
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
