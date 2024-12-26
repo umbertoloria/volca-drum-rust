@@ -12,6 +12,7 @@ mod player;
 mod sound_panel;
 mod yaml_patch_reader;
 mod yaml_song_reader;
+mod cli;
 
 fn main() {
     // MIDI
