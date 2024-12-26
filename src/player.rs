@@ -1,6 +1,6 @@
 use crate::cli::clear_terminal_screen;
 use crate::drummer::Drummer;
-use crate::yaml_song_reader::YamlSong;
+use crate::song::Song;
 use midir::MidiOutputConnection;
 use std::thread::sleep;
 use std::time::Duration;
@@ -12,10 +12,13 @@ pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
-pub fn play_song(song: YamlSong, volca_drum: &mut MidiOutputConnection) {
-    println!("Play song \"{}\" by \"{}\"", song.title, song.author);
+pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
+    println!(
+        "Play song \"{}\" by \"{}\"",
+        song.details.title, song.details.author
+    );
 
-    let mut player = Player::new(song.tempo_1_4);
+    let mut player = Player::new(song.tempo.bpm);
 
     for section in &song.sections {
         // Print section info
