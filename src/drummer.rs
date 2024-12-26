@@ -9,11 +9,6 @@ pub const DUR_1_8: Duration = Duration::from_millis(500);
 pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 
-// Drum parts
-pub const DRUM_KICK: u8 = 1;
-pub const DRUM_HH: u8 = 2;
-pub const DRUM_SNARE: u8 = 4;
-
 pub struct Drummer<'a> {
     pub conn: &'a mut MidiOutputConnection,
     pub bpm: f64,

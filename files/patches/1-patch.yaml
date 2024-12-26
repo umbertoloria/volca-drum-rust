@@ -1,0 +1,60 @@
+kick:
+  sound_src_type: "WaveSine"
+  mod_type: "ModExp"         # Or "ModTri" or "ModRand"
+  amp_eg: "EnvAd"            # Or "EnvExp" or "EnvMul"
+  level: 127
+  pitch: 80
+  eg_attack: 5
+  eg_release: 50
+  mod_amount: 120
+  mod_rate: 120
+hh:
+  sound_src_type: "WaveSine" # Or "WaveSaw" or "WaveNoiseHPF" or "WaveNoiseLPF" or "WaveNoiseBPF"
+  mod_type: "ModExp"         # Or "ModTri" or "ModRand"
+  amp_eg: "EnvAd"            # Or "EnvExp" or "EnvMul"
+  level: 127
+  pitch: 37
+  eg_attack: 13
+  eg_release: 9
+  mod_amount: 9
+  mod_rate: 20
+snare:
+  sound_src_type: "WaveSaw" # Or "WaveSaw" or "WaveNoiseHPF" or "WaveNoiseLPF" or "WaveNoiseBPF"
+  mod_type: "ModExp"         # Or "ModTri" or "ModRand"
+  amp_eg: "EnvAd"            # Or "EnvExp" or "EnvMul"
+  level: 127
+  pitch: 40
+  eg_attack: 5
+  eg_release: 50
+  mod_amount: 120
+  mod_rate: 120
+sound4:
+  sound_src_type: "WaveSine" # Or "WaveSaw" or "WaveNoiseHPF" or "WaveNoiseLPF" or "WaveNoiseBPF"
+  mod_type: "ModExp"         # Or "ModTri" or "ModRand"
+  amp_eg: "EnvAd"            # Or "EnvExp" or "EnvMul"
+  level: 127
+  pitch: 37
+  eg_attack: 13
+  eg_release: 9
+  mod_amount: 9
+  mod_rate: 20
+sound5:
+  sound_src_type: "WaveSine" # Or "WaveSaw" or "WaveNoiseHPF" or "WaveNoiseLPF" or "WaveNoiseBPF"
+  mod_type: "ModExp"         # Or "ModTri" or "ModRand"
+  amp_eg: "EnvAd"            # Or "EnvExp" or "EnvMul"
+  level: 127
+  pitch: 37
+  eg_attack: 13
+  eg_release: 9
+  mod_amount: 9
+  mod_rate: 20
+sound6:
+  sound_src_type: "WaveSine" # Or "WaveSaw" or "WaveNoiseHPF" or "WaveNoiseLPF" or "WaveNoiseBPF"
+  mod_type: "ModExp"         # Or "ModTri" or "ModRand"
+  amp_eg: "EnvAd"            # Or "EnvExp" or "EnvMul"
+  level: 127
+  pitch: 37
+  eg_attack: 13
+  eg_release: 9
+  mod_amount: 9
+  mod_rate: 20
