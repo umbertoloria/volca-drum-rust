@@ -52,6 +52,7 @@ impl SoundPanel<'_> {
     ) {
         self.set_sound_source_type(
             channel,
+            CC_NUMBER_LAYOUT_1_SOUND,
             match patch_layout.sound_src_type {
                 YamlPatchLayoutSoundSrcType::WaveSine => SoundSourceType::WaveSine,
                 YamlPatchLayoutSoundSrcType::WaveSaw => SoundSourceType::WaveSaw,
@@ -62,6 +63,7 @@ impl SoundPanel<'_> {
         );
         self.set_modulation_type(
             channel,
+            CC_NUMBER_LAYOUT_1_SOUND,
             match patch_layout.mod_type {
                 YamlPatchLayoutModulationType::ModExp => ModulationType::ModExp,
                 YamlPatchLayoutModulationType::ModTri => ModulationType::ModTri,
@@ -70,6 +72,7 @@ impl SoundPanel<'_> {
         );
         self.set_amp_eg(
             channel,
+            CC_NUMBER_LAYOUT_1_SOUND,
             match patch_layout.amp_eg {
                 YamlPatchLayoutAmpEg::EnvAd => AmpEg::EnvAd,
                 YamlPatchLayoutAmpEg::EnvExp => AmpEg::EnvExp,
@@ -104,10 +107,15 @@ impl SoundPanel<'_> {
     }
 
     // Manual set
-    fn set_sound_source_type(&mut self, channel: u8, sound_source_type: SoundSourceType) {
+    fn set_sound_source_type(
+        &mut self,
+        channel: u8,
+        cc_number: u8,
+        sound_source_type: SoundSourceType,
+    ) {
         self.send_cc_message(
             channel,
-            CC_NUMBER_LAYOUT_1_SOUND,
+            cc_number,
             match sound_source_type {
                 SoundSourceType::WaveSine => 24,
                 SoundSourceType::WaveSaw => 50,
@@ -117,10 +125,10 @@ impl SoundPanel<'_> {
             },
         );
     }
-    fn set_modulation_type(&mut self, channel: u8, modulation_type: ModulationType) {
+    fn set_modulation_type(&mut self, channel: u8, cc_number: u8, modulation_type: ModulationType) {
         self.send_cc_message(
             channel,
-            CC_NUMBER_LAYOUT_1_SOUND,
+            cc_number,
             match modulation_type {
                 ModulationType::ModExp => 109,
                 ModulationType::ModTri => 118,
@@ -128,10 +136,10 @@ impl SoundPanel<'_> {
             },
         );
     }
-    fn set_amp_eg(&mut self, channel: u8, amp_eg: AmpEg) {
+    fn set_amp_eg(&mut self, channel: u8, cc_number: u8, amp_eg: AmpEg) {
         self.send_cc_message(
             channel,
-            CC_NUMBER_LAYOUT_1_SOUND,
+            cc_number,
             match amp_eg {
                 AmpEg::EnvAd => 121,
                 AmpEg::EnvExp => 124,
