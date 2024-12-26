@@ -1,4 +1,3 @@
-use crate::midi_controller::bridge_send_message;
 use crate::song::DrumPattern;
 use crate::sound_panel::{DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE};
 use crate::volca_drum::VolcaDrum;
@@ -50,13 +49,13 @@ impl Drummer {
         const NOTE_OFF_MSG: u8 = 0x80;
         const VELOCITY: u8 = 0x70;
 
-        bridge_send_message(volca_drum.conn, PROGRAM_CHANGE, instr, 0);
+        volca_drum.send_plain_message(PROGRAM_CHANGE, instr, 0);
         // let _ = volca_drum.send(&[PROGRAM_CHANGE, instr]);
 
-        bridge_send_message(volca_drum.conn, NOTE_ON_MSG, note, VELOCITY);
+        volca_drum.send_plain_message(NOTE_ON_MSG, note, VELOCITY);
 
         // Are we sure that no wait is fine?
         // sleep(duration.mul_f64(BPM_DEFAULT).div_f64(self.bpm));
-        bridge_send_message(volca_drum.conn, NOTE_OFF_MSG, note, VELOCITY);
+        volca_drum.send_plain_message(NOTE_OFF_MSG, note, VELOCITY);
     }
 }
