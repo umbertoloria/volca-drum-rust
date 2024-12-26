@@ -1,4 +1,5 @@
-use crate::sound_panel::{DRUM_CH_KICK, DRUM_CH_SNARE};
+use crate::song::DrumPattern;
+use crate::sound_panel::{DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE};
 use midir::MidiOutputConnection;
 
 pub struct Drummer {
@@ -14,8 +15,7 @@ impl Drummer {
     }
     pub fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
-            // TODO: Avoid cloning the drum pattern key
-            format!("{}", pattern.clone_key())
+            format!("{}", pattern.key)
         } else {
             // Like when I write "no drums" or "φ".
             "".to_string()
@@ -27,19 +27,22 @@ impl Drummer {
         cur_1_16: usize,
         volca_drum: &mut MidiOutputConnection,
     ) {
-        if self.pattern.is_none() {
-            // Easy way of skip playing when there's no drum pattern.
-            return;
-        }
+        if let Some(pattern) = &self.pattern {
+            let index = (cur_1_4 - 1) * 4 + (cur_1_16 - 1);
 
-        // TODO: Understand what's the "right" default note value.
-        const DEFAULT_NOTE_VALUE: u8 = 7;
+            let hh_symbol = pattern.hh.get(index..=index).unwrap();
+            let sn_symbol = pattern.sn.get(index..=index).unwrap();
+            let kk_symbol = pattern.kk.get(index..=index).unwrap();
 
-        // This drum pattern is hard-coded.
-        if cur_1_16 == 1 {
-            if cur_1_4 % 2 == 0 {
+            // TODO: Understand what's the "right" default note value.
+            const DEFAULT_NOTE_VALUE: u8 = 7;
+            if hh_symbol != " " {
+                self.hit(DEFAULT_NOTE_VALUE, DRUM_CH_HH, volca_drum);
+            }
+            if kk_symbol != " " {
                 self.hit(DEFAULT_NOTE_VALUE, DRUM_CH_KICK, volca_drum);
-            } else {
+            }
+            if sn_symbol != " " {
                 self.hit(DEFAULT_NOTE_VALUE, DRUM_CH_SNARE, volca_drum);
             }
         }

@@ -68,26 +68,13 @@ pub fn convert_section_kind_from_string(
 }
 
 // Drum Pattern
+#[derive(Clone)]
 pub struct DrumPattern {
-    key: String, // Es. "A"
-    num_1_4: usize,
-    hh: String, // Es. "x x x x x x x x "
-    sn: String, // Es. "    x  x    x   "
-    kk: String, // Es. "x       x x    x"
-}
-impl DrumPattern {
-    pub fn clone(&self) -> DrumPattern {
-        DrumPattern {
-            key: self.key.clone(),
-            num_1_4: self.num_1_4,
-            hh: self.hh.clone(),
-            sn: self.sn.clone(),
-            kk: self.kk.clone(),
-        }
-    }
-    pub fn clone_key(&self) -> String {
-        self.key.clone()
-    }
+    pub key: String, // Es. "A"
+    pub num_1_4: usize,
+    pub hh: String, // Es. "x x x x x x x x "
+    pub sn: String, // Es. "    x  x    x   "
+    pub kk: String, // Es. "x       x x    x"
 }
 
 // Songs

@@ -36,10 +36,10 @@ pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
             player.drummer.set_pattern(None);
         } else {
             // TODO: Avoid cloning the drum pattern key
-            let key = section.drum_pattern_key.clone().unwrap();
+            let drum_pattern_key = section.drum_pattern_key.clone().unwrap();
             player
                 .drummer
-                .set_pattern(song.get_drum_pattern_clone_from_key(key));
+                .set_pattern(song.get_drum_pattern_clone_from_key(drum_pattern_key));
         }
 
         for _ in 0..section.bars {
