@@ -1,0 +1,43 @@
+author: "Harry Styles"
+title: "Sign of the times"
+tempo_1_4: 60
+default_drum_beat: "A" # Format drum beat
+sections:
+  - kind: "Intro"
+    bars: 4
+    drums: null
+  - kind: "Verse"
+    bars: 8
+    drums: null
+  - kind: "Verse"
+    bars: 8
+    drums: null
+    notes: "Fill!!!"
+  - kind: "Chorus"
+    bars: 8
+    notes: "2 fill"
+  - kind: "Verse"
+    bars: 8
+    notes: "2 fill"
+  - kind: "Verse"
+    bars: 8
+    notes: "\"We never learn, we've been here before\", mini-fill, fill"
+  - kind: "Chorus"
+    bars: 8
+    notes: "2 fill"
+  - kind: "Verse"
+    bars: 8
+    notes: "\"We never learn, we've been here before\", fill & climax, fill"
+  - kind: "Bridge"
+    bars: 8
+    notes: "Tanti fill"
+  - kind: "Chorus"
+    bars: 4
+    notes: "Climax -> \"We got to get away\""
+  - kind: "Chorus"
+    bars: 8
+    notes: "\"We got to get away\", fill, fill & crash!"
+  - kind: "Outro"
+    bars: 4
+    drums: null
+    notes: "Slight arpeggio"

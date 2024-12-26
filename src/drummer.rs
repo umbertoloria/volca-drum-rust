@@ -1,3 +1,4 @@
+use crate::player::BPM_DEFAULT;
 use midir::MidiOutputConnection;
 use std::thread::sleep;
 use std::time::Duration;
@@ -12,9 +13,6 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const DRUM_KICK: u8 = 1;
 pub const DRUM_HH: u8 = 2;
 pub const DRUM_SNARE: u8 = 4;
-
-// BPM config
-const BPM_DEFAULT: f64 = 60.0;
 
 pub struct Drummer<'a> {
     pub conn: &'a mut MidiOutputConnection,
