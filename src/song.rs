@@ -12,7 +12,7 @@ pub struct Song {
 impl Song {
     pub fn get_drum_pattern_clone_from_key(&self, drum_pattern_key: String) -> Option<DrumPattern> {
         if let Some(drum_pattern) = self.drum_patterns.get(&drum_pattern_key) {
-            // TODO: Avoid cloning the drum pattern
+            // TODO: Avoid cloning pattern
             Some(drum_pattern.clone())
         } else {
             None
@@ -20,7 +20,7 @@ impl Song {
     }
     pub fn get_keyboard_pattern_clone_from_key(&self, key: String) -> Option<KeyboardPattern> {
         if let Some(pattern) = self.keyboard_patterns.get(&key) {
-            // TODO: Avoid cloning the pattern
+            // TODO: Avoid cloning pattern
             Some(pattern.clone())
         } else {
             None

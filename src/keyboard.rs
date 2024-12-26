@@ -31,7 +31,7 @@ impl Keyboard {
 
     pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
-            let index_1_16th = tempo_snapshot.get_cur_1_16th_in_the_whole_section_from_1();
+            let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
             // TODO: Avoid cloning pattern
             // TODO: This is slow
             let mut i = 0;

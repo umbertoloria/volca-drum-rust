@@ -25,7 +25,7 @@ impl Drummer {
 
     pub fn play_1_16th(&self, tempo_snapshot: &TempoSnapshot, volca_drum: &mut VolcaDrum) {
         if let Some(pattern) = &self.pattern {
-            let index_1_16th = tempo_snapshot.get_cur_1_16th_in_the_whole_bar_from_1() - 1;
+            let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_bar_from_1() - 1;
 
             let hh_symbol = pattern.hh.get(index_1_16th..=index_1_16th).unwrap();
             let sn_symbol = pattern.sn.get(index_1_16th..=index_1_16th).unwrap();

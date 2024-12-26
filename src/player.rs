@@ -1,7 +1,7 @@
 use crate::cli::clear_terminal_screen;
 use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
-use crate::song::{Song, SongSection};
+use crate::song::{Song, SongSection, SongTempo};
 use crate::volca_drum::VolcaDrum;
 use std::thread::sleep;
 use std::time::Duration;
@@ -14,7 +14,7 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
-    let mut player = Player::new(song.tempo.bpm);
+    let mut player = Player::new();
 
     for section in &song.sections {
         // Beginning of a new section.
@@ -22,13 +22,13 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
         if section.bars < 1 {
             continue;
         }
-        player.set_new_window_section(section.bars);
+        player.starts_new_section_with_many_bars(section.bars);
 
         // Drum Pattern
         if section.drum_pattern_key.is_none() {
             player.drummer.set_pattern(None);
         } else {
-            // TODO: Avoid cloning the drum pattern key
+            // TODO: Avoid cloning pattern key
             let drum_pattern_key = section.drum_pattern_key.clone().unwrap();
             player
                 .drummer
@@ -38,7 +38,7 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
         if section.keyboard_pattern_key.is_none() {
             player.keyboard.set_pattern(None);
         } else {
-            // TODO: Avoid cloning the pattern key
+            // TODO: Avoid cloning pattern key
             let pattern_key = section.keyboard_pattern_key.clone().unwrap();
             player
                 .keyboard
@@ -52,7 +52,7 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
                 // Beginning of a quarter.
                 for _ in 0..4 {
                     // Beginning of a 1/16th.
-                    player.play_1_16th_now(section, volca_drum);
+                    player.play_1_16th_now(section, &song.tempo, volca_drum);
                     player.next_1_16th();
                 }
             }
@@ -62,60 +62,44 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
 
 // Player
 pub struct Player {
-    // Compose-time.
-    bpm: usize,
-    // Assuming all 4/4 bars.
-    // Assuming bpm ticks to 1/4.
-
-    // Play-time.
-    cur_bar: usize,
-    cur_quarter: usize,
-    cur_1_8: usize,
-    cur_1_16: usize,
-    section_bar_first: usize,
-    section_bar_last: usize,
+    tempo_snapshot: TempoSnapshot,
 
     // Musicians
     drummer: Drummer,
     keyboard: Keyboard,
 }
 impl Player {
-    pub fn new(bpm: usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            bpm,
-            cur_bar: 1,
-            cur_quarter: 1,
-            cur_1_8: 1,
-            cur_1_16: 1,
-            section_bar_first: 0,
-            section_bar_last: 0,
+            tempo_snapshot: TempoSnapshot {
+                cur_bar: 1,
+                cur_quarter: 1,
+                cur_1_8: 1,
+                cur_1_16: 1,
+                section_bar_first: 0,
+                section_bar_last: 0,
+            },
             drummer: Drummer::new(),
             keyboard: Keyboard::new(),
         }
     }
-    pub fn set_new_window_section(&mut self, bars_count: usize) {
-        self.section_bar_first = self.cur_bar;
-        self.section_bar_last = self.section_bar_first + bars_count - 1;
-    }
-    fn get_tempo_snapshot(&self) -> TempoSnapshot {
-        let cur_bar_in_section = self.cur_bar - self.section_bar_first + 1;
-        let tot_bars_in_section = self.section_bar_last - self.section_bar_first + 1;
-        TempoSnapshot {
-            cur_bar_in_section,
-            tot_bars_in_section,
-            cur_bar: self.cur_bar,
-            cur_quarter: self.cur_quarter,
-            cur_1_8: self.cur_1_8,
-            cur_1_16: self.cur_1_16,
-        }
+    pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {
+        self.tempo_snapshot.section_bar_first = self.tempo_snapshot.cur_bar;
+        self.tempo_snapshot.section_bar_last =
+            self.tempo_snapshot.section_bar_first + bars_count - 1;
     }
 
-    pub fn play_1_16th_now(&mut self, section: &SongSection, volca_drum: &mut VolcaDrum) {
-        let tempo_snapshot = self.get_tempo_snapshot();
+    pub fn play_1_16th_now(
+        &mut self,
+        section: &SongSection,
+        song_tempo: &SongTempo,
+        volca_drum: &mut VolcaDrum,
+    ) {
+        let tempo_snapshot = &self.tempo_snapshot;
 
         // Play music
-        self.drummer.play_1_16th(&tempo_snapshot, volca_drum);
-        self.keyboard.play_1_16th(&tempo_snapshot);
+        self.drummer.play_1_16th(tempo_snapshot, volca_drum);
+        self.keyboard.play_1_16th(tempo_snapshot);
 
         // + Interactive screen
         clear_terminal_screen();
@@ -126,10 +110,9 @@ impl Player {
         println!("  Drummer: {}", self.drummer.get_short_info());
         println!("  Keyboard: {}", self.keyboard.get_short_info());
 
-        let tot_bars_in_section = tempo_snapshot.tot_bars_in_section;
-        let tot_1_16ths_in_section = tempo_snapshot.tot_1_16ths_in_section();
-        let cur_1_16ths_in_section =
-            tempo_snapshot.get_cur_1_16ths_in_section(self.section_bar_first);
+        let tot_bars_in_section = tempo_snapshot.get_tot_bars_in_section();
+        let tot_1_16ths_in_section = tempo_snapshot.get_tot_1_16ths_in_section();
+        let cur_1_16ths_in_section = tempo_snapshot.get_cur_1_16ths_in_section_from_1() - 1;
         println!(
             "  {}",
             (1..=tot_bars_in_section) // Or: (self.section_bar_first..=self.section_bar_last)
@@ -146,57 +129,63 @@ impl Player {
         // - Interactive screen
 
         // Wait time
-        let millis_1_16th = DUR_1_16.mul_f64(BPM_DEFAULT).div_f64(self.bpm as f64);
+        let millis_1_16th = DUR_1_16.mul_f64(BPM_DEFAULT).div_f64(song_tempo.bpm as f64);
         sleep(millis_1_16th);
         // TODO: Metronome is not really precise due to processing slow-down
     }
 
     pub fn next_1_16th(&mut self) {
-        self.cur_1_16 += 1;
-        self.cur_1_8 = if self.cur_1_16 > 2 { 2 } else { 1 };
-        if self.cur_1_16 > 4 {
-            self.cur_1_16 = 1;
-            self.cur_1_8 = 1;
-            self.cur_quarter += 1;
+        self.tempo_snapshot.cur_1_16 += 1;
+        self.tempo_snapshot.cur_1_8 = if self.tempo_snapshot.cur_1_16 > 2 {
+            2
+        } else {
+            1
+        };
+        if self.tempo_snapshot.cur_1_16 > 4 {
+            self.tempo_snapshot.cur_1_16 = 1;
+            self.tempo_snapshot.cur_1_8 = 1;
+            self.tempo_snapshot.cur_quarter += 1;
         }
-        if self.cur_quarter > 4 {
-            self.cur_quarter = 1;
-            self.cur_bar += 1;
+        if self.tempo_snapshot.cur_quarter > 4 {
+            self.tempo_snapshot.cur_quarter = 1;
+            self.tempo_snapshot.cur_bar += 1;
         }
     }
 }
 
 // Tempo Snapshot
 pub struct TempoSnapshot {
-    pub cur_bar_in_section: usize,
-    pub tot_bars_in_section: usize,
     pub cur_bar: usize,
     pub cur_quarter: usize,
     pub cur_1_8: usize,
     pub cur_1_16: usize,
+    pub section_bar_first: usize,
+    pub section_bar_last: usize,
 }
 impl TempoSnapshot {
-    pub fn get_tot_1_4s_in_section(&self) -> usize {
-        self.tot_bars_in_section * 4
+    pub fn get_tot_1_16ths_in_section(&self) -> usize {
+        // Assuming 4/4 and four 1/16ths in 1/4th.
+        self.get_tot_bars_in_section() * 16
     }
-    pub fn tot_1_16ths_in_section(&self) -> usize {
-        self.get_tot_1_4s_in_section() * 4
-    }
-    pub fn get_cur_1_16ths_in_section(&self, section_bar_first: usize) -> usize {
-        (self.cur_bar - section_bar_first) * 16 + (self.cur_quarter - 1) * 4 + (self.cur_1_16 - 1)
-    }
-    pub fn get_cur_1_16th_in_the_whole_bar_from_1(&self) -> usize {
+    pub fn get_cur_1_16ths_in_section_from_1(&self) -> usize {
         // From 1 to...
-        (self.cur_quarter - 1) * 4 + (self.cur_1_16 - 1) + 1
+        (self.get_cur_bar_in_section() - 1) * 16 + self.get_cur_1_16ths_in_bar_from_1()
     }
-    pub fn get_cur_1_16th_in_the_whole_section_from_1(&self) -> usize {
-        (self.cur_bar_in_section - 1) * 16 + self.get_cur_1_16th_in_the_whole_bar_from_1()
+    pub fn get_cur_1_16ths_in_bar_from_1(&self) -> usize {
+        // From 1 to...
+        (self.cur_quarter - 1) * 4 + self.cur_1_16
+    }
+    fn get_cur_bar_in_section(&self) -> usize {
+        self.cur_bar - self.section_bar_first + 1
+    }
+    pub fn get_tot_bars_in_section(&self) -> usize {
+        self.section_bar_last - self.section_bar_first + 1
     }
     pub fn string_info(&self) -> String {
         format!(
             "{}th of {} bars in section / {}.{} / {}th global bar",
-            self.cur_bar_in_section,
-            self.tot_bars_in_section,
+            self.get_cur_bar_in_section(),
+            self.get_tot_bars_in_section(),
             self.cur_quarter,
             self.cur_1_16,
             self.cur_bar
