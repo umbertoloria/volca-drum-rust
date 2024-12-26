@@ -72,3 +72,17 @@ pub fn bridge_send_message(volca_drum: &mut MidiOutputConnection, a: u8, b: u8, 
         a, b, c,
     );
 }
+
+pub fn bridge_smart_send_message(
+    volca_drum: &mut MidiOutputConnection,
+    channel: u8,
+    cc_number: u8,
+    value: u8,
+) {
+    bridge_send_message(
+        volca_drum,
+        0xb0 | (channel & 0x0f),
+        cc_number & 0x7f,
+        value & 0x7f,
+    );
+}

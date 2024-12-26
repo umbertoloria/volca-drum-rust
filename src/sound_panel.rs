@@ -1,4 +1,4 @@
-use crate::midi_controller::bridge_send_message;
+use crate::midi_controller::bridge_smart_send_message;
 use crate::yaml_patch_reader::{
     YamlPatchFile, YamlPatchLayout, YamlPatchLayoutAmpEg, YamlPatchLayoutModulationType,
     YamlPatchLayoutSoundSrcType,
@@ -113,7 +113,8 @@ impl SoundPanel<'_> {
         cc_number: u8,
         sound_source_type: SoundSourceType,
     ) {
-        self.send_cc_message(
+        bridge_smart_send_message(
+            self.conn,
             channel,
             cc_number,
             match sound_source_type {
@@ -126,7 +127,8 @@ impl SoundPanel<'_> {
         );
     }
     fn set_modulation_type(&mut self, channel: u8, cc_number: u8, modulation_type: ModulationType) {
-        self.send_cc_message(
+        bridge_smart_send_message(
+            self.conn,
             channel,
             cc_number,
             match modulation_type {
@@ -137,7 +139,8 @@ impl SoundPanel<'_> {
         );
     }
     fn set_amp_eg(&mut self, channel: u8, cc_number: u8, amp_eg: AmpEg) {
-        self.send_cc_message(
+        bridge_smart_send_message(
+            self.conn,
             channel,
             cc_number,
             match amp_eg {
@@ -148,7 +151,8 @@ impl SoundPanel<'_> {
         );
     }
     fn set_param_level(&mut self, channel: u8, param: ParamSoundType, value: u8) {
-        self.send_cc_message(
+        bridge_smart_send_message(
+            self.conn,
             channel,
             match param {
                 // Layout 1
@@ -162,16 +166,6 @@ impl SoundPanel<'_> {
                 ParamSoundType::Level2 => 18, // Used for disabling layout 2 sounds (for now).
             },
             value,
-        );
-    }
-
-    // MIDI communication
-    fn send_cc_message(&mut self, channel: u8, cc_number: u8, value: u8) {
-        bridge_send_message(
-            self.conn,
-            0xb0 | (channel & 0x0f),
-            cc_number & 0x7f,
-            value & 0x7f,
         );
     }
 }
