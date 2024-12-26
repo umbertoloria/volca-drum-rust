@@ -1,3 +1,4 @@
+use crate::player::TempoSnapshot;
 use crate::song::KeyboardPattern;
 
 pub struct Keyboard {
@@ -22,17 +23,15 @@ impl Keyboard {
             if self.chord_index <= pattern.chords.len() {
                 let mut chord = pattern.chords.get(self.chord_index).unwrap();
                 // TODO: Avoid cloning pattern
-                return chord.clone().chord_name;
+                return format!("{} chord", chord.clone().chord_name);
             }
         }
         "".to_string()
     }
 
-    pub fn play_1_16th(&mut self, cur_bar_in_section: usize, cur_1_4: usize, cur_1_16: usize) {
+    pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
-            // From 1 to ...
-            let index_1_16th =
-                (cur_bar_in_section - 1) * 16 + (cur_1_4 - 1) * 4 + (cur_1_16 - 1) + 1;
+            let index_1_16th = tempo_snapshot.get_cur_1_16th_in_the_whole_section_from_1();
             // TODO: Avoid cloning pattern
             // TODO: This is slow
             let mut i = 0;
