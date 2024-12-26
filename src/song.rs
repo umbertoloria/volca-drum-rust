@@ -91,6 +91,19 @@ pub struct KeyboardPattern {
     pub key: String, // Es. "A"
     pub chords: Vec<KeyboardPatternChord>,
 }
+impl KeyboardPattern {
+    pub fn get_total_to_1_16th_incl(&self) -> usize {
+        let last_chord = &self.chords[self.chords.len() - 1];
+        last_chord.to_1_16th_incl
+    }
+    pub fn get_ceil_num_bars_coverage(&self) -> usize {
+        let total_1_16ths_incl = self.get_total_to_1_16th_incl();
+        // Assuming 1/4ths is a group of "4" 1/16ths.
+        let ceil_1_4ths = (total_1_16ths_incl as f64 / 4.0).ceil() as usize;
+        // Assuming 4/4 bars.
+        ceil_1_4ths / 4
+    }
+}
 #[derive(Clone)]
 pub struct KeyboardPatternChord {
     pub chord_name: String, // Es. "Fmaj7"

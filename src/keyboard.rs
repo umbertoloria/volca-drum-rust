@@ -31,12 +31,18 @@ impl Keyboard {
 
     pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
+            let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
             let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
+            // Adjusting because we may have 4 bars patter onto 8 bars section.
+            let index_1_16th_for_pattern = index_1_16th % (bars_covered_by_pattern * 16);
+
             // TODO: Avoid cloning pattern
             // TODO: This is slow
             let mut i = 0;
             for chord in &pattern.chords {
-                if chord.from_1_16th_incl <= index_1_16th && index_1_16th <= chord.to_1_16th_incl {
+                if chord.from_1_16th_incl <= index_1_16th_for_pattern
+                    && index_1_16th_for_pattern <= chord.to_1_16th_incl
+                {
                     self.chord_index = i;
                     break;
                 }
