@@ -27,7 +27,7 @@ fn main() {
 
     // SONG
     let song1 = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
-    play_song(song1);
+    play_song(song1, &mut volca_drum);
 
     // MIDI
     volca_drum.close();
