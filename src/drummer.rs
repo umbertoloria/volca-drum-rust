@@ -3,12 +3,6 @@ use midir::MidiOutputConnection;
 use std::thread::sleep;
 use std::time::Duration;
 
-// Durations
-pub const DUR_1_4: Duration = Duration::from_millis(1000);
-pub const DUR_1_8: Duration = Duration::from_millis(500);
-pub const DUR_1_16: Duration = Duration::from_millis(250);
-pub const DUR_1_32: Duration = Duration::from_millis(125);
-
 pub struct Drummer<'a> {
     pub conn: &'a mut MidiOutputConnection,
     pub bpm: f64,
