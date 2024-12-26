@@ -13,21 +13,12 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
-    println!(
-        "Play song \"{}\" by \"{}\"",
-        song.details.title, song.details.author
-    );
 
     let mut player = Player::new(song.tempo.bpm);
 
     for section in &song.sections {
         // Beginning of a new section.
 
-        // Print section info
-        let mut section_notes = "";
-        if let Some(x) = &section.notes {
-            section_notes = x;
-        }
         if section.bars < 1 {
             continue;
         }
@@ -54,7 +45,6 @@ pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
             }
         }
     }
-    println!("Song end.");
 }
 
 pub struct Player {
@@ -104,7 +94,9 @@ impl Player {
                 + (self.cur_quarter - 1) * 4
                 + (self.cur_1_16 - 1);
 
+            // + Interactive screen
             clear_terminal_screen();
+            // TODO: Maybe show song author & title here
             println!("  .:[ {} ]:.", section.kind);
             println!("  Drummer: {}", self.drummer.get_short_info());
             println!(
@@ -120,6 +112,7 @@ impl Player {
                 "-".repeat(cur_1_16ths_in_section),
                 " ".repeat(tot_1_16ths_in_section - cur_1_16ths_in_section - 1)
             );
+            // - Interactive screen
         }
 
         // Wait time
