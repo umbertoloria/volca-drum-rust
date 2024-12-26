@@ -6,15 +6,17 @@ impl Drummer {
     pub fn new() -> Self {
         Self {}
     }
-}
-
-impl Drummer {
-    pub fn play_1_8(&self, cur_1_4: usize, cur_1_8: usize, volca_drum: &mut MidiOutputConnection) {
+    pub fn play_1_16th(
+        &self,
+        cur_1_4: usize,
+        cur_1_16: usize,
+        volca_drum: &mut MidiOutputConnection,
+    ) {
         // TODO: Understand what's the "right" default note value.
         const DEFAULT_NOTE_VALUE: u8 = 7;
 
         // This drum pattern is hard-coded.
-        if cur_1_8 == 1 {
+        if cur_1_16 == 1 {
             if cur_1_4 % 2 == 0 {
                 self.hit(DEFAULT_NOTE_VALUE, DRUM_CH_KICK, volca_drum);
             } else {

@@ -14,8 +14,8 @@ pub struct SongDetails {
 }
 pub struct SongTempo {
     pub bpm: usize,
-    // Assuming all 4/4 bars.
     // Assuming bpm ticks to 1/4.
+    pub time_signature: (usize, usize), // Es. (4, 4) for 4/4 bars.
 }
 
 // Song Section
@@ -73,6 +73,7 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
         },
         tempo: SongTempo {
             bpm: yaml_song.tempo_1_4,
+            time_signature: (4, 4),
         },
         drum_patterns: HashMap::new(),
         sections: yaml_song
@@ -93,7 +94,10 @@ pub fn get_dummy_song() -> Song {
             author: "Author 1".into(),
             title: "Title 1".into(),
         },
-        tempo: SongTempo { bpm: 85 },
+        tempo: SongTempo {
+            bpm: 85,
+            time_signature: (4, 4),
+        },
         drum_patterns: HashMap::from([
             (
                 "A".into(),

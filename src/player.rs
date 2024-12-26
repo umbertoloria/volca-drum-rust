@@ -1,6 +1,6 @@
 use crate::cli::clear_terminal_screen;
 use crate::drummer::Drummer;
-use crate::song::Song;
+use crate::song::{Song, SongSection};
 use midir::MidiOutputConnection;
 use std::thread::sleep;
 use std::time::Duration;
@@ -26,18 +26,23 @@ pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
         if let Some(x) = &section.notes {
             section_notes = x;
         }
-        println!("New section: type {:6} -> {}", section.kind, section_notes);
-
         if section.bars < 1 {
             continue;
         }
-
+        println!("New section: type {:6} -> {}", section.kind, section_notes);
         player.start_new_section(section.bars);
 
         // Assuming bars or 4/4. Assuming 1/4 is two 1/8s.
-        for _ in 0..(section.bars * 8) {
-            player.play_1_8_now(volca_drum);
-            player.next_1_8();
+        for _ in 0..section.bars {
+            // Beginning of a new bar.
+            for _ in 0..song.tempo.time_signature.0 {
+                // Beginning of a quarter.
+                for _ in 0..4 {
+                    // Beginning of a 1/16th.
+                    player.play_1_16th_now(section, volca_drum);
+                    player.next_1_16th();
+                }
+            }
         }
     }
     println!("Song end.");
@@ -53,6 +58,7 @@ pub struct Player {
     cur_bar: usize,
     cur_quarter: usize,
     cur_1_8: usize,
+    cur_1_16: usize,
     section_bar_first: usize,
     section_bar_last: usize,
 
@@ -66,6 +72,7 @@ impl Player {
             cur_bar: 1,
             cur_quarter: 1,
             cur_1_8: 1,
+            cur_1_16: 1,
             section_bar_first: 0,
             section_bar_last: 0,
             drummer: Drummer::new(),
@@ -75,30 +82,21 @@ impl Player {
         self.section_bar_first = self.cur_bar;
         self.section_bar_last = self.section_bar_first + bars_count - 1;
     }
-    pub fn play_1_8_now(&self, volca_drum: &mut MidiOutputConnection) {
+    pub fn play_1_16th_now(&self, section: &SongSection, volca_drum: &mut MidiOutputConnection) {
         // Play music
         self.drummer
-            .play_1_8(self.cur_quarter, self.cur_1_8, volca_drum);
-
-        // Show
-        println!(
-            "Bar={}, Quarter={}.{} ({}->{})",
-            self.cur_bar,
-            self.cur_quarter,
-            self.cur_1_8,
-            self.section_bar_first,
-            self.section_bar_last
-        );
+            .play_1_16th(self.cur_quarter, self.cur_1_16, volca_drum);
 
         if self.section_bar_first <= self.cur_bar && self.cur_bar <= self.section_bar_last {
             let tot_bars_in_section = self.section_bar_last - self.section_bar_first + 1;
             let tot_1_4s_in_section = tot_bars_in_section * 4;
-            let tot_1_8s_in_section = tot_1_4s_in_section * 2;
-            let cur_1_8s_in_section = (self.cur_bar - self.section_bar_first) * 8
-                + (self.cur_quarter - 1) * 2
-                + (self.cur_1_8 - 1);
+            let tot_1_16ths_in_section = tot_1_4s_in_section * 4;
+            let cur_1_16ths_in_section = (self.cur_bar - self.section_bar_first) * 16
+                + (self.cur_quarter - 1) * 4
+                + (self.cur_1_16 - 1);
 
             clear_terminal_screen();
+            println!("  .:[ {} ]:.", section.kind);
             println!(
                 "  {}",
                 (1..=tot_bars_in_section) // Or: (self.section_bar_first..=self.section_bar_last)
@@ -109,18 +107,20 @@ impl Player {
             println!("  {}", "V   .   v   .   ".repeat(tot_bars_in_section));
             println!(
                 "  {}*{}",
-                "-".repeat(cur_1_8s_in_section * 2),
-                " ".repeat((tot_1_8s_in_section - cur_1_8s_in_section) * 2 - 1)
+                "-".repeat(cur_1_16ths_in_section),
+                " ".repeat(tot_1_16ths_in_section - cur_1_16ths_in_section - 1)
             );
         }
 
         // Wait time
-        let millis_1_8 = DUR_1_8.mul_f64(BPM_DEFAULT).div_f64(self.bpm as f64); // One eighth.
-        sleep(millis_1_8);
+        let millis_1_16th = DUR_1_16.mul_f64(BPM_DEFAULT).div_f64(self.bpm as f64);
+        sleep(millis_1_16th);
     }
-    pub fn next_1_8(&mut self) {
-        self.cur_1_8 += 1;
-        if self.cur_1_8 > 2 {
+    pub fn next_1_16th(&mut self) {
+        self.cur_1_16 += 1;
+        self.cur_1_8 = if self.cur_1_16 > 2 { 2 } else { 1 };
+        if self.cur_1_16 > 4 {
+            self.cur_1_16 = 1;
             self.cur_1_8 = 1;
             self.cur_quarter += 1;
         }
