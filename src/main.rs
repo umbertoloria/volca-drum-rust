@@ -1,4 +1,3 @@
-use crate::input::get_console_int_input;
 use crate::midi_controller::init_midi_controller;
 use crate::player::play_song;
 use crate::song::get_dummy_song;
@@ -10,6 +9,7 @@ use std::io::Write;
 mod cli;
 mod drummer;
 mod input;
+mod keyboard;
 mod midi_controller;
 mod player;
 mod song;
@@ -17,7 +17,6 @@ mod sound_panel;
 mod volca_drum;
 mod yaml_patch_reader;
 mod yaml_song_reader;
-mod keyboard;
 
 fn main() {
     // MIDI
@@ -33,14 +32,14 @@ fn main() {
     let mut patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
     // TODO: Make sure it always sounds ok from the first hit
     sound_panel.set_from_patch(patch1);
-    while {
+    /*while {
         let num = get_console_int_input("1 per sound refresh, 0 per uscire", 0, 1);
 
         patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
         sound_panel.set_from_patch(patch1);
 
         num > 0
-    } {}
+    } {}*/
 
     // SONG
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");

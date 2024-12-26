@@ -23,6 +23,8 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
             continue;
         }
         player.set_new_window_section(section.bars);
+
+        // Drum Pattern
         if section.drum_pattern_key.is_none() {
             player.drummer.set_pattern(None);
         } else {
@@ -32,7 +34,18 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
                 .drummer
                 .set_pattern(song.get_drum_pattern_clone_from_key(drum_pattern_key));
         }
+        // Keyboard Pattern
+        if section.keyboard_pattern_key.is_none() {
+            player.keyboard.set_pattern(None);
+        } else {
+            // TODO: Avoid cloning the pattern key
+            let pattern_key = section.keyboard_pattern_key.clone().unwrap();
+            player
+                .keyboard
+                .set_pattern(song.get_keyboard_pattern_clone_from_key(pattern_key));
+        }
 
+        // Play section
         for _ in 0..section.bars {
             // Beginning of a new bar.
             for _ in 0..song.tempo.time_signature.0 {
@@ -83,12 +96,15 @@ impl Player {
         self.section_bar_first = self.cur_bar;
         self.section_bar_last = self.section_bar_first + bars_count - 1;
     }
-    pub fn play_1_16th_now(&self, section: &SongSection, volca_drum: &mut VolcaDrum) {
+    pub fn play_1_16th_now(&mut self, section: &SongSection, volca_drum: &mut VolcaDrum) {
         // Play music
         self.drummer
             .play_1_16th(self.cur_quarter, self.cur_1_16, volca_drum);
-        self.keyboard
-            .play_1_16th(self.cur_1_8, self.cur_1_16, volca_drum);
+        self.keyboard.play_1_16th(
+            self.cur_bar - self.section_bar_first + 1, // From 1 to...
+            self.cur_quarter,
+            self.cur_1_16,
+        );
 
         if self.section_bar_first <= self.cur_bar && self.cur_bar <= self.section_bar_last {
             // + Interactive screen

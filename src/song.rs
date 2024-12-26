@@ -6,6 +6,7 @@ pub struct Song {
     pub details: SongDetails,
     pub tempo: SongTempo,
     pub drum_patterns: HashMap<String, DrumPattern>,
+    pub keyboard_patterns: HashMap<String, KeyboardPattern>,
     pub sections: Vec<SongSection>,
 }
 impl Song {
@@ -13,6 +14,14 @@ impl Song {
         if let Some(drum_pattern) = self.drum_patterns.get(&drum_pattern_key) {
             // TODO: Avoid cloning the drum pattern
             Some(drum_pattern.clone())
+        } else {
+            None
+        }
+    }
+    pub fn get_keyboard_pattern_clone_from_key(&self, key: String) -> Option<KeyboardPattern> {
+        if let Some(pattern) = self.keyboard_patterns.get(&key) {
+            // TODO: Avoid cloning the pattern
+            Some(pattern.clone())
         } else {
             None
         }
@@ -34,6 +43,7 @@ pub struct SongSection {
     pub kind: SongSectionKind,
     pub bars: usize,
     pub drum_pattern_key: Option<String>,
+    pub keyboard_pattern_key: Option<String>,
     pub notes: Option<String>,
 }
 pub enum SongSectionKind {
@@ -76,6 +86,19 @@ pub struct DrumPattern {
     pub sn: String, // Es. "    x  x    x   "
     pub kk: String, // Es. "x       x x    x"
 }
+#[derive(Clone)]
+pub struct KeyboardPattern {
+    pub key: String, // Es. "A"
+    pub chords: Vec<KeyboardPatternChord>,
+}
+#[derive(Clone)]
+pub struct KeyboardPatternChord {
+    pub chord_name: String, // Es. "Fmaj7"
+    // Params "from_1_16th_incl" and "to_1_16th_incl" start from 1.
+    pub from_1_16th_incl: usize,
+    pub to_1_16th_incl: usize,
+    pub notes: Vec<String>, // Es. ["F3", "A3", "C4"]
+}
 
 // Songs
 pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
@@ -89,6 +112,7 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
             time_signature: (4, 4),
         },
         drum_patterns: HashMap::new(),
+        keyboard_patterns: HashMap::new(),
         sections: yaml_song
             .sections
             .iter()
@@ -96,6 +120,7 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
                 kind: convert_section_kind_from_string(section).unwrap(),
                 bars: section.bars,
                 drum_pattern_key: None,
+                keyboard_pattern_key: None,
                 notes: section.notes.clone(),
             })
             .collect(),
@@ -133,41 +158,98 @@ pub fn get_dummy_song() -> Song {
                 },
             ),
         ]),
+        keyboard_patterns: HashMap::from([(
+            "A".into(),
+            KeyboardPattern {
+                key: "A".into(),
+                chords: [
+                    KeyboardPatternChord {
+                        chord_name: "F".into(),
+                        from_1_16th_incl: 1,
+                        to_1_16th_incl: 16,
+                        notes: [
+                            //
+                            "F3".into(),
+                            //
+                            "A3".into(),
+                            //
+                            "C4".into(),
+                        ]
+                        .into(),
+                    },
+                    KeyboardPatternChord {
+                        chord_name: "Dm".into(),
+                        from_1_16th_incl: 16 + 1,
+                        to_1_16th_incl: 16 + 16,
+                        notes: [
+                            //
+                            "D3".into(),
+                            //
+                            "F3".into(),
+                            //
+                            "A3".into(),
+                        ]
+                        .into(),
+                    },
+                    KeyboardPatternChord {
+                        chord_name: "C".into(),
+                        from_1_16th_incl: 16 + 16 + 1,
+                        to_1_16th_incl: 16 + 16 + 32,
+                        notes: [
+                            //
+                            "C3".into(),
+                            //
+                            "E3".into(),
+                            //
+                            "G3".into(),
+                        ]
+                        .into(),
+                    },
+                ]
+                .into(),
+            },
+        )]),
         sections: [
             SongSection {
                 kind: SongSectionKind::Intro,
                 bars: 4,
-                drum_pattern_key: None,
+                drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
                 notes: None,
             },
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
                 drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
                 notes: None,
             },
             SongSection {
                 kind: SongSectionKind::Chorus,
                 bars: 8,
-                drum_pattern_key: Some("B".into()),
+                drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
                 notes: None,
             },
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
                 drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
                 notes: None,
             },
             SongSection {
                 kind: SongSectionKind::Chorus,
                 bars: 8,
-                drum_pattern_key: Some("B".into()),
+                drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
                 notes: None,
             },
             SongSection {
                 kind: SongSectionKind::Outro,
                 bars: 4,
-                drum_pattern_key: None,
+                drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
                 notes: None,
             },
         ]
