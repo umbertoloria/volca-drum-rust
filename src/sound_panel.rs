@@ -1,9 +1,8 @@
-use crate::midi_controller::bridge_smart_send_message;
+use crate::volca_drum::VolcaDrum;
 use crate::yaml_patch_reader::{
     YamlPatchFile, YamlPatchLayout, YamlPatchLayoutAmpEg, YamlPatchLayoutModulationType,
     YamlPatchLayoutSoundSrcType,
 };
-use midir::MidiOutputConnection;
 
 // DRUM CHANNELS
 pub const DRUM_CH_KICK: u8 = 0;
@@ -14,7 +13,7 @@ pub const DRUM_CH_SNARE: u8 = 2;
 const CC_NUMBER_LAYOUT_1_SOUND: u8 = 14;
 
 pub struct SoundPanel<'a> {
-    pub conn: &'a mut MidiOutputConnection,
+    pub volca_drum: VolcaDrum<'a>,
 }
 impl SoundPanel<'_> {
     pub fn set_from_patch(&mut self, patch: YamlPatchFile) {
@@ -113,8 +112,7 @@ impl SoundPanel<'_> {
         cc_number: u8,
         sound_source_type: SoundSourceType,
     ) {
-        bridge_smart_send_message(
-            self.conn,
+        self.volca_drum.send_cc_message(
             channel,
             cc_number,
             match sound_source_type {
@@ -127,8 +125,7 @@ impl SoundPanel<'_> {
         );
     }
     fn set_modulation_type(&mut self, channel: u8, cc_number: u8, modulation_type: ModulationType) {
-        bridge_smart_send_message(
-            self.conn,
+        self.volca_drum.send_cc_message(
             channel,
             cc_number,
             match modulation_type {
@@ -139,8 +136,7 @@ impl SoundPanel<'_> {
         );
     }
     fn set_amp_eg(&mut self, channel: u8, cc_number: u8, amp_eg: AmpEg) {
-        bridge_smart_send_message(
-            self.conn,
+        self.volca_drum.send_cc_message(
             channel,
             cc_number,
             match amp_eg {
@@ -151,8 +147,7 @@ impl SoundPanel<'_> {
         );
     }
     fn set_param_level(&mut self, channel: u8, param: ParamSoundType, value: u8) {
-        bridge_smart_send_message(
-            self.conn,
+        self.volca_drum.send_cc_message(
             channel,
             match param {
                 // Layout 1

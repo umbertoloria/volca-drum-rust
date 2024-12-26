@@ -3,6 +3,7 @@ use crate::midi_controller::init_midi_controller;
 use crate::player::play_song;
 use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
+use crate::volca_drum::VolcaDrum;
 use crate::yaml_patch_reader::read_patch_from_yaml;
 use std::io::Write;
 
@@ -13,6 +14,7 @@ mod midi_controller;
 mod player;
 mod song;
 mod sound_panel;
+mod volca_drum;
 mod yaml_patch_reader;
 mod yaml_song_reader;
 
@@ -24,7 +26,9 @@ fn main() {
 
     // SOUNDS
     let mut volca_drum_sound_panel = SoundPanel {
-        conn: &mut volca_drum,
+        volca_drum: VolcaDrum {
+            conn: &mut volca_drum,
+        },
     };
     let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
     // TODO: Make sure it always sounds ok from the first hit

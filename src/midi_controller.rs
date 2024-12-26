@@ -63,26 +63,12 @@ pub fn init_midi_controller(
 }
 
 // TODO: Create wrapper for MIDI to avoid this function
-pub fn bridge_send_message(volca_drum: &mut MidiOutputConnection, a: u8, b: u8, c: u8) {
-    let _ = volca_drum.send(&[a, b, c]);
+pub fn bridge_send_message(conn: &mut MidiOutputConnection, a: u8, b: u8, c: u8) {
+    let _ = conn.send(&[a, b, c]);
     println!(
         "Send msg -> [{:10} {:10} {:10}]\n            [{:#10x} {:#10x} {:#10x}]\n            [{:#10b} {:#10b} {:#10b}]",
         a, b, c,
         a, b, c,
         a, b, c,
-    );
-}
-
-pub fn bridge_smart_send_message(
-    volca_drum: &mut MidiOutputConnection,
-    channel: u8,
-    cc_number: u8,
-    value: u8,
-) {
-    bridge_send_message(
-        volca_drum,
-        0xb0 | (channel & 0x0f),
-        cc_number & 0x7f,
-        value & 0x7f,
     );
 }
