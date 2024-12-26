@@ -2,7 +2,6 @@ use crate::midi_controller::bridge_send_message;
 use crate::song::DrumPattern;
 use crate::sound_panel::{DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE};
 use crate::volca_drum::VolcaDrum;
-use midir::MidiOutputConnection;
 
 pub struct Drummer {
     pattern: Option<DrumPattern>,
@@ -23,12 +22,7 @@ impl Drummer {
             "".to_string()
         }
     }
-    pub fn play_1_16th(
-        &self,
-        cur_1_4: usize,
-        cur_1_16: usize,
-        volca_drum: &mut MidiOutputConnection,
-    ) {
+    pub fn play_1_16th(&self, cur_1_4: usize, cur_1_16: usize, volca_drum: &mut VolcaDrum) {
         if let Some(pattern) = &self.pattern {
             let index = (cur_1_4 - 1) * 4 + (cur_1_16 - 1);
 
@@ -50,8 +44,7 @@ impl Drummer {
         }
     }
 
-    fn hit(&self, note: u8, instr: u8, conn: &mut MidiOutputConnection) {
-        let volca_drum = VolcaDrum { conn };
+    fn hit(&self, note: u8, instr: u8, volca_drum: &mut VolcaDrum) {
         const PROGRAM_CHANGE: u8 = 0xC0;
         const NOTE_ON_MSG: u8 = 0x90;
         const NOTE_OFF_MSG: u8 = 0x80;

@@ -1,7 +1,7 @@
 use crate::cli::clear_terminal_screen;
 use crate::drummer::Drummer;
 use crate::song::{Song, SongSection};
-use midir::MidiOutputConnection;
+use crate::volca_drum::VolcaDrum;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -12,7 +12,7 @@ pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
-pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
+pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
     let mut player = Player::new(song.tempo.bpm);
 
     for section in &song.sections {
@@ -80,7 +80,7 @@ impl Player {
         self.section_bar_first = self.cur_bar;
         self.section_bar_last = self.section_bar_first + bars_count - 1;
     }
-    pub fn play_1_16th_now(&self, section: &SongSection, volca_drum: &mut MidiOutputConnection) {
+    pub fn play_1_16th_now(&self, section: &SongSection, volca_drum: &mut VolcaDrum) {
         // Play music
         self.drummer
             .play_1_16th(self.cur_quarter, self.cur_1_16, volca_drum);
