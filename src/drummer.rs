@@ -1,10 +1,25 @@
 use crate::sound_panel::{DRUM_CH_KICK, DRUM_CH_SNARE};
 use midir::MidiOutputConnection;
 
-pub struct Drummer {}
+pub struct Drummer {
+    pattern: Option<DrumPattern>,
+}
+
 impl Drummer {
     pub fn new() -> Self {
-        Self {}
+        Self { pattern: None }
+    }
+    pub fn set_pattern(&mut self, pattern: Option<DrumPattern>) {
+        self.pattern = pattern;
+    }
+    pub fn get_short_info(&self) -> String {
+        if let Some(pattern) = &self.pattern {
+            // TODO: Avoid cloning the drum pattern key
+            format!("{}", pattern.clone_key())
+        } else {
+            // Like when I write "no drums" or "φ".
+            "".to_string()
+        }
     }
     pub fn play_1_16th(
         &self,
@@ -12,6 +27,11 @@ impl Drummer {
         cur_1_16: usize,
         volca_drum: &mut MidiOutputConnection,
     ) {
+        if self.pattern.is_none() {
+            // Easy way of skip playing when there's no drum pattern.
+            return;
+        }
+
         // TODO: Understand what's the "right" default note value.
         const DEFAULT_NOTE_VALUE: u8 = 7;
 

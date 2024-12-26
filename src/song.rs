@@ -8,6 +8,17 @@ pub struct Song {
     pub drum_patterns: HashMap<String, DrumPattern>,
     pub sections: Vec<SongSection>,
 }
+impl Song {
+    pub fn get_drum_pattern_clone_from_key(&self, drum_pattern_key: String) -> Option<DrumPattern> {
+        if let Some(drum_pattern) = self.drum_patterns.get(&drum_pattern_key) {
+            // TODO: Avoid cloning the drum pattern
+            Some(drum_pattern.clone())
+        } else {
+            None
+        }
+    }
+}
+
 pub struct SongDetails {
     pub author: String,
     pub title: String,
@@ -58,10 +69,25 @@ pub fn convert_section_kind_from_string(
 
 // Drum Pattern
 pub struct DrumPattern {
+    key: String, // Es. "A"
     num_1_4: usize,
     hh: String, // Es. "x x x x x x x x "
     sn: String, // Es. "    x  x    x   "
     kk: String, // Es. "x       x x    x"
+}
+impl DrumPattern {
+    pub fn clone(&self) -> DrumPattern {
+        DrumPattern {
+            key: self.key.clone(),
+            num_1_4: self.num_1_4,
+            hh: self.hh.clone(),
+            sn: self.sn.clone(),
+            kk: self.kk.clone(),
+        }
+    }
+    pub fn clone_key(&self) -> String {
+        self.key.clone()
+    }
 }
 
 // Songs
@@ -102,6 +128,7 @@ pub fn get_dummy_song() -> Song {
             (
                 "A".into(),
                 DrumPattern {
+                    key: "A".into(),
                     num_1_4: 2,
                     hh: "x x x x x x x x ".into(),
                     sn: "    x  x    x   ".into(),
@@ -111,6 +138,7 @@ pub fn get_dummy_song() -> Song {
             (
                 "B".into(),
                 DrumPattern {
+                    key: "B".into(),
                     num_1_4: 2,
                     hh: "x x x xxx x x xx".into(),
                     sn: "    x       x   ".into(),

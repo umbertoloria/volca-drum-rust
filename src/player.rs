@@ -21,6 +21,8 @@ pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
     let mut player = Player::new(song.tempo.bpm);
 
     for section in &song.sections {
+        // Beginning of a new section.
+
         // Print section info
         let mut section_notes = "";
         if let Some(x) = &section.notes {
@@ -29,10 +31,17 @@ pub fn play_song(song: Song, volca_drum: &mut MidiOutputConnection) {
         if section.bars < 1 {
             continue;
         }
-        println!("New section: type {:6} -> {}", section.kind, section_notes);
-        player.start_new_section(section.bars);
+        player.set_new_window_section(section.bars);
+        if section.drum_pattern_key.is_none() {
+            player.drummer.set_pattern(None);
+        } else {
+            // TODO: Avoid cloning the drum pattern key
+            let key = section.drum_pattern_key.clone().unwrap();
+            player
+                .drummer
+                .set_pattern(song.get_drum_pattern_clone_from_key(key));
+        }
 
-        // Assuming bars or 4/4. Assuming 1/4 is two 1/8s.
         for _ in 0..section.bars {
             // Beginning of a new bar.
             for _ in 0..song.tempo.time_signature.0 {
@@ -78,7 +87,7 @@ impl Player {
             drummer: Drummer::new(),
         }
     }
-    pub fn start_new_section(&mut self, bars_count: usize) {
+    pub fn set_new_window_section(&mut self, bars_count: usize) {
         self.section_bar_first = self.cur_bar;
         self.section_bar_last = self.section_bar_first + bars_count - 1;
     }
@@ -97,6 +106,7 @@ impl Player {
 
             clear_terminal_screen();
             println!("  .:[ {} ]:.", section.kind);
+            println!("  Drummer: {}", self.drummer.get_short_info());
             println!(
                 "  {}",
                 (1..=tot_bars_in_section) // Or: (self.section_bar_first..=self.section_bar_last)

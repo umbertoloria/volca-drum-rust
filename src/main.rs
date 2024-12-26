@@ -19,6 +19,7 @@ fn main() {
     // MIDI
     let midi_controller = init_midi_controller(Some(1)).expect("Unable to create midi controller");
     let mut volca_drum = midi_controller.connect_and_get();
+    // TODO: Make sure it always connect
 
     // SOUNDS
     let mut volca_drum_sound_panel = SoundPanel {
@@ -26,6 +27,7 @@ fn main() {
     };
     let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
     volca_drum_sound_panel.set_from_patch(patch1);
+    // TODO: Make sure it always sounds ok from the first hit
 
     // SONG
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
