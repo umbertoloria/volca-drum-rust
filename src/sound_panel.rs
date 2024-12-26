@@ -20,13 +20,13 @@ pub struct SoundPanel<'a> {
 impl SoundPanel<'_> {
     // Settings from YAML FILE
     pub fn set_from_patch(&mut self, patch: YamlPatchFile) {
-        self.set_to_channel_just_patch_layout_1(DRUM_CH_KICK, patch.kick);
+        self.config_patch_onto_channel_and_layout1(DRUM_CH_KICK, patch.kick);
         self.disable_layout_2_sounds(DRUM_CH_KICK);
 
-        self.set_to_channel_just_patch_layout_1(DRUM_CH_HH, patch.hh);
+        self.config_patch_onto_channel_and_layout1(DRUM_CH_HH, patch.hh);
         self.disable_layout_2_sounds(DRUM_CH_HH);
 
-        self.set_to_channel_just_patch_layout_1(DRUM_CH_SNARE, patch.snare);
+        self.config_patch_onto_channel_and_layout1(DRUM_CH_SNARE, patch.snare);
         self.disable_layout_2_sounds(DRUM_CH_SNARE);
 
         // TODO: Use the other 3 sounds
@@ -46,48 +46,37 @@ impl SoundPanel<'_> {
         */
     }
 
-    pub fn set_to_channel_just_patch_layout_1(
+    pub fn config_patch_onto_channel_and_layout1(
         &mut self,
         channel: u8,
         patch_layout: YamlPatchLayout,
     ) {
-        // Sound Source Type
-        match patch_layout.sound_src_type {
-            YamlPatchLayoutSoundSrcType::WaveSine => {
-                self.set_sound_source_type(channel, SoundSourceType::WaveSine)
-            }
-            YamlPatchLayoutSoundSrcType::WaveSaw => {
-                self.set_sound_source_type(channel, SoundSourceType::WaveSaw)
-            }
-            YamlPatchLayoutSoundSrcType::WaveNoiseHPF => {
-                self.set_sound_source_type(channel, SoundSourceType::WaveNoiseHPF)
-            }
-            YamlPatchLayoutSoundSrcType::WaveNoiseLPF => {
-                self.set_sound_source_type(channel, SoundSourceType::WaveNoiseLPF)
-            }
-            YamlPatchLayoutSoundSrcType::WaveNoiseBPF => {
-                self.set_sound_source_type(channel, SoundSourceType::WaveNoiseBPF)
-            }
-        };
-        // Modulation Type
-        match patch_layout.mod_type {
-            YamlPatchLayoutModulationType::ModExp => {
-                self.set_modulation_type(channel, ModulationType::ModExp)
-            }
-            YamlPatchLayoutModulationType::ModTri => {
-                self.set_modulation_type(channel, ModulationType::ModTri)
-            }
-            YamlPatchLayoutModulationType::ModRand => {
-                self.set_modulation_type(channel, ModulationType::ModRand)
-            }
-        };
-        // Amp Eg
-        match patch_layout.amp_eg {
-            YamlPatchLayoutAmpEg::EnvAd => self.set_amp_eg(channel, AmpEg::EnvAd),
-            YamlPatchLayoutAmpEg::EnvExp => self.set_amp_eg(channel, AmpEg::EnvExp),
-            YamlPatchLayoutAmpEg::EnvMul => self.set_amp_eg(channel, AmpEg::EnvMul),
-        };
-        // Params
+        self.set_sound_source_type(
+            channel,
+            match patch_layout.sound_src_type {
+                YamlPatchLayoutSoundSrcType::WaveSine => SoundSourceType::WaveSine,
+                YamlPatchLayoutSoundSrcType::WaveSaw => SoundSourceType::WaveSaw,
+                YamlPatchLayoutSoundSrcType::WaveNoiseHPF => SoundSourceType::WaveNoiseHPF,
+                YamlPatchLayoutSoundSrcType::WaveNoiseLPF => SoundSourceType::WaveNoiseLPF,
+                YamlPatchLayoutSoundSrcType::WaveNoiseBPF => SoundSourceType::WaveNoiseBPF,
+            },
+        );
+        self.set_modulation_type(
+            channel,
+            match patch_layout.mod_type {
+                YamlPatchLayoutModulationType::ModExp => ModulationType::ModExp,
+                YamlPatchLayoutModulationType::ModTri => ModulationType::ModTri,
+                YamlPatchLayoutModulationType::ModRand => ModulationType::ModRand,
+            },
+        );
+        self.set_amp_eg(
+            channel,
+            match patch_layout.amp_eg {
+                YamlPatchLayoutAmpEg::EnvAd => AmpEg::EnvAd,
+                YamlPatchLayoutAmpEg::EnvExp => AmpEg::EnvExp,
+                YamlPatchLayoutAmpEg::EnvMul => AmpEg::EnvMul,
+            },
+        );
         self.set_param_level(channel, ParamSoundType::Level, patch_layout.level as u8);
         self.set_param_level(channel, ParamSoundType::Pitch, patch_layout.pitch as u8);
         self.set_param_level(
