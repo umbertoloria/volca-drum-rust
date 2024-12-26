@@ -21,20 +21,22 @@ mod yaml_song_reader;
 fn main() {
     // MIDI
     let midi_controller = init_midi_controller(Some(1)).expect("Unable to create midi controller");
-    let mut conn = midi_controller.connect_and_get();
-    let volca_drum = VolcaDrum { conn: &mut conn };
-    // TODO: Make sure it always connect
+
+    // VOLCA DRUM
+    let mut volca_drum = VolcaDrum::new(midi_controller.connect_and_get());
 
     // SOUNDS
-    let mut volca_drum_sound_panel = SoundPanel { volca_drum };
-    let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
+    let mut sound_panel = SoundPanel {
+        volca_drum: &mut volca_drum,
+    };
+    let mut patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
     // TODO: Make sure it always sounds ok from the first hit
-    volca_drum_sound_panel.set_from_patch(patch1);
+    sound_panel.set_from_patch(patch1);
     while {
         let num = get_console_int_input("1 per sound refresh, 0 per uscire", 0, 1);
 
-        let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
-        volca_drum_sound_panel.set_from_patch(patch1);
+        patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
+        sound_panel.set_from_patch(patch1);
 
         num > 0
     } {}
@@ -44,8 +46,8 @@ fn main() {
     // let song1 = convert_yaml_into_song(song1_yaml);
     let song1 = get_dummy_song();
     // TODO: Try to share the same Volca Drum instance
-    play_song(song1, &mut VolcaDrum { conn: &mut conn });
+    play_song(song1, &mut volca_drum);
 
-    // MIDI
-    conn.close();
+    // SHUT DOWN
+    volca_drum.shut_down();
 }

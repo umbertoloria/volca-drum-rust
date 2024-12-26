@@ -13,7 +13,7 @@ pub const DRUM_CH_SNARE: u8 = 2;
 const CC_NUMBER_LAYOUT_1_SOUND: u8 = 14;
 
 pub struct SoundPanel<'a> {
-    pub volca_drum: VolcaDrum<'a>,
+    pub volca_drum: &'a mut VolcaDrum,
 }
 impl SoundPanel<'_> {
     pub fn set_from_patch(&mut self, patch: YamlPatchFile) {

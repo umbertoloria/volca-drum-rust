@@ -1,9 +1,13 @@
 use midir::MidiOutputConnection;
 
-pub struct VolcaDrum<'a> {
-    pub conn: &'a mut MidiOutputConnection,
+pub struct VolcaDrum {
+    pub conn: MidiOutputConnection,
 }
-impl<'a> VolcaDrum<'a> {
+impl VolcaDrum {
+    pub fn new(conn: MidiOutputConnection) -> Self {
+        Self { conn }
+    }
+
     pub fn send_plain_message(&mut self, a: u8, b: u8, c: u8) {
         let _ = self.conn.send(&[a, b, c]);
         println!(
@@ -13,6 +17,7 @@ impl<'a> VolcaDrum<'a> {
             a, b, c,
         );
     }
+
     pub fn send_cc_message(&mut self, channel: u8, cc_number: u8, value: u8) {
         self.send_plain_message(
             // 1
@@ -22,5 +27,9 @@ impl<'a> VolcaDrum<'a> {
             // 3
             value & 0x7f,
         );
+    }
+
+    pub fn shut_down(self) {
+        self.conn.close();
     }
 }
