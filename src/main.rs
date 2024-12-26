@@ -17,6 +17,7 @@ mod sound_panel;
 mod volca_drum;
 mod yaml_patch_reader;
 mod yaml_song_reader;
+mod keyboard;
 
 fn main() {
     // MIDI

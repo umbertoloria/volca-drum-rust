@@ -1,5 +1,6 @@
 use crate::cli::clear_terminal_screen;
 use crate::drummer::Drummer;
+use crate::keyboard::Keyboard;
 use crate::song::{Song, SongSection};
 use crate::volca_drum::VolcaDrum;
 use std::thread::sleep;
@@ -62,6 +63,7 @@ pub struct Player {
 
     // Musicians
     drummer: Drummer,
+    keyboard: Keyboard,
 }
 impl Player {
     pub fn new(bpm: usize) -> Self {
@@ -74,6 +76,7 @@ impl Player {
             section_bar_first: 0,
             section_bar_last: 0,
             drummer: Drummer::new(),
+            keyboard: Keyboard::new(),
         }
     }
     pub fn set_new_window_section(&mut self, bars_count: usize) {
@@ -84,20 +87,24 @@ impl Player {
         // Play music
         self.drummer
             .play_1_16th(self.cur_quarter, self.cur_1_16, volca_drum);
+        self.keyboard
+            .play_1_16th(self.cur_1_8, self.cur_1_16, volca_drum);
 
         if self.section_bar_first <= self.cur_bar && self.cur_bar <= self.section_bar_last {
+            // + Interactive screen
+            clear_terminal_screen();
+            // TODO: Maybe show song author & title here
+            println!("  .:[ {} ]:.", section.kind);
+
+            println!("  Drummer: {}", self.drummer.get_short_info());
+            println!("  Keyboard: {}", self.keyboard.get_short_info());
+
             let tot_bars_in_section = self.section_bar_last - self.section_bar_first + 1;
             let tot_1_4s_in_section = tot_bars_in_section * 4;
             let tot_1_16ths_in_section = tot_1_4s_in_section * 4;
             let cur_1_16ths_in_section = (self.cur_bar - self.section_bar_first) * 16
                 + (self.cur_quarter - 1) * 4
                 + (self.cur_1_16 - 1);
-
-            // + Interactive screen
-            clear_terminal_screen();
-            // TODO: Maybe show song author & title here
-            println!("  .:[ {} ]:.", section.kind);
-            println!("  Drummer: {}", self.drummer.get_short_info());
             println!(
                 "  {}",
                 (1..=tot_bars_in_section) // Or: (self.section_bar_first..=self.section_bar_last)
@@ -117,6 +124,7 @@ impl Player {
         // Wait time
         let millis_1_16th = DUR_1_16.mul_f64(BPM_DEFAULT).div_f64(self.bpm as f64);
         sleep(millis_1_16th);
+        // TODO: Metronome is not really precise due to processing slow-down
     }
     pub fn next_1_16th(&mut self) {
         self.cur_1_16 += 1;

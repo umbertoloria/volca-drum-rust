@@ -10,9 +10,11 @@ impl Drummer {
     pub fn new() -> Self {
         Self { pattern: None }
     }
+
     pub fn set_pattern(&mut self, pattern: Option<DrumPattern>) {
         self.pattern = pattern;
     }
+
     pub fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
             format!("{}", pattern.key)
@@ -21,6 +23,7 @@ impl Drummer {
             "".to_string()
         }
     }
+
     pub fn play_1_16th(&self, cur_1_4: usize, cur_1_16: usize, volca_drum: &mut VolcaDrum) {
         if let Some(pattern) = &self.pattern {
             let index = (cur_1_4 - 1) * 4 + (cur_1_16 - 1);
