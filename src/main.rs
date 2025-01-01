@@ -1,5 +1,5 @@
 use crate::midi_controller::init_midi_controller;
-use crate::midi_device::MidiDeviceConcrete;
+use crate::midi_device::MidiDeviceGhost;
 use crate::player::play_song;
 use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
@@ -26,8 +26,9 @@ fn main() {
         init_midi_controller(Some(1)).expect("Unable to create midi controller");
 
     // INSTRUMENTS
-    let mut volca_drum =
-        VolcaDrum::new(MidiDeviceConcrete::new(midi_controller_1.connect_and_get()));
+    // let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
+    let midi_device_1 = MidiDeviceGhost::new();
+    let mut volca_drum = VolcaDrum::new(midi_device_1);
 
     // SOUNDS
     let mut sound_panel = SoundPanel {

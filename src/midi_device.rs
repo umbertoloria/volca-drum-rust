@@ -24,3 +24,18 @@ impl MidiDevice for MidiDeviceConcrete {
         );*/
     }
 }
+
+// MIDI Device Ghost
+pub struct MidiDeviceGhost {}
+
+impl MidiDeviceGhost {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl MidiDevice for MidiDeviceGhost {
+    fn send(&mut self, a: u8, b: u8, c: u8) {
+        println!("send to MIDI device ghost: {} {} {}", a, b, c)
+    }
+}
