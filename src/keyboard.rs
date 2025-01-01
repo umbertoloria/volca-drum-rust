@@ -48,6 +48,17 @@ impl Keyboard {
                 }
                 i += 1;
             }
+
+            if 0 <= self.chord_index && self.chord_index < pattern.chords.len() {
+                let pattern = self.pattern.clone().unwrap();
+                let chord = pattern.chords.get(self.chord_index).unwrap().clone();
+                let notes = chord.notes;
+                self.play_notes(notes);
+            }
         }
+    }
+
+    pub fn play_notes(&self, notes: Vec<String>) {
+        // TODO: Using notes and sending them via MIDI
     }
 }
