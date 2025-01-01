@@ -7,11 +7,13 @@ pub const DRUM_CH_SNARE: u8 = 2;
 const DEFAULT_NOTE_VALUE: u8 = 7;
 
 pub struct VolcaDrum {
-    pub device: MidiDevice,
+    pub device: Box<dyn MidiDevice>,
 }
 impl VolcaDrum {
-    pub fn new(device: MidiDevice) -> Self {
-        Self { device }
+    pub fn new(device: impl MidiDevice + 'static) -> Self {
+        Self {
+            device: Box::new(device),
+        }
     }
 
     // HIGH LEVEL
@@ -55,9 +57,5 @@ impl VolcaDrum {
             // 3
             value & 0x7f,
         );
-    }
-
-    pub fn shut_down(self) {
-        self.device.close();
     }
 }

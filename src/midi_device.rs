@@ -1,10 +1,20 @@
 use midir::MidiOutputConnection;
 
-pub struct MidiDevice {
+pub trait MidiDevice {
+    fn send(&mut self, a: u8, b: u8, c: u8);
+    // fn close(self);
+}
+
+pub struct MidiDeviceConcrete {
     pub conn: MidiOutputConnection,
 }
-impl MidiDevice {
-    pub fn send(&mut self, a: u8, b: u8, c: u8) {
+impl MidiDeviceConcrete {
+    pub fn new(conn: MidiOutputConnection) -> Self {
+        Self { conn }
+    }
+}
+impl MidiDevice for MidiDeviceConcrete {
+    fn send(&mut self, a: u8, b: u8, c: u8) {
         let _ = self.conn.send(&[a, b, c]);
         /*println!(
             "Send msg -> [{:10} {:10} {:10}]\n            [{:#10x} {:#10x} {:#10x}]\n            [{:#10b} {:#10b} {:#10b}]",
@@ -12,8 +22,5 @@ impl MidiDevice {
             a, b, c,
             a, b, c,
         );*/
-    }
-    pub fn close(self) {
-        let _ = self.conn.close();
     }
 }

@@ -1,5 +1,5 @@
 use crate::midi_controller::init_midi_controller;
-use crate::midi_device::MidiDevice;
+use crate::midi_device::MidiDeviceConcrete;
 use crate::player::play_song;
 use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
@@ -21,19 +21,19 @@ mod yaml_patch_reader;
 mod yaml_song_reader;
 
 fn main() {
-    // MIDI
-    let midi_controller = init_midi_controller(Some(1)).expect("Unable to create midi controller");
+    // MIDI CONTROLLERS
+    let midi_controller_1 =
+        init_midi_controller(Some(1)).expect("Unable to create midi controller");
 
-    // VOLCA DRUM
-    let mut volca_drum = VolcaDrum::new(MidiDevice {
-        conn: midi_controller.connect_and_get(),
-    });
+    // INSTRUMENTS
+    let mut volca_drum =
+        VolcaDrum::new(MidiDeviceConcrete::new(midi_controller_1.connect_and_get()));
 
     // SOUNDS
     let mut sound_panel = SoundPanel {
         volca_drum: &mut volca_drum,
     };
-    let mut patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
+    let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
     // TODO: Make sure it always sounds ok from the first hit
     sound_panel.set_from_patch(patch1);
     /*while {
@@ -51,7 +51,4 @@ fn main() {
     let song1 = get_dummy_song();
     // TODO: Try to share the same Volca Drum instance
     play_song(song1, &mut volca_drum);
-
-    // SHUT DOWN
-    volca_drum.shut_down();
 }
