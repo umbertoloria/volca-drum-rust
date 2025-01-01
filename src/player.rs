@@ -3,6 +3,7 @@ use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
 use crate::song::{Song, SongSection, SongTempo};
 use crate::volca_drum::VolcaDrum;
+use crate::volca_keys::VolcaKeys;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -13,7 +14,7 @@ pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
-pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
+pub fn play_song(song: Song, volca_drum: &mut VolcaDrum, volca_keys: &mut VolcaKeys) {
     let mut player = Player::new();
 
     for section in &song.sections {
@@ -52,7 +53,7 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum) {
                 // Beginning of a quarter.
                 for _ in 0..4 {
                     // Beginning of a 1/16th.
-                    player.play_1_16th_now(section, &song.tempo, volca_drum);
+                    player.play_1_16th_now(section, &song.tempo, volca_drum, volca_keys);
                     player.next_1_16th();
                 }
             }
@@ -94,12 +95,13 @@ impl Player {
         section: &SongSection,
         song_tempo: &SongTempo,
         volca_drum: &mut VolcaDrum,
+        volca_keys: &mut VolcaKeys,
     ) {
         let tempo_snapshot = &self.tempo_snapshot;
 
         // Play music
         self.drummer.play_1_16th(tempo_snapshot, volca_drum);
-        self.keyboard.play_1_16th(tempo_snapshot);
+        self.keyboard.play_1_16th(tempo_snapshot, volca_keys);
 
         // + Interactive screen
         clear_terminal_screen();

@@ -1,9 +1,10 @@
 use crate::midi_controller::init_midi_controller;
-use crate::midi_device::MidiDeviceGhost;
+use crate::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
 use crate::player::play_song;
 use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
+use crate::volca_keys::VolcaKeys;
 use crate::yaml_patch_reader::read_patch_from_yaml;
 use std::io::Write;
 
@@ -17,18 +18,21 @@ mod player;
 mod song;
 mod sound_panel;
 mod volca_drum;
+mod volca_keys;
 mod yaml_patch_reader;
 mod yaml_song_reader;
 
 fn main() {
     // MIDI CONTROLLERS
-    let midi_controller_1 =
+    let midi_controller_2 =
         init_midi_controller(Some(1)).expect("Unable to create midi controller");
 
     // INSTRUMENTS
     // let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
     let midi_device_1 = MidiDeviceGhost::new();
     let mut volca_drum = VolcaDrum::new(midi_device_1);
+    let midi_device_2 = MidiDeviceConcrete::new(midi_controller_2.connect_and_get());
+    let mut volca_keys = VolcaKeys::new(midi_device_2);
 
     // SOUNDS
     let mut sound_panel = SoundPanel {
@@ -51,5 +55,5 @@ fn main() {
     // let song1 = convert_yaml_into_song(song1_yaml);
     let song1 = get_dummy_song();
     // TODO: Try to share the same Volca Drum instance
-    play_song(song1, &mut volca_drum);
+    play_song(song1, &mut volca_drum, &mut volca_keys);
 }
