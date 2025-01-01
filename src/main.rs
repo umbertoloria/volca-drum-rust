@@ -1,4 +1,5 @@
 use crate::midi_controller::init_midi_controller;
+use crate::midi_device::MidiDevice;
 use crate::player::play_song;
 use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
@@ -11,6 +12,7 @@ mod drummer;
 mod input;
 mod keyboard;
 mod midi_controller;
+mod midi_device;
 mod player;
 mod song;
 mod sound_panel;
@@ -23,7 +25,9 @@ fn main() {
     let midi_controller = init_midi_controller(Some(1)).expect("Unable to create midi controller");
 
     // VOLCA DRUM
-    let mut volca_drum = VolcaDrum::new(midi_controller.connect_and_get());
+    let mut volca_drum = VolcaDrum::new(MidiDevice {
+        conn: midi_controller.connect_and_get(),
+    });
 
     // SOUNDS
     let mut sound_panel = SoundPanel {

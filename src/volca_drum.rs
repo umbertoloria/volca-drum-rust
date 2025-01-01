@@ -1,4 +1,4 @@
-use midir::MidiOutputConnection;
+use crate::midi_device::MidiDevice;
 
 pub const DRUM_CH_KICK: u8 = 0;
 pub const DRUM_CH_HH: u8 = 1;
@@ -7,11 +7,11 @@ pub const DRUM_CH_SNARE: u8 = 2;
 const DEFAULT_NOTE_VALUE: u8 = 7;
 
 pub struct VolcaDrum {
-    pub conn: MidiOutputConnection,
+    pub device: MidiDevice,
 }
 impl VolcaDrum {
-    pub fn new(conn: MidiOutputConnection) -> Self {
-        Self { conn }
+    pub fn new(device: MidiDevice) -> Self {
+        Self { device }
     }
 
     // HIGH LEVEL
@@ -43,13 +43,7 @@ impl VolcaDrum {
 
     // LOW LEVEL
     pub fn send_plain_message(&mut self, a: u8, b: u8, c: u8) {
-        let _ = self.conn.send(&[a, b, c]);
-        /*println!(
-            "Send msg -> [{:10} {:10} {:10}]\n            [{:#10x} {:#10x} {:#10x}]\n            [{:#10b} {:#10b} {:#10b}]",
-            a, b, c,
-            a, b, c,
-            a, b, c,
-        );*/
+        let _ = self.device.send(a, b, c);
     }
 
     pub fn send_cc_message(&mut self, channel: u8, cc_number: u8, value: u8) {
@@ -64,6 +58,6 @@ impl VolcaDrum {
     }
 
     pub fn shut_down(self) {
-        self.conn.close();
+        self.device.close();
     }
 }
