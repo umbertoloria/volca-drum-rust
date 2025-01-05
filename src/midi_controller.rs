@@ -16,7 +16,8 @@ impl MidiController {
 pub fn init_midi_controller(
     preferred_output_port_index: Option<usize>,
 ) -> Result<MidiController, String> {
-    let midi_output = MidiOutput::new("RUST Volca Drum MIDI Output").unwrap();
+    let midi_output =
+        MidiOutput::new("RUST MIDI Output").expect("Midi controller: unable to create output");
 
     let mut midi_output_ports = midi_output.ports();
     let mut midi_port_index = None;
@@ -54,7 +55,7 @@ pub fn init_midi_controller(
     }
 
     match midi_port_index {
-        None => Err(String::from("No output port found")),
+        None => Err("Midi controller: unable to find output port".into()),
         Some(index) => Ok(MidiController {
             output: midi_output,
             output_port: midi_output_ports.remove(index),

@@ -24,8 +24,8 @@ mod yaml_song_reader;
 
 fn main() {
     // MIDI CONTROLLERS
-    let midi_controller_2 =
-        init_midi_controller(Some(1)).expect("Unable to create midi controller");
+    // let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
+    let midi_controller_2 = init_midi_controller(Some(1)).unwrap();
 
     // INSTRUMENTS
     // let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
