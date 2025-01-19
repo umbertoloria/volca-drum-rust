@@ -8,7 +8,6 @@ use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
 use crate::volca_keys::VolcaKeys;
 use crate::yaml_patch_reader::read_patch_from_yaml;
-use std::io::Write;
 
 mod cli;
 mod drummer;
@@ -53,14 +52,16 @@ fn main() {
     } {}*/
 
     // SONG
-    let mut instruments: Vec<Box<dyn PlayerObserver>> = Vec::new();
-    let drummer = Drummer::new(volca_drum);
-    instruments.push(Box::new(drummer));
-    let keyboard = Keyboard::new(volca_keys);
-    instruments.push(Box::new(keyboard));
-    let mut player = Player::new(true, instruments);
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
     // let song1 = convert_yaml_into_song(song1_yaml);
     let song1 = get_dummy_song();
-    player.play_song(song1);
+
+    let mut instruments: Vec<Box<dyn PlayerObserver>> = Vec::new();
+    let drummer = Drummer::new(song1.clone(), volca_drum);
+    instruments.push(Box::new(drummer));
+    let keyboard = Keyboard::new(song1.clone(), volca_keys);
+    instruments.push(Box::new(keyboard));
+
+    let mut player = Player::new(true, instruments);
+    player.play_song(song1).unwrap();
 }

@@ -3,18 +3,30 @@ use crate::song::{KeyboardPattern, Song, SongSection};
 use crate::volca_keys::VolcaKeys;
 
 pub struct Keyboard {
-    song: Option<Song>,
+    song: Song,
     pattern: Option<KeyboardPattern>,
     chord_index: usize,
     volca_keys: VolcaKeys,
+    // Internal Player
+    curr_section_index: usize,
+    cur_1_16: usize,
 }
 impl Keyboard {
-    pub fn new(volca_keys: VolcaKeys) -> Self {
+    pub fn new(song: Song, volca_keys: VolcaKeys) -> Self {
         Self {
-            song: None,
+            song,
             pattern: None,
             chord_index: 0,
             volca_keys,
+            curr_section_index: 0,
+            cur_1_16: 1,
+        }
+    }
+    fn get_current_song_section(&self) -> Option<&SongSection> {
+        if self.curr_section_index < self.song.sections.len() {
+            Some(&self.song.sections[self.curr_section_index])
+        } else {
+            None
         }
     }
     pub fn play_notes(&mut self, notes: Vec<String>) {
@@ -40,17 +52,25 @@ impl PlayerObserver for Keyboard {
         "".to_string()
     }
     fn teach_song(&mut self, song: Song) {
-        let song = song.clone();
-        self.song = Some(song);
+        self.song = song;
+        self.curr_section_index = 0;
+        self.cur_1_16 = 1;
+        self.set_pattern_from_song_section();
     }
-    fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
-        self.pattern = match &section.keyboard_pattern_key {
-            Some(keyboard_pattern_key) => {
-                // TODO: Avoid cloning pattern key
-                let keyboard_pattern = song
-                    .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
-                    .expect("Unable to find right Keyboard Pattern");
-                Some(keyboard_pattern)
+    fn set_pattern_from_song_section(&mut self) {
+        self.pattern = match &self.get_current_song_section() {
+            Some(current_song_section) => {
+                match &current_song_section.keyboard_pattern_key {
+                    Some(keyboard_pattern_key) => {
+                        // TODO: Avoid cloning pattern key
+                        let keyboard_pattern = self
+                            .song
+                            .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
+                            .expect("Unable to find right Keyboard Pattern");
+                        Some(keyboard_pattern)
+                    }
+                    None => None,
+                }
             }
             None => None,
         };
@@ -81,6 +101,18 @@ impl PlayerObserver for Keyboard {
                 let notes = chord.notes;
                 self.play_notes(notes);
             }
+        }
+
+        // Preparing the next hit!
+        self.cur_1_16 += 1;
+        if let Some(current_song_section) = self.get_current_song_section() {
+            if self.cur_1_16 >= current_song_section.get_num_1_16s() {
+                self.cur_1_16 = 1;
+                self.curr_section_index += 1;
+                self.set_pattern_from_song_section();
+            }
+        } else {
+            // This should never happen...
         }
     }
 }

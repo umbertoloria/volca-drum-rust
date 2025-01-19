@@ -14,7 +14,7 @@ pub trait PlayerObserver {
     fn get_instrument_name(&self) -> String;
     fn get_short_info(&self) -> String;
     fn teach_song(&mut self, song: Song);
-    fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection);
+    fn set_pattern_from_song_section(&mut self);
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
 }
 
@@ -39,7 +39,11 @@ impl Player {
         }
     }
 
-    pub fn play_song(&mut self, song: Song) {
+    pub fn play_song(&mut self, song: Song) -> Result<(), String> {
+        if song.sections.len() == 0 {
+            return Err("Song has no sections".into());
+        }
+
         // Teach song to all instruments
         for instrument in &mut self.instruments {
             // TODO: Sure copying is the only way?
@@ -55,11 +59,6 @@ impl Player {
             }
             self.starts_new_section_with_many_bars(section.bars);
 
-            // Instruments
-            for instrument in &mut self.instruments {
-                instrument.set_pattern_from_song_section(&song, &section);
-            }
-
             // Play section
             for _ in 0..section.bars {
                 // Beginning of a new bar.
@@ -73,6 +72,8 @@ impl Player {
                 }
             }
         }
+
+        Ok(())
     }
 
     pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {
@@ -89,8 +90,8 @@ impl Player {
             instrument.play_1_16th(tempo_snapshot);
         }
 
+        // Interactive CLI
         if self.enable_interactive_cli {
-            // + Interactive screen
             clear_terminal_screen();
             // TODO: Maybe show song author & title here
             println!("  .:[ {} ]:.", section.kind);
@@ -118,7 +119,6 @@ impl Player {
                 "-".repeat(cur_1_16ths_in_section),
                 " ".repeat(tot_1_16ths_in_section - cur_1_16ths_in_section - 1)
             );
-            // - Interactive screen
         }
 
         // Wait time

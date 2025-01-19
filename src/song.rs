@@ -46,9 +46,17 @@ pub struct SongTempo {
 pub struct SongSection {
     pub kind: SongSectionKind,
     pub bars: usize,
+    pub time_signature: (usize, usize), // Es. (4, 4) for 4/4 bars.
+    pub num_1_16s_in_a_quarter: usize,
     pub drum_pattern_key: Option<String>,
     pub keyboard_pattern_key: Option<String>,
     pub notes: Option<String>,
+}
+impl SongSection {
+    pub fn get_num_1_16s(&self) -> usize {
+        // Assuming "self.time_signature.1" is 4.
+        self.bars * self.time_signature.0 * self.time_signature.1
+    }
 }
 #[derive(Clone)]
 pub enum SongSectionKind {
@@ -137,6 +145,8 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
             .map(|section| SongSection {
                 kind: convert_section_kind_from_string(section).unwrap(),
                 bars: section.bars,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: None,
                 notes: section.notes.clone(),
@@ -231,6 +241,8 @@ pub fn get_dummy_song() -> Song {
             SongSection {
                 kind: SongSectionKind::Intro,
                 bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
                 notes: None,
@@ -238,6 +250,8 @@ pub fn get_dummy_song() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
                 notes: None,
@@ -245,6 +259,8 @@ pub fn get_dummy_song() -> Song {
             SongSection {
                 kind: SongSectionKind::Chorus,
                 bars: 8,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
                 notes: None,
@@ -252,6 +268,8 @@ pub fn get_dummy_song() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
                 notes: None,
@@ -259,6 +277,8 @@ pub fn get_dummy_song() -> Song {
             SongSection {
                 kind: SongSectionKind::Chorus,
                 bars: 8,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
                 notes: None,
@@ -266,6 +286,8 @@ pub fn get_dummy_song() -> Song {
             SongSection {
                 kind: SongSectionKind::Outro,
                 bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
                 notes: None,

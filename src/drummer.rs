@@ -3,16 +3,28 @@ use crate::song::{DrumPattern, Song, SongSection};
 use crate::volca_drum::VolcaDrum;
 
 pub struct Drummer {
-    song: Option<Song>,
+    song: Song,
     pattern: Option<DrumPattern>,
     volca_drum: VolcaDrum,
+    // Internal Player
+    curr_section_index: usize,
+    cur_1_16: usize,
 }
 impl Drummer {
-    pub fn new(volca_drum: VolcaDrum) -> Self {
+    pub fn new(song: Song, volca_drum: VolcaDrum) -> Self {
         Self {
-            song: None,
+            song,
             pattern: None,
             volca_drum,
+            curr_section_index: 0,
+            cur_1_16: 1,
+        }
+    }
+    fn get_current_song_section(&self) -> Option<&SongSection> {
+        if self.curr_section_index < self.song.sections.len() {
+            Some(&self.song.sections[self.curr_section_index])
+        } else {
+            None
         }
     }
 }
@@ -28,17 +40,25 @@ impl PlayerObserver for Drummer {
         }
     }
     fn teach_song(&mut self, song: Song) {
-        let song = song.clone();
-        self.song = Some(song);
+        self.song = song;
+        self.curr_section_index = 0;
+        self.cur_1_16 = 1;
+        self.set_pattern_from_song_section();
     }
-    fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
-        self.pattern = match &section.drum_pattern_key {
-            Some(drum_pattern_key) => {
-                // TODO: Avoid cloning pattern key
-                let drum_pattern = song
-                    .get_drum_pattern_clone_from_key(drum_pattern_key.into())
-                    .expect("Unable to find right Drum Pattern");
-                Some(drum_pattern)
+    fn set_pattern_from_song_section(&mut self) {
+        self.pattern = match self.get_current_song_section() {
+            Some(current_song_section) => {
+                match &current_song_section.drum_pattern_key {
+                    Some(drum_pattern_key) => {
+                        // TODO: Avoid cloning pattern key
+                        let drum_pattern = self
+                            .song
+                            .get_drum_pattern_clone_from_key(drum_pattern_key.into())
+                            .expect("Unable to find right Drum Pattern");
+                        Some(drum_pattern)
+                    }
+                    None => None,
+                }
             }
             None => None,
         };
@@ -60,6 +80,18 @@ impl PlayerObserver for Drummer {
             if sn_symbol != " " {
                 self.volca_drum.hit_snare();
             }
+        }
+
+        // Preparing the next hit!
+        self.cur_1_16 += 1;
+        if let Some(current_song_section) = self.get_current_song_section() {
+            if self.cur_1_16 >= current_song_section.get_num_1_16s() {
+                self.cur_1_16 = 1;
+                self.curr_section_index += 1;
+                self.set_pattern_from_song_section();
+            }
+        } else {
+            // This should never happen...
         }
     }
 }
