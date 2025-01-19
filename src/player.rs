@@ -52,14 +52,18 @@ impl Player {
             self.starts_new_section_with_many_bars(section.bars);
 
             // Drum Pattern
-            if section.drum_pattern_key.is_none() {
-                self.drummer.set_pattern(None);
-            } else {
-                // TODO: Avoid cloning pattern key
-                let drum_pattern_key = section.drum_pattern_key.clone().unwrap();
-                self.drummer
-                    .set_pattern(song.get_drum_pattern_clone_from_key(drum_pattern_key));
-            }
+            let drum_pattern_for_section = match &section.drum_pattern_key {
+                Some(drum_pattern_key) => {
+                    // TODO: Avoid cloning pattern key
+                    let drum_pattern = song
+                        .get_drum_pattern_clone_from_key(drum_pattern_key.into())
+                        .expect("Unable to find right Drum Pattern");
+                    Some(drum_pattern)
+                }
+                None => None,
+            };
+            self.drummer.set_pattern(drum_pattern_for_section);
+
             // Keyboard Pattern
             if section.keyboard_pattern_key.is_none() {
                 self.keyboard.set_pattern(None);
