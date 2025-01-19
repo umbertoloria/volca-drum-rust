@@ -15,20 +15,6 @@ impl Keyboard {
             volca_keys,
         }
     }
-
-    pub fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
-        self.pattern = match &section.keyboard_pattern_key {
-            Some(keyboard_pattern_key) => {
-                // TODO: Avoid cloning pattern key
-                let keyboard_pattern = song
-                    .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
-                    .expect("Unable to find right Keyboard Pattern");
-                Some(keyboard_pattern)
-            }
-            None => None,
-        };
-    }
-
     pub fn play_notes(&mut self, notes: Vec<String>) {
         // TODO: Using notes and sending them via MIDI
         for note in &notes {
@@ -47,6 +33,18 @@ impl PlayerObserver for Keyboard {
             }
         }
         "".to_string()
+    }
+    fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
+        self.pattern = match &section.keyboard_pattern_key {
+            Some(keyboard_pattern_key) => {
+                // TODO: Avoid cloning pattern key
+                let keyboard_pattern = song
+                    .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
+                    .expect("Unable to find right Keyboard Pattern");
+                Some(keyboard_pattern)
+            }
+            None => None,
+        };
     }
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {

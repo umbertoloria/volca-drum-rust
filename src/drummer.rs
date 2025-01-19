@@ -13,8 +13,16 @@ impl Drummer {
             volca_drum,
         }
     }
-
-    pub fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
+}
+impl PlayerObserver for Drummer {
+    fn get_short_info(&self) -> String {
+        if let Some(pattern) = &self.pattern {
+            format!("part \"{}\"", pattern.key)
+        } else {
+            "no drums".to_string()
+        }
+    }
+    fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
         self.pattern = match &section.drum_pattern_key {
             Some(drum_pattern_key) => {
                 // TODO: Avoid cloning pattern key
@@ -26,16 +34,6 @@ impl Drummer {
             None => None,
         };
     }
-}
-impl PlayerObserver for Drummer {
-    fn get_short_info(&self) -> String {
-        if let Some(pattern) = &self.pattern {
-            format!("part \"{}\"", pattern.key)
-        } else {
-            "no drums".to_string()
-        }
-    }
-
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
             let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_bar_from_1() - 1;

@@ -14,6 +14,7 @@ pub const BPM_DEFAULT: f64 = 60.0;
 
 pub trait PlayerObserver {
     fn get_short_info(&self) -> String;
+    fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection);
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
 }
 
