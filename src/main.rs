@@ -25,12 +25,12 @@ mod yaml_song_reader;
 
 fn main() {
     // MIDI CONTROLLERS
-    // let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
-    let midi_controller_2 = init_midi_controller(Some(1)).unwrap();
+    let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
+    let midi_controller_2 = init_midi_controller(Some(0)).unwrap();
 
     // INSTRUMENTS
-    // let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
-    let midi_device_1 = MidiDeviceGhost::new();
+    let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
+    // let midi_device_1 = MidiDeviceGhost::new();
     let mut volca_drum = VolcaDrum::new(midi_device_1);
     let midi_device_2 = MidiDeviceConcrete::new(midi_controller_2.connect_and_get());
     let mut volca_keys = VolcaKeys::new(midi_device_2);
@@ -62,6 +62,7 @@ fn main() {
     let keyboard = Keyboard::new(song1.clone(), volca_keys);
     instruments.push(Box::new(keyboard));
 
-    let mut player = Player::new(true, instruments);
+    let enable_interactive_cli = true;
+    let mut player = Player::new(enable_interactive_cli, instruments);
     player.play_song(song1).unwrap();
 }

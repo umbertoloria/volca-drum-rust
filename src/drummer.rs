@@ -8,7 +8,6 @@ pub struct Drummer {
     volca_drum: VolcaDrum,
     // Internal Player
     curr_section_index: usize,
-    cur_1_16: usize,
 }
 impl Drummer {
     pub fn new(song: Song, volca_drum: VolcaDrum) -> Self {
@@ -17,7 +16,6 @@ impl Drummer {
             pattern: None,
             volca_drum,
             curr_section_index: 0,
-            cur_1_16: 1,
         }
     }
     fn get_current_song_section(&self) -> Option<&SongSection> {
@@ -41,8 +39,8 @@ impl PlayerObserver for Drummer {
     }
     fn teach_song(&mut self, song: Song) {
         self.song = song;
+        // Start from beginning.
         self.curr_section_index = 0;
-        self.cur_1_16 = 1;
         self.set_pattern_from_song_section();
     }
     fn set_pattern_from_song_section(&mut self) {
@@ -83,15 +81,13 @@ impl PlayerObserver for Drummer {
         }
 
         // Preparing the next hit!
-        self.cur_1_16 += 1;
-        if let Some(current_song_section) = self.get_current_song_section() {
-            if self.cur_1_16 >= current_song_section.get_num_1_16s() {
-                self.cur_1_16 = 1;
-                self.curr_section_index += 1;
-                self.set_pattern_from_song_section();
-            }
-        } else {
-            // This should never happen...
+        if tempo_snapshot.cur_bar == tempo_snapshot.section_bar_last
+            && tempo_snapshot.cur_quarter == self.song.tempo.time_signature.0
+            && tempo_snapshot.cur_1_16 == 4
+        {
+            // Assuming this is the last hit
+            self.curr_section_index += 1;
+            self.set_pattern_from_song_section();
         }
     }
 }

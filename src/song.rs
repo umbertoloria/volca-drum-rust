@@ -186,57 +186,124 @@ pub fn get_dummy_song() -> Song {
                 },
             ),
         ]),
-        keyboard_patterns: HashMap::from([(
-            "A".into(),
-            KeyboardPattern {
-                key: "A".into(),
-                chords: [
-                    KeyboardPatternChord {
-                        chord_name: "F".into(),
-                        from_1_16th_incl: 1,
-                        to_1_16th_incl: 16,
-                        notes: [
-                            //
-                            "F3".into(),
-                            //
-                            "A3".into(),
-                            //
-                            "C4".into(),
-                        ]
-                        .into(),
-                    },
-                    KeyboardPatternChord {
-                        chord_name: "Dm".into(),
-                        from_1_16th_incl: 16 + 1,
-                        to_1_16th_incl: 16 + 16,
-                        notes: [
-                            //
-                            "D3".into(),
-                            //
-                            "F3".into(),
-                            //
-                            "A3".into(),
-                        ]
-                        .into(),
-                    },
-                    KeyboardPatternChord {
-                        chord_name: "C".into(),
-                        from_1_16th_incl: 16 + 16 + 1,
-                        to_1_16th_incl: 16 + 16 + 32,
-                        notes: [
-                            //
-                            "C3".into(),
-                            //
-                            "E3".into(),
-                            //
-                            "G3".into(),
-                        ]
-                        .into(),
-                    },
-                ]
-                .into(),
-            },
-        )]),
+        keyboard_patterns: HashMap::from([
+            (
+                "A".into(),
+                KeyboardPattern {
+                    key: "A".into(),
+                    chords: [
+                        KeyboardPatternChord {
+                            chord_name: "F".into(),
+                            from_1_16th_incl: 1,
+                            to_1_16th_incl: 16,
+                            notes: [
+                                //
+                                "F3".into(),
+                                //
+                                "A3".into(),
+                                //
+                                "C4".into(),
+                            ]
+                            .into(),
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Dm".into(),
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 16,
+                            notes: [
+                                //
+                                "D3".into(),
+                                //
+                                "F3".into(),
+                                //
+                                "A3".into(),
+                            ]
+                            .into(),
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "C".into(),
+                            from_1_16th_incl: 16 + 16 + 1,
+                            to_1_16th_incl: 16 + 16 + 32,
+                            notes: [
+                                //
+                                "C3".into(),
+                                //
+                                "E3".into(),
+                                //
+                                "G3".into(),
+                            ]
+                            .into(),
+                        },
+                    ]
+                    .into(),
+                },
+            ),
+            (
+                "B".into(),
+                KeyboardPattern {
+                    key: "B".into(),
+                    chords: [
+                        KeyboardPatternChord {
+                            chord_name: "F".into(),
+                            from_1_16th_incl: 1,
+                            to_1_16th_incl: 16,
+                            notes: [
+                                //
+                                "F3".into(),
+                                //
+                                "A3".into(),
+                                //
+                                "C4".into(),
+                            ]
+                            .into(),
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Dm".into(),
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 16,
+                            notes: [
+                                //
+                                "D3".into(),
+                                //
+                                "F3".into(),
+                                //
+                                "A3".into(),
+                            ]
+                            .into(),
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "C".into(),
+                            from_1_16th_incl: 16 + 16 + 1,
+                            to_1_16th_incl: 16 + 16 + 16,
+                            notes: [
+                                //
+                                "C3".into(),
+                                //
+                                "E3".into(),
+                                //
+                                "G3".into(),
+                            ]
+                            .into(),
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "G".into(),
+                            from_1_16th_incl: 16 + 16 + 16 + 1,
+                            to_1_16th_incl: 16 + 16 + 16 + 16,
+                            notes: [
+                                //
+                                "D3".into(),
+                                //
+                                "G3".into(),
+                                //
+                                "B3".into(),
+                            ]
+                            .into(),
+                        },
+                    ]
+                    .into(),
+                },
+            ),
+        ]),
         sections: [
             SongSection {
                 kind: SongSectionKind::Intro,
@@ -262,7 +329,7 @@ pub fn get_dummy_song() -> Song {
                 time_signature: (4, 4),
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("B".into()),
                 notes: None,
             },
             SongSection {
@@ -280,7 +347,7 @@ pub fn get_dummy_song() -> Song {
                 time_signature: (4, 4),
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("B".into()),
                 notes: None,
             },
             SongSection {
