@@ -15,6 +15,9 @@ impl Drummer {
     }
 }
 impl PlayerObserver for Drummer {
+    fn get_instrument_name(&self) -> String {
+        "Drummer".into()
+    }
     fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
             format!("part \"{}\"", pattern.key)

@@ -11,6 +11,7 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub trait PlayerObserver {
+    fn get_instrument_name(&self) -> String;
     fn get_short_info(&self) -> String;
     fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection);
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
@@ -87,8 +88,11 @@ impl Player {
             println!("  .:[ {} ]:.", section.kind);
 
             println!("  Now: {}", tempo_snapshot.string_info());
-            // println!("  Drummer: {}", self.drummer.get_short_info());
-            // println!("  Keyboard: {}", self.keyboard.get_short_info());
+            for instrument in &mut self.instruments {
+                let instrument_name = instrument.get_instrument_name();
+                let short_info = instrument.get_short_info();
+                println!("  {}: {}", instrument_name, short_info);
+            }
 
             let tot_bars_in_section = tempo_snapshot.get_tot_bars_in_section();
             let tot_1_16ths_in_section = tempo_snapshot.get_tot_1_16ths_in_section();

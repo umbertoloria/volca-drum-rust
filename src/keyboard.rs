@@ -24,6 +24,9 @@ impl Keyboard {
     }
 }
 impl PlayerObserver for Keyboard {
+    fn get_instrument_name(&self) -> String {
+        "Keyboard".into()
+    }
     fn get_short_info(&self) -> String {
         if let Some(pattern) = self.pattern.clone() {
             if self.chord_index <= pattern.chords.len() {
