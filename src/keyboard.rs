@@ -1,4 +1,4 @@
-use crate::player::TempoSnapshot;
+use crate::player::{PlayerObserver, TempoSnapshot};
 use crate::song::KeyboardPattern;
 use crate::volca_keys::VolcaKeys;
 
@@ -20,7 +20,16 @@ impl Keyboard {
         self.pattern = pattern;
     }
 
-    pub fn get_short_info(&self) -> String {
+    pub fn play_notes(&mut self, notes: Vec<String>) {
+        // TODO: Using notes and sending them via MIDI
+        for note in &notes {
+            let note = note.clone();
+            self.volca_keys.note_play_start(note);
+        }
+    }
+}
+impl PlayerObserver for Keyboard {
+    fn get_short_info(&self) -> String {
         if let Some(pattern) = self.pattern.clone() {
             if self.chord_index <= pattern.chords.len() {
                 let mut chord = pattern.chords.get(self.chord_index).unwrap();
@@ -30,8 +39,7 @@ impl Keyboard {
         }
         "".to_string()
     }
-
-    pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
+    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
             let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
@@ -57,14 +65,6 @@ impl Keyboard {
                 let notes = chord.notes;
                 self.play_notes(notes);
             }
-        }
-    }
-
-    pub fn play_notes(&mut self, notes: Vec<String>) {
-        // TODO: Using notes and sending them via MIDI
-        for note in &notes {
-            let note = note.clone();
-            self.volca_keys.note_play_start(note);
         }
     }
 }

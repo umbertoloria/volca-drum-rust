@@ -1,4 +1,4 @@
-use crate::player::TempoSnapshot;
+use crate::player::{PlayerObserver, TempoSnapshot};
 use crate::song::DrumPattern;
 use crate::volca_drum::VolcaDrum;
 
@@ -17,8 +17,9 @@ impl Drummer {
     pub fn set_pattern(&mut self, pattern: Option<DrumPattern>) {
         self.pattern = pattern;
     }
-
-    pub fn get_short_info(&self) -> String {
+}
+impl PlayerObserver for Drummer {
+    fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
             format!("part \"{}\"", pattern.key)
         } else {
@@ -26,7 +27,7 @@ impl Drummer {
         }
     }
 
-    pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
+    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
             let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_bar_from_1() - 1;
 

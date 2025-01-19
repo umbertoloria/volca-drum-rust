@@ -14,6 +14,11 @@ pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
+pub trait PlayerObserver {
+    fn get_short_info(&self) -> String;
+    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
+}
+
 pub struct Player {
     enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
