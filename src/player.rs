@@ -14,8 +14,13 @@ pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
-pub fn play_song(song: Song, volca_drum: &mut VolcaDrum, volca_keys: &mut VolcaKeys) {
-    let mut player = Player::new();
+pub fn play_song(
+    song: Song,
+    enable_interactive_cli: bool,
+    volca_drum: &mut VolcaDrum,
+    volca_keys: &mut VolcaKeys,
+) {
+    let mut player = Player::new(enable_interactive_cli);
 
     for section in &song.sections {
         // Beginning of a new section.
@@ -63,6 +68,7 @@ pub fn play_song(song: Song, volca_drum: &mut VolcaDrum, volca_keys: &mut VolcaK
 
 // Player
 pub struct Player {
+    enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
 
     // Musicians
@@ -70,8 +76,9 @@ pub struct Player {
     keyboard: Keyboard,
 }
 impl Player {
-    pub fn new() -> Self {
+    pub fn new(enable_interactive_cli: bool) -> Self {
         Self {
+            enable_interactive_cli,
             tempo_snapshot: TempoSnapshot {
                 cur_bar: 1,
                 cur_quarter: 1,
@@ -103,32 +110,34 @@ impl Player {
         self.drummer.play_1_16th(tempo_snapshot, volca_drum);
         self.keyboard.play_1_16th(tempo_snapshot, volca_keys);
 
-        // + Interactive screen
-        clear_terminal_screen();
-        // TODO: Maybe show song author & title here
-        println!("  .:[ {} ]:.", section.kind);
+        if self.enable_interactive_cli {
+            // + Interactive screen
+            clear_terminal_screen();
+            // TODO: Maybe show song author & title here
+            println!("  .:[ {} ]:.", section.kind);
 
-        println!("  Now: {}", tempo_snapshot.string_info());
-        println!("  Drummer: {}", self.drummer.get_short_info());
-        println!("  Keyboard: {}", self.keyboard.get_short_info());
+            println!("  Now: {}", tempo_snapshot.string_info());
+            println!("  Drummer: {}", self.drummer.get_short_info());
+            println!("  Keyboard: {}", self.keyboard.get_short_info());
 
-        let tot_bars_in_section = tempo_snapshot.get_tot_bars_in_section();
-        let tot_1_16ths_in_section = tempo_snapshot.get_tot_1_16ths_in_section();
-        let cur_1_16ths_in_section = tempo_snapshot.get_cur_1_16ths_in_section_from_1() - 1;
-        println!(
-            "  {}",
-            (1..=tot_bars_in_section) // Or: (self.section_bar_first..=self.section_bar_last)
-                .map(|n| format!("{:16}", format!("{}th bar", n)))
-                .collect::<String>()
-        );
-        println!("  {}", "1 . 2 . 3 . 4 . ".repeat(tot_bars_in_section));
-        println!("  {}", "V   .   v   .   ".repeat(tot_bars_in_section));
-        println!(
-            "  {}*{}",
-            "-".repeat(cur_1_16ths_in_section),
-            " ".repeat(tot_1_16ths_in_section - cur_1_16ths_in_section - 1)
-        );
-        // - Interactive screen
+            let tot_bars_in_section = tempo_snapshot.get_tot_bars_in_section();
+            let tot_1_16ths_in_section = tempo_snapshot.get_tot_1_16ths_in_section();
+            let cur_1_16ths_in_section = tempo_snapshot.get_cur_1_16ths_in_section_from_1() - 1;
+            println!(
+                "  {}",
+                (1..=tot_bars_in_section) // Or: (self.section_bar_first..=self.section_bar_last)
+                    .map(|n| format!("{:16}", format!("{}th bar", n)))
+                    .collect::<String>()
+            );
+            println!("  {}", "1 . 2 . 3 . 4 . ".repeat(tot_bars_in_section));
+            println!("  {}", "V   .   v   .   ".repeat(tot_bars_in_section));
+            println!(
+                "  {}*{}",
+                "-".repeat(cur_1_16ths_in_section),
+                " ".repeat(tot_1_16ths_in_section - cur_1_16ths_in_section - 1)
+            );
+            // - Interactive screen
+        }
 
         // Wait time
         let millis_1_16th = DUR_1_16.mul_f64(BPM_DEFAULT).div_f64(song_tempo.bpm as f64);

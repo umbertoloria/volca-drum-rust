@@ -55,5 +55,5 @@ fn main() {
     // let song1 = convert_yaml_into_song(song1_yaml);
     let song1 = get_dummy_song();
     // TODO: Try to share the same Volca Drum instance
-    play_song(song1, &mut volca_drum, &mut volca_keys);
+    play_song(song1, true, &mut volca_drum, &mut volca_keys);
 }
