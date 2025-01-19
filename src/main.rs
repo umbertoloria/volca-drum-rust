@@ -1,6 +1,6 @@
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
-use crate::player::play_song;
+use crate::player::Player;
 use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
@@ -51,9 +51,9 @@ fn main() {
     } {}*/
 
     // SONG
+    let mut player = Player::new(true, volca_drum, volca_keys);
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
     // let song1 = convert_yaml_into_song(song1_yaml);
     let song1 = get_dummy_song();
-    // TODO: Try to share the same Volca Drum instance
-    play_song(song1, true, volca_drum, volca_keys);
+    player.play_song(song1);
 }

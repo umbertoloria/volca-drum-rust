@@ -14,59 +14,6 @@ pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
-pub fn play_song(
-    song: Song,
-    enable_interactive_cli: bool,
-    volca_drum: VolcaDrum,
-    volca_keys: VolcaKeys,
-) {
-    let mut player = Player::new(enable_interactive_cli, volca_drum, volca_keys);
-
-    for section in &song.sections {
-        // Beginning of a new section.
-
-        if section.bars < 1 {
-            continue;
-        }
-        player.starts_new_section_with_many_bars(section.bars);
-
-        // Drum Pattern
-        if section.drum_pattern_key.is_none() {
-            player.drummer.set_pattern(None);
-        } else {
-            // TODO: Avoid cloning pattern key
-            let drum_pattern_key = section.drum_pattern_key.clone().unwrap();
-            player
-                .drummer
-                .set_pattern(song.get_drum_pattern_clone_from_key(drum_pattern_key));
-        }
-        // Keyboard Pattern
-        if section.keyboard_pattern_key.is_none() {
-            player.keyboard.set_pattern(None);
-        } else {
-            // TODO: Avoid cloning pattern key
-            let pattern_key = section.keyboard_pattern_key.clone().unwrap();
-            player
-                .keyboard
-                .set_pattern(song.get_keyboard_pattern_clone_from_key(pattern_key));
-        }
-
-        // Play section
-        for _ in 0..section.bars {
-            // Beginning of a new bar.
-            for _ in 0..song.tempo.time_signature.0 {
-                // Beginning of a quarter.
-                for _ in 0..4 {
-                    // Beginning of a 1/16th.
-                    player.play_1_16th_now(section, &song.tempo);
-                    player.next_1_16th();
-                }
-            }
-        }
-    }
-}
-
-// Player
 pub struct Player {
     enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
@@ -91,6 +38,50 @@ impl Player {
             keyboard: Keyboard::new(volca_keys),
         }
     }
+
+    pub fn play_song(&mut self, song: Song) {
+        for section in &song.sections {
+            // Beginning of a new section.
+
+            if section.bars < 1 {
+                continue;
+            }
+            self.starts_new_section_with_many_bars(section.bars);
+
+            // Drum Pattern
+            if section.drum_pattern_key.is_none() {
+                self.drummer.set_pattern(None);
+            } else {
+                // TODO: Avoid cloning pattern key
+                let drum_pattern_key = section.drum_pattern_key.clone().unwrap();
+                self.drummer
+                    .set_pattern(song.get_drum_pattern_clone_from_key(drum_pattern_key));
+            }
+            // Keyboard Pattern
+            if section.keyboard_pattern_key.is_none() {
+                self.keyboard.set_pattern(None);
+            } else {
+                // TODO: Avoid cloning pattern key
+                let pattern_key = section.keyboard_pattern_key.clone().unwrap();
+                self.keyboard
+                    .set_pattern(song.get_keyboard_pattern_clone_from_key(pattern_key));
+            }
+
+            // Play section
+            for _ in 0..section.bars {
+                // Beginning of a new bar.
+                for _ in 0..song.tempo.time_signature.0 {
+                    // Beginning of a quarter.
+                    for _ in 0..4 {
+                        // Beginning of a 1/16th.
+                        self.play_1_16th_now(section, &song.tempo);
+                        self.next_1_16th();
+                    }
+                }
+            }
+        }
+    }
+
     pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {
         self.tempo_snapshot.section_bar_first = self.tempo_snapshot.cur_bar;
         self.tempo_snapshot.section_bar_last =
