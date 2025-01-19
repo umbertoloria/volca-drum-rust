@@ -13,7 +13,7 @@ impl VolcaKeys {
     }
 
     // HIGH LEVEL
-    pub fn note_play_start(&mut self, note_str: String) {
+    pub fn note_play_start(&mut self, note_str: &String) {
         // TODO: Start playing note "note"
 
         // TODO: Improve if possible

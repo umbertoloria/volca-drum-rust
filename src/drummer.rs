@@ -1,15 +1,17 @@
 use crate::player::{PlayerObserver, TempoSnapshot};
-use crate::song::{DrumPattern, Song, SongSection};
+use crate::song::{DrumPattern, Song};
 use crate::volca_drum::VolcaDrum;
 
 pub struct Drummer {
+    // Song
     song: Song,
+
     // Charts
+    curr_section_index: usize,
     pattern: Option<DrumPattern>,
+
     // Outputs
     volca_drum: VolcaDrum,
-    // Internal Player
-    curr_section_index: usize,
 }
 impl Drummer {
     pub fn new(song: Song, volca_drum: VolcaDrum) -> Self {
@@ -20,30 +22,24 @@ impl Drummer {
             curr_section_index: 0,
         }
     }
-    fn get_current_song_section(&self) -> Option<&SongSection> {
-        if self.curr_section_index < self.song.sections.len() {
-            Some(&self.song.sections[self.curr_section_index])
-        } else {
-            None
-        }
-    }
     fn update_pattern_from_song_section(&mut self) {
-        self.pattern = match self.get_current_song_section() {
-            Some(current_song_section) => {
-                match &current_song_section.drum_pattern_key {
-                    Some(drum_pattern_key) => {
-                        // TODO: Avoid cloning pattern key
-                        let drum_pattern = self
-                            .song
-                            .get_drum_pattern_clone_from_key(drum_pattern_key.into())
-                            .expect("Unable to find right Drum Pattern");
-                        Some(drum_pattern)
-                    }
-                    None => None,
+        if self.curr_section_index < self.song.sections.len() {
+            let current_song_section = &self.song.sections[self.curr_section_index];
+            self.pattern = match &current_song_section.drum_pattern_key {
+                Some(drum_pattern_key) => {
+                    let drum_pattern = self
+                        .song
+                        .get_drum_pattern_from_key(drum_pattern_key.into())
+                        .expect("Unable to find right Drum Pattern")
+                        // TODO: Avoid cloning pattern
+                        .clone();
+                    Some(drum_pattern)
                 }
+                None => None,
             }
-            None => None,
-        };
+        } else {
+            self.pattern = None;
+        }
     }
 }
 impl PlayerObserver for Drummer {
@@ -83,11 +79,7 @@ impl PlayerObserver for Drummer {
         }
 
         // Preparing the next hit!
-        if tempo_snapshot.cur_bar == tempo_snapshot.section_bar_last
-            && tempo_snapshot.cur_quarter == self.song.tempo.time_signature.0
-            && tempo_snapshot.cur_1_16 == 4
-        {
-            // Assuming this is the last hit
+        if tempo_snapshot.is_this_the_last_1_16th_of_this_section(&self.song) {
             self.curr_section_index += 1;
             self.update_pattern_from_song_section();
         }

@@ -11,21 +11,11 @@ pub struct Song {
     pub sections: Vec<SongSection>,
 }
 impl Song {
-    pub fn get_drum_pattern_clone_from_key(&self, drum_pattern_key: String) -> Option<DrumPattern> {
-        if let Some(drum_pattern) = self.drum_patterns.get(&drum_pattern_key) {
-            // TODO: Avoid cloning pattern
-            Some(drum_pattern.clone())
-        } else {
-            None
-        }
+    pub fn get_drum_pattern_from_key(&self, pattern_key: String) -> Option<&DrumPattern> {
+        self.drum_patterns.get(&pattern_key)
     }
-    pub fn get_keyboard_pattern_clone_from_key(&self, key: String) -> Option<KeyboardPattern> {
-        if let Some(pattern) = self.keyboard_patterns.get(&key) {
-            // TODO: Avoid cloning pattern
-            Some(pattern.clone())
-        } else {
-            None
-        }
+    pub fn get_keyboard_pattern_from_key(&self, pattern_key: String) -> Option<&KeyboardPattern> {
+        self.keyboard_patterns.get(&pattern_key)
     }
 }
 

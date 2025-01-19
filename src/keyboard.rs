@@ -1,16 +1,18 @@
 use crate::player::{PlayerObserver, TempoSnapshot};
-use crate::song::{KeyboardPattern, Song, SongSection};
+use crate::song::{KeyboardPattern, Song};
 use crate::volca_keys::VolcaKeys;
 
 pub struct Keyboard {
+    // Song
     song: Song,
+
     // Charts
+    curr_section_index: usize,
     pattern: Option<KeyboardPattern>,
     chord_index: usize,
+
     // Outputs
     volca_keys: VolcaKeys,
-    // Internal Player
-    curr_section_index: usize,
 }
 impl Keyboard {
     pub fn new(song: Song, volca_keys: VolcaKeys) -> Self {
@@ -22,35 +24,27 @@ impl Keyboard {
             curr_section_index: 0,
         }
     }
-    fn get_current_song_section(&self) -> Option<&SongSection> {
+    fn update_pattern_from_song_section(&mut self) {
         if self.curr_section_index < self.song.sections.len() {
-            Some(&self.song.sections[self.curr_section_index])
+            let current_song_section = &self.song.sections[self.curr_section_index];
+            self.pattern = match &current_song_section.keyboard_pattern_key {
+                Some(keyboard_pattern_key) => {
+                    let keyboard_pattern = self
+                        .song
+                        .get_keyboard_pattern_from_key(keyboard_pattern_key.into())
+                        .expect("Unable to find right Keyboard Pattern")
+                        // TODO: Avoid cloning pattern
+                        .clone();
+                    Some(keyboard_pattern)
+                }
+                None => None,
+            }
         } else {
-            None
+            self.pattern = None;
         }
     }
-    fn update_pattern_from_song_section(&mut self) {
-        self.pattern = match &self.get_current_song_section() {
-            Some(current_song_section) => {
-                match &current_song_section.keyboard_pattern_key {
-                    Some(keyboard_pattern_key) => {
-                        // TODO: Avoid cloning pattern key
-                        let keyboard_pattern = self
-                            .song
-                            .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
-                            .expect("Unable to find right Keyboard Pattern");
-                        Some(keyboard_pattern)
-                    }
-                    None => None,
-                }
-            }
-            None => None,
-        };
-    }
     pub fn play_notes(&mut self, notes: &Vec<String>) {
-        // TODO: Using notes and sending them via MIDI
         for note in notes {
-            let note = note.clone();
             self.volca_keys.note_play_start(note);
         }
     }
@@ -60,15 +54,10 @@ impl PlayerObserver for Keyboard {
         "Keyboard".into()
     }
     fn get_short_info(&self) -> String {
-        // TODO: Avoid cloning pattern
-        if let Some(pattern) = self.pattern.clone() {
+        if let Some(pattern) = &self.pattern {
             if self.chord_index < pattern.chords.len() {
                 let mut chord = &pattern.chords[self.chord_index];
-                return format!(
-                    "part \"{}\" / {} chord",
-                    pattern.key,
-                    chord.clone().chord_name
-                );
+                return format!("part \"{}\" / {} chord", pattern.key, chord.chord_name);
             }
         }
         "".to_string()
@@ -107,11 +96,7 @@ impl PlayerObserver for Keyboard {
         }
 
         // Preparing the next hit!
-        if tempo_snapshot.cur_bar == tempo_snapshot.section_bar_last
-            && tempo_snapshot.cur_quarter == self.song.tempo.time_signature.0
-            && tempo_snapshot.cur_1_16 == 4
-        {
-            // Assuming this is the last hit
+        if tempo_snapshot.is_this_the_last_1_16th_of_this_section(&self.song) {
             self.curr_section_index += 1;
             self.update_pattern_from_song_section();
         }

@@ -173,6 +173,12 @@ impl TempoSnapshot {
     pub fn get_tot_bars_in_section(&self) -> usize {
         self.section_bar_last - self.section_bar_first + 1
     }
+    pub fn is_this_the_last_1_16th_of_this_section(&self, song: &Song) -> bool {
+        // Assuming this is the last hit (what if there was a "6/8"?)
+        self.cur_bar == self.section_bar_last
+            && self.cur_quarter == song.tempo.time_signature.0
+            && self.cur_1_16 == 4
+    }
     pub fn string_info(&self) -> String {
         format!(
             "{}th of {} bars in section / {}.{} / {}th global bar",
