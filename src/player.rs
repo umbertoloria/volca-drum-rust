@@ -65,14 +65,17 @@ impl Player {
             self.drummer.set_pattern(drum_pattern_for_section);
 
             // Keyboard Pattern
-            if section.keyboard_pattern_key.is_none() {
-                self.keyboard.set_pattern(None);
-            } else {
-                // TODO: Avoid cloning pattern key
-                let pattern_key = section.keyboard_pattern_key.clone().unwrap();
-                self.keyboard
-                    .set_pattern(song.get_keyboard_pattern_clone_from_key(pattern_key));
-            }
+            let keyboard_pattern_for_section = match &section.keyboard_pattern_key {
+                Some(keyboard_pattern_key) => {
+                    // TODO: Avoid cloning pattern key
+                    let keyboard_pattern = song
+                        .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
+                        .expect("Unable to find right Keyboard Pattern");
+                    Some(keyboard_pattern)
+                }
+                None => None,
+            };
+            self.keyboard.set_pattern(keyboard_pattern_for_section);
 
             // Play section
             for _ in 0..section.bars {
