@@ -17,10 +17,10 @@ pub const BPM_DEFAULT: f64 = 60.0;
 pub fn play_song(
     song: Song,
     enable_interactive_cli: bool,
-    volca_drum: &mut VolcaDrum,
-    volca_keys: &mut VolcaKeys,
+    volca_drum: VolcaDrum,
+    volca_keys: VolcaKeys,
 ) {
-    let mut player = Player::new(enable_interactive_cli);
+    let mut player = Player::new(enable_interactive_cli, volca_drum, volca_keys);
 
     for section in &song.sections {
         // Beginning of a new section.
@@ -58,7 +58,7 @@ pub fn play_song(
                 // Beginning of a quarter.
                 for _ in 0..4 {
                     // Beginning of a 1/16th.
-                    player.play_1_16th_now(section, &song.tempo, volca_drum, volca_keys);
+                    player.play_1_16th_now(section, &song.tempo);
                     player.next_1_16th();
                 }
             }
@@ -76,7 +76,7 @@ pub struct Player {
     keyboard: Keyboard,
 }
 impl Player {
-    pub fn new(enable_interactive_cli: bool) -> Self {
+    pub fn new(enable_interactive_cli: bool, volca_drum: VolcaDrum, volca_keys: VolcaKeys) -> Self {
         Self {
             enable_interactive_cli,
             tempo_snapshot: TempoSnapshot {
@@ -87,8 +87,8 @@ impl Player {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
-            drummer: Drummer::new(),
-            keyboard: Keyboard::new(),
+            drummer: Drummer::new(volca_drum),
+            keyboard: Keyboard::new(volca_keys),
         }
     }
     pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {
@@ -97,18 +97,12 @@ impl Player {
             self.tempo_snapshot.section_bar_first + bars_count - 1;
     }
 
-    pub fn play_1_16th_now(
-        &mut self,
-        section: &SongSection,
-        song_tempo: &SongTempo,
-        volca_drum: &mut VolcaDrum,
-        volca_keys: &mut VolcaKeys,
-    ) {
+    pub fn play_1_16th_now(&mut self, section: &SongSection, song_tempo: &SongTempo) {
         let tempo_snapshot = &self.tempo_snapshot;
 
         // Play music
-        self.drummer.play_1_16th(tempo_snapshot, volca_drum);
-        self.keyboard.play_1_16th(tempo_snapshot, volca_keys);
+        self.drummer.play_1_16th(tempo_snapshot);
+        self.keyboard.play_1_16th(tempo_snapshot);
 
         if self.enable_interactive_cli {
             // + Interactive screen
