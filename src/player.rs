@@ -2,8 +2,6 @@ use crate::cli::clear_terminal_screen;
 use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
 use crate::song::{Song, SongSection, SongTempo};
-use crate::volca_drum::VolcaDrum;
-use crate::volca_keys::VolcaKeys;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -28,7 +26,7 @@ pub struct Player {
     keyboard: Keyboard,
 }
 impl Player {
-    pub fn new(enable_interactive_cli: bool, volca_drum: VolcaDrum, volca_keys: VolcaKeys) -> Self {
+    pub fn new(enable_interactive_cli: bool, drummer: Drummer, keyboard: Keyboard) -> Self {
         Self {
             enable_interactive_cli,
             tempo_snapshot: TempoSnapshot {
@@ -39,8 +37,8 @@ impl Player {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
-            drummer: Drummer::new(volca_drum),
-            keyboard: Keyboard::new(volca_keys),
+            drummer,
+            keyboard,
         }
     }
 
