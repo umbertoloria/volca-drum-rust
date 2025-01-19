@@ -4,7 +4,9 @@ use crate::volca_drum::VolcaDrum;
 
 pub struct Drummer {
     song: Song,
+    // Charts
     pattern: Option<DrumPattern>,
+    // Outputs
     volca_drum: VolcaDrum,
     // Internal Player
     curr_section_index: usize,
@@ -25,25 +27,7 @@ impl Drummer {
             None
         }
     }
-}
-impl PlayerObserver for Drummer {
-    fn get_instrument_name(&self) -> String {
-        "Drummer".into()
-    }
-    fn get_short_info(&self) -> String {
-        if let Some(pattern) = &self.pattern {
-            format!("part \"{}\"", pattern.key)
-        } else {
-            "no drums".to_string()
-        }
-    }
-    fn teach_song(&mut self, song: Song) {
-        self.song = song;
-        // Start from beginning.
-        self.curr_section_index = 0;
-        self.set_pattern_from_song_section();
-    }
-    fn set_pattern_from_song_section(&mut self) {
+    fn update_pattern_from_song_section(&mut self) {
         self.pattern = match self.get_current_song_section() {
             Some(current_song_section) => {
                 match &current_song_section.drum_pattern_key {
@@ -60,6 +44,24 @@ impl PlayerObserver for Drummer {
             }
             None => None,
         };
+    }
+}
+impl PlayerObserver for Drummer {
+    fn get_instrument_name(&self) -> String {
+        "Drummer".into()
+    }
+    fn get_short_info(&self) -> String {
+        if let Some(pattern) = &self.pattern {
+            format!("part \"{}\"", pattern.key)
+        } else {
+            "no drums".to_string()
+        }
+    }
+    fn teach_song(&mut self, song: Song) {
+        self.song = song;
+        // Start from beginning.
+        self.curr_section_index = 0;
+        self.update_pattern_from_song_section();
     }
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
@@ -87,7 +89,7 @@ impl PlayerObserver for Drummer {
         {
             // Assuming this is the last hit
             self.curr_section_index += 1;
-            self.set_pattern_from_song_section();
+            self.update_pattern_from_song_section();
         }
     }
 }

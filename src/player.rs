@@ -14,7 +14,6 @@ pub trait PlayerObserver {
     fn get_instrument_name(&self) -> String;
     fn get_short_info(&self) -> String;
     fn teach_song(&mut self, song: Song);
-    fn set_pattern_from_song_section(&mut self);
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
 }
 
