@@ -13,6 +13,7 @@ pub const BPM_DEFAULT: f64 = 60.0;
 pub trait PlayerObserver {
     fn get_instrument_name(&self) -> String;
     fn get_short_info(&self) -> String;
+    fn teach_song(&mut self, song: Song);
     fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection);
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
 }
@@ -39,6 +40,13 @@ impl Player {
     }
 
     pub fn play_song(&mut self, song: Song) {
+        // Teach song to all instruments
+        for instrument in &mut self.instruments {
+            // TODO: Sure copying is the only way?
+            let cloned_song = song.clone();
+            instrument.teach_song(cloned_song);
+        }
+
         for section in &song.sections {
             // Beginning of a new section.
 

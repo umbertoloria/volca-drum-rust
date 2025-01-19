@@ -3,6 +3,7 @@ use crate::song::{KeyboardPattern, Song, SongSection};
 use crate::volca_keys::VolcaKeys;
 
 pub struct Keyboard {
+    song: Option<Song>,
     pattern: Option<KeyboardPattern>,
     chord_index: usize,
     volca_keys: VolcaKeys,
@@ -10,6 +11,7 @@ pub struct Keyboard {
 impl Keyboard {
     pub fn new(volca_keys: VolcaKeys) -> Self {
         Self {
+            song: None,
             pattern: None,
             chord_index: 0,
             volca_keys,
@@ -36,6 +38,10 @@ impl PlayerObserver for Keyboard {
             }
         }
         "".to_string()
+    }
+    fn teach_song(&mut self, song: Song) {
+        let song = song.clone();
+        self.song = Some(song);
     }
     fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
         self.pattern = match &section.keyboard_pattern_key {

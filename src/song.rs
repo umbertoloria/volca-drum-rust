@@ -2,6 +2,7 @@ use crate::yaml_song_reader::{YamlSong, YamlSongSection};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
+#[derive(Clone)]
 pub struct Song {
     pub details: SongDetails,
     pub tempo: SongTempo,
@@ -28,10 +29,12 @@ impl Song {
     }
 }
 
+#[derive(Clone)]
 pub struct SongDetails {
     pub author: String,
     pub title: String,
 }
+#[derive(Clone)]
 pub struct SongTempo {
     pub bpm: usize,
     // Assuming bpm ticks to 1/4.
@@ -39,6 +42,7 @@ pub struct SongTempo {
 }
 
 // Song Section
+#[derive(Clone)]
 pub struct SongSection {
     pub kind: SongSectionKind,
     pub bars: usize,
@@ -46,6 +50,7 @@ pub struct SongSection {
     pub keyboard_pattern_key: Option<String>,
     pub notes: Option<String>,
 }
+#[derive(Clone)]
 pub enum SongSectionKind {
     Intro,
     Verse,

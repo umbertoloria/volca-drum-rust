@@ -3,12 +3,14 @@ use crate::song::{DrumPattern, Song, SongSection};
 use crate::volca_drum::VolcaDrum;
 
 pub struct Drummer {
+    song: Option<Song>,
     pattern: Option<DrumPattern>,
     volca_drum: VolcaDrum,
 }
 impl Drummer {
     pub fn new(volca_drum: VolcaDrum) -> Self {
         Self {
+            song: None,
             pattern: None,
             volca_drum,
         }
@@ -24,6 +26,10 @@ impl PlayerObserver for Drummer {
         } else {
             "no drums".to_string()
         }
+    }
+    fn teach_song(&mut self, song: Song) {
+        let song = song.clone();
+        self.song = Some(song);
     }
     fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
         self.pattern = match &section.drum_pattern_key {
