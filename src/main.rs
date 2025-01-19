@@ -2,7 +2,7 @@ use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
-use crate::player::Player;
+use crate::player::{Player, PlayerObserver};
 use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
@@ -53,9 +53,12 @@ fn main() {
     } {}*/
 
     // SONG
+    let mut instruments: Vec<Box<dyn PlayerObserver>> = Vec::new();
     let drummer = Drummer::new(volca_drum);
+    instruments.push(Box::new(drummer));
     let keyboard = Keyboard::new(volca_keys);
-    let mut player = Player::new(true, drummer, keyboard);
+    instruments.push(Box::new(keyboard));
+    let mut player = Player::new(true, instruments);
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
     // let song1 = convert_yaml_into_song(song1_yaml);
     let song1 = get_dummy_song();

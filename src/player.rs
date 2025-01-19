@@ -1,6 +1,4 @@
 use crate::cli::clear_terminal_screen;
-use crate::drummer::Drummer;
-use crate::keyboard::Keyboard;
 use crate::song::{Song, SongSection, SongTempo};
 use std::thread::sleep;
 use std::time::Duration;
@@ -21,13 +19,10 @@ pub trait PlayerObserver {
 pub struct Player {
     enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
-
-    // Musicians
-    drummer: Drummer,
-    keyboard: Keyboard,
+    instruments: Vec<Box<dyn PlayerObserver>>,
 }
 impl Player {
-    pub fn new(enable_interactive_cli: bool, drummer: Drummer, keyboard: Keyboard) -> Self {
+    pub fn new(enable_interactive_cli: bool, instruments: Vec<Box<dyn PlayerObserver>>) -> Self {
         Self {
             enable_interactive_cli,
             tempo_snapshot: TempoSnapshot {
@@ -38,8 +33,7 @@ impl Player {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
-            drummer,
-            keyboard,
+            instruments,
         }
     }
 
@@ -53,8 +47,9 @@ impl Player {
             self.starts_new_section_with_many_bars(section.bars);
 
             // Instruments
-            self.drummer.set_pattern_from_song_section(&song, &section);
-            self.keyboard.set_pattern_from_song_section(&song, &section);
+            for instrument in &mut self.instruments {
+                instrument.set_pattern_from_song_section(&song, &section);
+            }
 
             // Play section
             for _ in 0..section.bars {
@@ -81,8 +76,9 @@ impl Player {
         let tempo_snapshot = &self.tempo_snapshot;
 
         // Play music
-        self.drummer.play_1_16th(tempo_snapshot);
-        self.keyboard.play_1_16th(tempo_snapshot);
+        for instrument in &mut self.instruments {
+            instrument.play_1_16th(tempo_snapshot);
+        }
 
         if self.enable_interactive_cli {
             // + Interactive screen
@@ -91,8 +87,8 @@ impl Player {
             println!("  .:[ {} ]:.", section.kind);
 
             println!("  Now: {}", tempo_snapshot.string_info());
-            println!("  Drummer: {}", self.drummer.get_short_info());
-            println!("  Keyboard: {}", self.keyboard.get_short_info());
+            // println!("  Drummer: {}", self.drummer.get_short_info());
+            // println!("  Keyboard: {}", self.keyboard.get_short_info());
 
             let tot_bars_in_section = tempo_snapshot.get_tot_bars_in_section();
             let tot_1_16ths_in_section = tempo_snapshot.get_tot_1_16ths_in_section();
