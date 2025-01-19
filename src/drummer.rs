@@ -1,5 +1,5 @@
 use crate::player::{PlayerObserver, TempoSnapshot};
-use crate::song::DrumPattern;
+use crate::song::{DrumPattern, Song, SongSection};
 use crate::volca_drum::VolcaDrum;
 
 pub struct Drummer {
@@ -14,8 +14,17 @@ impl Drummer {
         }
     }
 
-    pub fn set_pattern(&mut self, pattern: Option<DrumPattern>) {
-        self.pattern = pattern;
+    pub fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
+        self.pattern = match &section.drum_pattern_key {
+            Some(drum_pattern_key) => {
+                // TODO: Avoid cloning pattern key
+                let drum_pattern = song
+                    .get_drum_pattern_clone_from_key(drum_pattern_key.into())
+                    .expect("Unable to find right Drum Pattern");
+                Some(drum_pattern)
+            }
+            None => None,
+        };
     }
 }
 impl PlayerObserver for Drummer {

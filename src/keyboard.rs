@@ -1,5 +1,5 @@
 use crate::player::{PlayerObserver, TempoSnapshot};
-use crate::song::KeyboardPattern;
+use crate::song::{KeyboardPattern, Song, SongSection};
 use crate::volca_keys::VolcaKeys;
 
 pub struct Keyboard {
@@ -16,8 +16,17 @@ impl Keyboard {
         }
     }
 
-    pub fn set_pattern(&mut self, pattern: Option<KeyboardPattern>) {
-        self.pattern = pattern;
+    pub fn set_pattern_from_song_section(&mut self, song: &Song, section: &SongSection) {
+        self.pattern = match &section.keyboard_pattern_key {
+            Some(keyboard_pattern_key) => {
+                // TODO: Avoid cloning pattern key
+                let keyboard_pattern = song
+                    .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
+                    .expect("Unable to find right Keyboard Pattern");
+                Some(keyboard_pattern)
+            }
+            None => None,
+        };
     }
 
     pub fn play_notes(&mut self, notes: Vec<String>) {

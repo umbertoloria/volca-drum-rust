@@ -51,31 +51,9 @@ impl Player {
             }
             self.starts_new_section_with_many_bars(section.bars);
 
-            // Drum Pattern
-            let drum_pattern_for_section = match &section.drum_pattern_key {
-                Some(drum_pattern_key) => {
-                    // TODO: Avoid cloning pattern key
-                    let drum_pattern = song
-                        .get_drum_pattern_clone_from_key(drum_pattern_key.into())
-                        .expect("Unable to find right Drum Pattern");
-                    Some(drum_pattern)
-                }
-                None => None,
-            };
-            self.drummer.set_pattern(drum_pattern_for_section);
-
-            // Keyboard Pattern
-            let keyboard_pattern_for_section = match &section.keyboard_pattern_key {
-                Some(keyboard_pattern_key) => {
-                    // TODO: Avoid cloning pattern key
-                    let keyboard_pattern = song
-                        .get_keyboard_pattern_clone_from_key(keyboard_pattern_key.into())
-                        .expect("Unable to find right Keyboard Pattern");
-                    Some(keyboard_pattern)
-                }
-                None => None,
-            };
-            self.keyboard.set_pattern(keyboard_pattern_for_section);
+            // Instruments
+            self.drummer.set_pattern_from_song_section(&song, &section);
+            self.keyboard.set_pattern_from_song_section(&song, &section);
 
             // Play section
             for _ in 0..section.bars {
