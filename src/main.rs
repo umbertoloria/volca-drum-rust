@@ -1,15 +1,16 @@
+use crate::composer::{Composer, TonalityMode, TonalityNote};
 use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::MidiDeviceConcrete;
 use crate::player::{Player, PlayerObserver};
-use crate::song::get_dummy_song;
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
 use crate::volca_keys::VolcaKeys;
 use crate::yaml_patch_reader::read_patch_from_yaml;
 
 mod cli;
+mod composer;
 mod drummer;
 mod input;
 mod keyboard;
@@ -31,7 +32,15 @@ fn main() {
     // SONG
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
     // let song1 = convert_yaml_into_song(song1_yaml);
-    let song1 = get_dummy_song();
+    // let song1 = get_dummy_song();
+    let composer = Composer {
+        bpm: 50,
+        num_sections: 10,
+        click: true,
+        tonality_note: TonalityNote::C,
+        tonality_mode: TonalityMode::Major,
+    };
+    let song1 = composer.compose_new_song();
 
     // INSTRUMENTS
     let mut instruments: Vec<Box<dyn PlayerObserver>> = Vec::new();
