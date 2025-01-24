@@ -32,6 +32,7 @@ pub enum TonalityMode {
 impl Composer {
     pub fn compose_new_song(&self) -> Song {
         Song {
+            id: "composed-song".into(),
             details: SongDetails {
                 author: "Smart composer".into(),
                 title: "Smart song".into(),

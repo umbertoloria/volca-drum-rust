@@ -4,6 +4,7 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Clone)]
 pub struct Song {
+    pub id: String,
     pub details: SongDetails,
     pub tempo: SongTempo,
     pub drum_patterns: HashMap<String, DrumPattern>,
@@ -119,6 +120,7 @@ pub struct KeyboardPatternChord {
 // Songs
 pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
     Song {
+        id: "from-yaml".into(),
         details: SongDetails {
             title: yaml_song.title,
             author: yaml_song.author,
@@ -146,6 +148,7 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
 }
 pub fn get_dummy_song() -> Song {
     Song {
+        id: "dummy-song".into(),
         details: SongDetails {
             author: "Author 1".into(),
             title: "Title 1".into(),

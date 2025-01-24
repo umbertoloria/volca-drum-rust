@@ -1,6 +1,7 @@
 use crate::player::{PlayerObserver, TempoSnapshot};
 use crate::song::{DrumPattern, Song};
 use crate::volca_drum::VolcaDrum;
+use std::process::exit;
 
 pub struct Drummer {
     // Song
@@ -53,8 +54,11 @@ impl PlayerObserver for Drummer {
             "no drums".to_string()
         }
     }
-    fn teach_song(&mut self, song: Song) {
-        self.song = song;
+    fn teach_song(&mut self, song_id: String) {
+        if self.song.id != song_id {
+            println!("Drummer doesn't know the song");
+            exit(0x0100);
+        }
         // Start from beginning.
         self.curr_section_index = 0;
         self.update_pattern_from_song_section();

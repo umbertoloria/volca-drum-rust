@@ -10,13 +10,6 @@ pub const DUR_1_16: Duration = Duration::from_millis(250);
 pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
-pub trait PlayerObserver {
-    fn get_instrument_name(&self) -> String;
-    fn get_short_info(&self) -> String;
-    fn teach_song(&mut self, song: Song);
-    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
-}
-
 pub struct Player {
     enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
@@ -43,7 +36,8 @@ impl Player {
             return Err("Song has no sections".into());
         }
 
-        self.player_communicator.teach_songs(&song);
+        let song_id: String = (&song.id).into();
+        self.player_communicator.teach_songs(song_id);
 
         for section in &song.sections {
             // Beginning of a new section.
@@ -187,16 +181,20 @@ impl TempoSnapshot {
 }
 
 // Player Communicator
+pub trait PlayerObserver {
+    fn get_instrument_name(&self) -> String;
+    fn get_short_info(&self) -> String;
+    fn teach_song(&mut self, song_id: String);
+    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
+}
 pub struct PlayerCommunicator {
     pub instruments: Vec<Box<dyn PlayerObserver>>,
 }
 impl PlayerCommunicator {
-    pub fn teach_songs(&mut self, song: &Song) {
+    pub fn teach_songs(&mut self, song_id: String) {
         // Teach song to all instruments
         for instrument in &mut self.instruments {
-            // TODO: Sure copying is the only way?
-            let cloned_song = song.clone();
-            instrument.teach_song(cloned_song);
+            instrument.teach_song(song_id.clone());
         }
     }
     pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
