@@ -3,12 +3,14 @@ use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::MidiDeviceConcrete;
-use crate::player::{Player, PlayerCommunicator, PlayerCommunicatorEnumCommand, PlayerObserver};
+use crate::player::{
+    create_communication_channel_for_instrument, Player, PlayerCommunicator,
+    PlayerCommunicatorEnumCommand, PlayerObserver,
+};
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
 use crate::volca_keys::VolcaKeys;
 use crate::yaml_patch_reader::read_patch_from_yaml;
-use std::sync::mpsc;
 use std::thread;
 
 mod cli;
@@ -63,7 +65,7 @@ fn main() {
     instruments.push(Box::new(drummer));
 
     // Keyboard
-    let (tx, rx) = mpsc::channel::<PlayerCommunicatorEnumCommand>();
+    let (tx_keyboard, rx_keyboard) = create_communication_channel_for_instrument();
     let keyboard_thread = thread::spawn(move || {
         // MIDI CONTROLLERS
         let midi_controller_2 = init_midi_controller(Some(0)).unwrap();
@@ -72,7 +74,7 @@ fn main() {
         let midi_device_2 = MidiDeviceConcrete::new(midi_controller_2.connect_and_get());
         let volca_keys = VolcaKeys::new(midi_device_2);
         let mut keyboard = Keyboard::new(clone_song1.clone(), volca_keys);
-        for received in rx {
+        for received in rx_keyboard {
             match received {
                 PlayerCommunicatorEnumCommand::TeachSong(song_id) => {
                     keyboard.teach_song(song_id);
@@ -88,8 +90,13 @@ fn main() {
     });
 
     // PLAYER
+    let mut tx_list = Vec::new();
+    tx_list.push(tx_keyboard);
     let enable_interactive_cli = true;
-    let player_communicator = PlayerCommunicator { instruments, tx };
+    let player_communicator = PlayerCommunicator {
+        instruments,
+        tx_list,
+    };
     let mut player = Player::new(enable_interactive_cli, player_communicator);
     player.play_song(song1).unwrap();
 

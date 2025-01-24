@@ -1,6 +1,7 @@
 use crate::cli::clear_terminal_screen;
 use crate::song::{Song, SongSection, SongTempo};
-use std::sync::mpsc::Sender;
+use std::sync::mpsc;
+use std::sync::mpsc::{Receiver, Sender};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -193,7 +194,7 @@ pub trait PlayerObserver {
 }
 pub struct PlayerCommunicator {
     pub instruments: Vec<Box<dyn PlayerObserver>>,
-    pub tx: Sender<PlayerCommunicatorEnumCommand>,
+    pub tx_list: Vec<Sender<PlayerCommunicatorEnumCommand>>,
 }
 impl PlayerCommunicator {
     pub fn teach_songs(&mut self, song_id: String) {
@@ -201,25 +202,27 @@ impl PlayerCommunicator {
         for instrument in &mut self.instruments {
             instrument.teach_song(song_id.clone());
         }
-        self.tx
-            .send(PlayerCommunicatorEnumCommand::TeachSong(song_id))
-            .unwrap();
+        for tx in &self.tx_list {
+            tx.send(PlayerCommunicatorEnumCommand::TeachSong(song_id.clone()))
+                .unwrap();
+        }
     }
     pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         for instrument in &mut self.instruments {
             instrument.play_1_16th(tempo_snapshot);
         }
-        let cloned_tempo_snapshot = tempo_snapshot.clone();
-        self.tx
-            .send(PlayerCommunicatorEnumCommand::PlayHit(
+        for tx in &self.tx_list {
+            let cloned_tempo_snapshot = tempo_snapshot.clone();
+            tx.send(PlayerCommunicatorEnumCommand::PlayHit(
                 cloned_tempo_snapshot,
             ))
             .unwrap();
+        }
     }
     pub fn shutdown(&self) {
-        self.tx
-            .send(PlayerCommunicatorEnumCommand::Shutdown)
-            .unwrap();
+        for tx in &self.tx_list {
+            tx.send(PlayerCommunicatorEnumCommand::Shutdown).unwrap();
+        }
     }
 }
 
@@ -228,4 +231,10 @@ pub enum PlayerCommunicatorEnumCommand {
     TeachSong(String),
     PlayHit(TempoSnapshot),
     Shutdown,
+}
+pub fn create_communication_channel_for_instrument() -> (
+    Sender<PlayerCommunicatorEnumCommand>,
+    Receiver<PlayerCommunicatorEnumCommand>,
+) {
+    mpsc::channel::<PlayerCommunicatorEnumCommand>()
 }
