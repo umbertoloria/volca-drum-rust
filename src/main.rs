@@ -3,7 +3,7 @@ use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::MidiDeviceConcrete;
-use crate::player::{Player, PlayerObserver};
+use crate::player::{Player, PlayerCommunicator, PlayerObserver};
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
 use crate::volca_keys::VolcaKeys;
@@ -67,6 +67,7 @@ fn main() {
 
     // PLAYER
     let enable_interactive_cli = true;
-    let mut player = Player::new(enable_interactive_cli, instruments);
+    let player_communicator = PlayerCommunicator { instruments };
+    let mut player = Player::new(enable_interactive_cli, player_communicator);
     player.play_song(song1).unwrap();
 }

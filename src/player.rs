@@ -20,10 +20,10 @@ pub trait PlayerObserver {
 pub struct Player {
     enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
-    instruments: Vec<Box<dyn PlayerObserver>>,
+    player_communicator: PlayerCommunicator,
 }
 impl Player {
-    pub fn new(enable_interactive_cli: bool, instruments: Vec<Box<dyn PlayerObserver>>) -> Self {
+    pub fn new(enable_interactive_cli: bool, player_communicator: PlayerCommunicator) -> Self {
         Self {
             enable_interactive_cli,
             tempo_snapshot: TempoSnapshot {
@@ -34,7 +34,7 @@ impl Player {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
-            instruments,
+            player_communicator,
         }
     }
 
@@ -43,12 +43,7 @@ impl Player {
             return Err("Song has no sections".into());
         }
 
-        // Teach song to all instruments
-        for instrument in &mut self.instruments {
-            // TODO: Sure copying is the only way?
-            let cloned_song = song.clone();
-            instrument.teach_song(cloned_song);
-        }
+        self.player_communicator.teach_songs(&song);
 
         for section in &song.sections {
             // Beginning of a new section.
@@ -85,9 +80,7 @@ impl Player {
         let tempo_snapshot = &self.tempo_snapshot;
 
         // Play music
-        for instrument in &mut self.instruments {
-            instrument.play_1_16th(tempo_snapshot);
-        }
+        self.player_communicator.play_1_16th(tempo_snapshot);
 
         // Interactive CLI
         if self.enable_interactive_cli {
@@ -96,11 +89,12 @@ impl Player {
             println!("  .:[ {} ]:.", section.kind);
 
             println!("  Now: {}", tempo_snapshot.string_info());
-            for instrument in &mut self.instruments {
+            // TODO: Print info about what all instruments are playing...
+            /*for instrument in &mut self.instruments {
                 let instrument_name = instrument.get_instrument_name();
                 let short_info = instrument.get_short_info();
                 println!("  {}: {}", instrument_name, short_info);
-            }
+            }*/
 
             let tot_bars_in_section = tempo_snapshot.get_tot_bars_in_section();
             let tot_1_16ths_in_section = tempo_snapshot.get_tot_1_16ths_in_section();
@@ -189,5 +183,25 @@ impl TempoSnapshot {
             self.cur_bar
         )
         .into()
+    }
+}
+
+// Player Communicator
+pub struct PlayerCommunicator {
+    pub instruments: Vec<Box<dyn PlayerObserver>>,
+}
+impl PlayerCommunicator {
+    pub fn teach_songs(&mut self, song: &Song) {
+        // Teach song to all instruments
+        for instrument in &mut self.instruments {
+            // TODO: Sure copying is the only way?
+            let cloned_song = song.clone();
+            instrument.teach_song(cloned_song);
+        }
+    }
+    pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
+        for instrument in &mut self.instruments {
+            instrument.play_1_16th(tempo_snapshot);
+        }
     }
 }
