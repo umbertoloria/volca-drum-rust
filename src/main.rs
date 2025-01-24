@@ -23,6 +23,7 @@ mod midi_device;
 mod player;
 mod song;
 mod sound_panel;
+mod timing;
 mod volca_drum;
 mod volca_keys;
 mod yaml_patch_reader;

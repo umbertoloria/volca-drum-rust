@@ -1,7 +1,7 @@
 use crate::cli::clear_terminal_screen;
 use crate::instr_comm::InstrComm;
-use crate::song::{Song, SongSection, SongTempo};
-use std::thread::sleep;
+use crate::song::{Song, SongSection};
+use crate::timing::{get_moments_vec_from_song_start, get_now_millis, wait_around_bpm};
 use std::time::Duration;
 
 // Durations
@@ -40,6 +40,11 @@ impl Player {
         let song_id: String = (&song.id).into();
         self.instr_comm.teach_songs(song_id);
 
+        // The song starts *NOW*!
+        let moments_vec = get_moments_vec_from_song_start(&song, get_now_millis());
+        let mut moments_iter = moments_vec.iter();
+        moments_iter.next().unwrap(); // Assuming there is at least one millis.
+
         for section in &song.sections {
             // Beginning of a new section.
 
@@ -55,8 +60,11 @@ impl Player {
                     // Beginning of a quarter.
                     for _ in 0..4 {
                         // Beginning of a 1/16th.
-                        self.play_1_16th_now(section, &song.tempo);
+                        self.play_1_16th_now(section);
                         self.next_1_16th();
+
+                        // Waiting for BPM sync
+                        wait_around_bpm(&mut moments_iter);
                     }
                 }
             }
@@ -73,7 +81,7 @@ impl Player {
             self.tempo_snapshot.section_bar_first + bars_count - 1;
     }
 
-    pub fn play_1_16th_now(&mut self, section: &SongSection, song_tempo: &SongTempo) {
+    pub fn play_1_16th_now(&mut self, section: &SongSection) {
         let tempo_snapshot = &self.tempo_snapshot;
 
         // Play music
@@ -110,11 +118,6 @@ impl Player {
                 " ".repeat(tot_1_16ths_in_section - cur_1_16ths_in_section - 1)
             );
         }
-
-        // Wait time
-        let millis_1_16th = DUR_1_16.mul_f64(BPM_DEFAULT).div_f64(song_tempo.bpm as f64);
-        sleep(millis_1_16th);
-        // TODO: Metronome is not really precise due to processing slow-down
     }
 
     pub fn next_1_16th(&mut self) {
