@@ -193,24 +193,16 @@ pub trait PlayerObserver {
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
 }
 pub struct PlayerCommunicator {
-    pub instruments: Vec<Box<dyn PlayerObserver>>,
     pub tx_list: Vec<Sender<PlayerCommunicatorEnumCommand>>,
 }
 impl PlayerCommunicator {
     pub fn teach_songs(&mut self, song_id: String) {
-        // Teach song to all instruments
-        for instrument in &mut self.instruments {
-            instrument.teach_song(song_id.clone());
-        }
         for tx in &self.tx_list {
             tx.send(PlayerCommunicatorEnumCommand::TeachSong(song_id.clone()))
                 .unwrap();
         }
     }
     pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
-        for instrument in &mut self.instruments {
-            instrument.play_1_16th(tempo_snapshot);
-        }
         for tx in &self.tx_list {
             let cloned_tempo_snapshot = tempo_snapshot.clone();
             tx.send(PlayerCommunicatorEnumCommand::PlayHit(
