@@ -230,3 +230,21 @@ pub fn create_communication_channel_for_instrument() -> (
 ) {
     mpsc::channel::<PlayerCommunicatorEnumCommand>()
 }
+pub fn start_listening_to_communicator_enum_commands(
+    rx_keyboard: Receiver<PlayerCommunicatorEnumCommand>,
+    instrument: &mut impl PlayerObserver,
+) {
+    for received in rx_keyboard {
+        match received {
+            PlayerCommunicatorEnumCommand::TeachSong(song_id) => {
+                instrument.teach_song(song_id);
+            }
+            PlayerCommunicatorEnumCommand::PlayHit(tempo_signature) => {
+                instrument.play_1_16th(&tempo_signature);
+            }
+            PlayerCommunicatorEnumCommand::Shutdown => {
+                break;
+            }
+        }
+    }
+}
