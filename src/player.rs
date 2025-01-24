@@ -1,7 +1,6 @@
 use crate::cli::clear_terminal_screen;
+use crate::instr_comm::InstrComm;
 use crate::song::{Song, SongSection, SongTempo};
-use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender};
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -15,10 +14,10 @@ pub const BPM_DEFAULT: f64 = 60.0;
 pub struct Player {
     enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
-    player_communicator: PlayerCommunicator,
+    instr_comm: InstrComm,
 }
 impl Player {
-    pub fn new(enable_interactive_cli: bool, player_communicator: PlayerCommunicator) -> Self {
+    pub fn new(enable_interactive_cli: bool, instr_comm: InstrComm) -> Self {
         Self {
             enable_interactive_cli,
             tempo_snapshot: TempoSnapshot {
@@ -29,7 +28,7 @@ impl Player {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
-            player_communicator,
+            instr_comm,
         }
     }
 
@@ -39,7 +38,7 @@ impl Player {
         }
 
         let song_id: String = (&song.id).into();
-        self.player_communicator.teach_songs(song_id);
+        self.instr_comm.teach_songs(song_id);
 
         for section in &song.sections {
             // Beginning of a new section.
@@ -63,7 +62,7 @@ impl Player {
             }
         }
 
-        self.player_communicator.shutdown();
+        self.instr_comm.shutdown();
 
         Ok(())
     }
@@ -78,7 +77,7 @@ impl Player {
         let tempo_snapshot = &self.tempo_snapshot;
 
         // Play music
-        self.player_communicator.play_1_16th(tempo_snapshot);
+        self.instr_comm.play_1_16th(tempo_snapshot);
 
         // Interactive CLI
         if self.enable_interactive_cli {
@@ -182,69 +181,5 @@ impl TempoSnapshot {
             self.cur_bar
         )
         .into()
-    }
-}
-
-// Player Communicator
-pub trait PlayerObserver {
-    fn get_instrument_name(&self) -> String;
-    fn get_short_info(&self) -> String;
-    fn teach_song(&mut self, song_id: String);
-    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
-}
-pub struct PlayerCommunicator {
-    pub tx_list: Vec<Sender<PlayerCommunicatorEnumCommand>>,
-}
-impl PlayerCommunicator {
-    pub fn teach_songs(&mut self, song_id: String) {
-        for tx in &self.tx_list {
-            tx.send(PlayerCommunicatorEnumCommand::TeachSong(song_id.clone()))
-                .unwrap();
-        }
-    }
-    pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
-        for tx in &self.tx_list {
-            let cloned_tempo_snapshot = tempo_snapshot.clone();
-            tx.send(PlayerCommunicatorEnumCommand::PlayHit(
-                cloned_tempo_snapshot,
-            ))
-            .unwrap();
-        }
-    }
-    pub fn shutdown(&self) {
-        for tx in &self.tx_list {
-            tx.send(PlayerCommunicatorEnumCommand::Shutdown).unwrap();
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum PlayerCommunicatorEnumCommand {
-    TeachSong(String),
-    PlayHit(TempoSnapshot),
-    Shutdown,
-}
-pub fn create_communication_channel_for_instrument() -> (
-    Sender<PlayerCommunicatorEnumCommand>,
-    Receiver<PlayerCommunicatorEnumCommand>,
-) {
-    mpsc::channel::<PlayerCommunicatorEnumCommand>()
-}
-pub fn start_listening_to_communicator_enum_commands(
-    rx_keyboard: Receiver<PlayerCommunicatorEnumCommand>,
-    instrument: &mut impl PlayerObserver,
-) {
-    for received in rx_keyboard {
-        match received {
-            PlayerCommunicatorEnumCommand::TeachSong(song_id) => {
-                instrument.teach_song(song_id);
-            }
-            PlayerCommunicatorEnumCommand::PlayHit(tempo_signature) => {
-                instrument.play_1_16th(&tempo_signature);
-            }
-            PlayerCommunicatorEnumCommand::Shutdown => {
-                break;
-            }
-        }
     }
 }

@@ -1,4 +1,5 @@
-use crate::player::{PlayerObserver, TempoSnapshot};
+use crate::instrument::Instrument;
+use crate::player::TempoSnapshot;
 use crate::song::{KeyboardPattern, Song};
 use crate::volca_keys::VolcaKeys;
 use std::process::exit;
@@ -50,7 +51,7 @@ impl Keyboard {
         }
     }
 }
-impl PlayerObserver for Keyboard {
+impl Instrument for Keyboard {
     fn get_instrument_name(&self) -> String {
         "Keyboard".into()
     }

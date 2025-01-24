@@ -1,4 +1,5 @@
-use crate::player::{PlayerObserver, TempoSnapshot};
+use crate::instrument::Instrument;
+use crate::player::TempoSnapshot;
 use crate::song::{DrumPattern, Song};
 use crate::volca_drum::VolcaDrum;
 use std::process::exit;
@@ -43,7 +44,7 @@ impl Drummer {
         }
     }
 }
-impl PlayerObserver for Drummer {
+impl Instrument for Drummer {
     fn get_instrument_name(&self) -> String {
         "Drummer".into()
     }

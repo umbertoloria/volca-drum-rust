@@ -1,12 +1,10 @@
 use crate::composer::{Composer, TonalityMode, TonalityNote};
 use crate::drummer::Drummer;
+use crate::instr_comm::{create_instr_comm, start_listening_to_instr_comm_commands, InstrComm};
 use crate::keyboard::Keyboard;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::MidiDeviceConcrete;
-use crate::player::{
-    create_communication_channel_for_instrument, start_listening_to_communicator_enum_commands,
-    Player, PlayerCommunicator, PlayerObserver,
-};
+use crate::player::Player;
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
 use crate::volca_keys::VolcaKeys;
@@ -17,6 +15,8 @@ mod cli;
 mod composer;
 mod drummer;
 mod input;
+mod instr_comm;
+mod instrument;
 mod keyboard;
 mod midi_controller;
 mod midi_device;
@@ -45,7 +45,7 @@ fn main() {
     // INSTRUMENTS
     // Drummer
     let clone_song_drummer = song1.clone();
-    let (tx_drummer, rx_drummer) = create_communication_channel_for_instrument();
+    let (tx_drummer, rx_drummer) = create_instr_comm();
     let drummer_thread = thread::spawn(move || {
         let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
         let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
@@ -62,12 +62,12 @@ fn main() {
 
         // Instrument
         let mut drummer = Drummer::new(clone_song_drummer, volca_drum);
-        start_listening_to_communicator_enum_commands(rx_drummer, &mut drummer);
+        start_listening_to_instr_comm_commands(rx_drummer, &mut drummer);
     });
 
     // Keyboard
     let clone_song_keyboard = song1.clone();
-    let (tx_keyboard, rx_keyboard) = create_communication_channel_for_instrument();
+    let (tx_keyboard, rx_keyboard) = create_instr_comm();
     let keyboard_thread = thread::spawn(move || {
         let midi_controller_2 = init_midi_controller(Some(0)).unwrap();
         let midi_device_2 = MidiDeviceConcrete::new(midi_controller_2.connect_and_get());
@@ -75,19 +75,19 @@ fn main() {
 
         // Instrument
         let mut keyboard = Keyboard::new(clone_song_keyboard, volca_keys);
-        start_listening_to_communicator_enum_commands(rx_keyboard, &mut keyboard);
+        start_listening_to_instr_comm_commands(rx_keyboard, &mut keyboard);
     });
 
     // PLAYER
     let enable_interactive_cli = true;
-    let player_communicator = PlayerCommunicator {
+    let instr_comm = InstrComm {
         tx_list: vec![
             // List of Instruments Communicators
             tx_drummer,
             tx_keyboard,
         ],
     };
-    let mut player = Player::new(enable_interactive_cli, player_communicator);
+    let mut player = Player::new(enable_interactive_cli, instr_comm);
     player.play_song(song1).unwrap();
 
     // CLOSE THREADS
