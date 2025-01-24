@@ -1,5 +1,6 @@
 use crate::cli::clear_terminal_screen;
 use crate::song::{Song, SongSection, SongTempo};
+use std::sync::mpsc::Sender;
 use std::thread::sleep;
 use std::time::Duration;
 
@@ -60,6 +61,8 @@ impl Player {
                 }
             }
         }
+
+        self.player_communicator.shutdown();
 
         Ok(())
     }
@@ -134,6 +137,7 @@ impl Player {
 }
 
 // Tempo Snapshot
+#[derive(Debug, Clone)]
 pub struct TempoSnapshot {
     pub cur_bar: usize,
     pub cur_quarter: usize,
@@ -189,6 +193,7 @@ pub trait PlayerObserver {
 }
 pub struct PlayerCommunicator {
     pub instruments: Vec<Box<dyn PlayerObserver>>,
+    pub tx: Sender<PlayerCommunicatorEnumCommand>,
 }
 impl PlayerCommunicator {
     pub fn teach_songs(&mut self, song_id: String) {
@@ -196,10 +201,31 @@ impl PlayerCommunicator {
         for instrument in &mut self.instruments {
             instrument.teach_song(song_id.clone());
         }
+        self.tx
+            .send(PlayerCommunicatorEnumCommand::TeachSong(song_id))
+            .unwrap();
     }
     pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         for instrument in &mut self.instruments {
             instrument.play_1_16th(tempo_snapshot);
         }
+        let cloned_tempo_snapshot = tempo_snapshot.clone();
+        self.tx
+            .send(PlayerCommunicatorEnumCommand::PlayHit(
+                cloned_tempo_snapshot,
+            ))
+            .unwrap();
     }
+    pub fn shutdown(&self) {
+        self.tx
+            .send(PlayerCommunicatorEnumCommand::Shutdown)
+            .unwrap();
+    }
+}
+
+#[derive(Debug)]
+pub enum PlayerCommunicatorEnumCommand {
+    TeachSong(String),
+    PlayHit(TempoSnapshot),
+    Shutdown,
 }

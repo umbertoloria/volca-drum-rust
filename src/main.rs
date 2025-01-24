@@ -3,11 +3,13 @@ use crate::drummer::Drummer;
 use crate::keyboard::Keyboard;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::MidiDeviceConcrete;
-use crate::player::{Player, PlayerCommunicator, PlayerObserver};
+use crate::player::{Player, PlayerCommunicator, PlayerCommunicatorEnumCommand, PlayerObserver};
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
 use crate::volca_keys::VolcaKeys;
 use crate::yaml_patch_reader::read_patch_from_yaml;
+use std::sync::mpsc;
+use std::thread;
 
 mod cli;
 mod composer;
@@ -27,7 +29,6 @@ mod yaml_song_reader;
 fn main() {
     // MIDI CONTROLLERS
     let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
-    let midi_controller_2 = init_midi_controller(Some(0)).unwrap();
 
     // SONG
     // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
@@ -41,6 +42,8 @@ fn main() {
         tonality_mode: TonalityMode::Major,
     };
     let song1 = composer.compose_new_song();
+
+    let clone_song1 = song1.clone();
 
     // INSTRUMENTS
     let mut instruments: Vec<Box<dyn PlayerObserver>> = Vec::new();
@@ -60,14 +63,36 @@ fn main() {
     instruments.push(Box::new(drummer));
 
     // Keyboard
-    let midi_device_2 = MidiDeviceConcrete::new(midi_controller_2.connect_and_get());
-    let volca_keys = VolcaKeys::new(midi_device_2);
-    let keyboard = Keyboard::new(song1.clone(), volca_keys);
-    instruments.push(Box::new(keyboard));
+    let (tx, rx) = mpsc::channel::<PlayerCommunicatorEnumCommand>();
+    let keyboard_thread = thread::spawn(move || {
+        // MIDI CONTROLLERS
+        let midi_controller_2 = init_midi_controller(Some(0)).unwrap();
+
+        // INSTRUMENTS
+        let midi_device_2 = MidiDeviceConcrete::new(midi_controller_2.connect_and_get());
+        let volca_keys = VolcaKeys::new(midi_device_2);
+        let mut keyboard = Keyboard::new(clone_song1.clone(), volca_keys);
+        for received in rx {
+            match received {
+                PlayerCommunicatorEnumCommand::TeachSong(song_id) => {
+                    keyboard.teach_song(song_id);
+                }
+                PlayerCommunicatorEnumCommand::PlayHit(tempo_signature) => {
+                    keyboard.play_1_16th(&tempo_signature);
+                }
+                PlayerCommunicatorEnumCommand::Shutdown => {
+                    break;
+                }
+            }
+        }
+    });
 
     // PLAYER
     let enable_interactive_cli = true;
-    let player_communicator = PlayerCommunicator { instruments };
+    let player_communicator = PlayerCommunicator { instruments, tx };
     let mut player = Player::new(enable_interactive_cli, player_communicator);
     player.play_song(song1).unwrap();
+
+    // CLOSE THREADS
+    keyboard_thread.join().unwrap();
 }
