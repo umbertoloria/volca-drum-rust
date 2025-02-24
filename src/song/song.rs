@@ -1,4 +1,4 @@
-use crate::yaml_song_reader::{YamlSong, YamlSongSection};
+use crate::song::yaml_song_reader::{YamlSong, YamlSongSection};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 

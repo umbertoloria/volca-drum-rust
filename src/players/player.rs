@@ -1,7 +1,7 @@
-use crate::instr_comm::InstrComm;
+use crate::instruments::instr_comm::InstrComm;
 use crate::players::cli::clear_terminal_screen;
 use crate::song::song::{Song, SongSection};
-use crate::timing::{get_moments_vec_from_song_start, get_now_millis, wait_around_bpm};
+use crate::utils::timing::{get_moments_vec_from_song_start, get_now_millis, wait_around_bpm};
 use std::time::Duration;
 
 // Durations
