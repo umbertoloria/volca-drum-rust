@@ -2,6 +2,7 @@ use crate::instrument::Instrument;
 use crate::player::TempoSnapshot;
 use crate::song::{KeyboardPattern, Song};
 use crate::volca_keys::VolcaKeys;
+use std::collections::{HashMap, HashSet};
 use std::process::exit;
 
 pub struct Keyboard {
@@ -14,6 +15,7 @@ pub struct Keyboard {
     chord_index: usize,
 
     // Outputs
+    stop_notes_queue: HashMap<usize, HashSet<String>>,
     volca_keys: VolcaKeys,
 }
 impl Keyboard {
@@ -23,6 +25,7 @@ impl Keyboard {
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
+            stop_notes_queue: HashMap::new(),
             volca_keys,
         }
     }
@@ -46,6 +49,8 @@ impl Keyboard {
         }
     }
     fn play_notes_start(&mut self, notes: &Vec<String>) {
+        // println!("play_notes_start {:?}", notes);
+
         for note in notes {
             // TODO: Avoid cloning note
             let note_clone = note.clone();
@@ -54,11 +59,42 @@ impl Keyboard {
         }
     }
     fn play_notes_stop(&mut self, notes: &Vec<String>) {
+        // println!("play_notes_stop {:?}", notes);
+
         for note in notes {
             // TODO: Avoid cloning note
             let note_clone = note.clone();
 
             self.volca_keys.note_play_stop(note_clone);
+        }
+    }
+    fn add_notes_to_stop_notes_queue(&mut self, notes: &Vec<String>, index_1_16th: usize) {
+        // Param "index_1_16th" starts from 1.
+        if let Some(queued_notes_to_stop) = self.stop_notes_queue.get_mut(&index_1_16th) {
+            for note in notes {
+                // TODO: Avoid cloning note
+                let note_clone = note.clone();
+                queued_notes_to_stop.insert(note_clone);
+            }
+        } else {
+            let mut queued_notes_to_stop = HashSet::new();
+            for note in notes {
+                // TODO: Avoid cloning note
+                let note_clone = note.clone();
+                queued_notes_to_stop.insert(note_clone);
+            }
+            self.stop_notes_queue
+                .insert(index_1_16th, queued_notes_to_stop);
+        }
+    }
+    fn dequeue_notes_at_this_1_16th_from_stop_notes_queue(&mut self, index_1_16th: usize) {
+        // Param "index_1_16th" starts from 1.
+        if let Some(queued_notes_to_stop) = self.stop_notes_queue.remove(&index_1_16th) {
+            let mut notes_to_stop = Vec::new();
+            for note in queued_notes_to_stop {
+                notes_to_stop.push(note);
+            }
+            self.play_notes_stop(&notes_to_stop);
         }
     }
 }
@@ -85,9 +121,11 @@ impl Instrument for Keyboard {
         self.update_pattern_from_song_section();
     }
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
+        let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
+        self.dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
+
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
-            let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
             // Adjusting because we may have 4 bars patter onto 8 bars section.
             let index_1_16th_for_pattern = (index_1_16th - 1) % (bars_covered_by_pattern * 16) + 1;
 
@@ -108,11 +146,24 @@ impl Instrument for Keyboard {
                 let pattern = self.pattern.clone().unwrap();
                 let chord = &pattern.chords[self.chord_index];
 
+                /*
+                println!("play_1_16th:");
+                println!(" > index_1_16th_for_pattern={index_1_16th_for_pattern}");
+                println!(
+                    " > 1/16ths [{}, {}]",
+                    chord.from_1_16th_incl, chord.to_1_16th_incl
+                );
+                println!(" > chord notes={:?}", chord.notes);
+                */
+
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
                     self.play_notes_start(&chord.notes);
                 } else if index_1_16th_for_pattern == chord.to_1_16th_incl {
-                    // FIXME: Chord notes should not stop now, but at the *END* of this 1/16th
-                    self.play_notes_stop(&chord.notes);
+                    // Here we check if this Chord's Notes should end on the *next* of this 1/16th
+                    // (so after current 1/16th) using variable "index_1_16th_for_pattern".
+                    // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
+                    // absolute 1/16ths Indexes.
+                    self.add_notes_to_stop_notes_queue(&chord.notes.clone(), index_1_16th + 1);
                 } else {
                     // Notes are still playing.
                 }
