@@ -1,6 +1,6 @@
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::instrument::Instrument;
-use crate::player::TempoSnapshot;
+use crate::players::player::TempoSnapshot;
 use crate::song::song::{KeyboardPattern, Song};
 use std::collections::{HashMap, HashSet};
 use std::process::exit;

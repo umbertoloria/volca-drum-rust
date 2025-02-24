@@ -1,4 +1,4 @@
-use crate::player::TempoSnapshot;
+use crate::players::player::TempoSnapshot;
 
 pub trait Instrument {
     fn get_instrument_name(&self) -> String;

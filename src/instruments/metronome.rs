@@ -1,5 +1,5 @@
 use crate::instruments::instrument::Instrument;
-use crate::player::TempoSnapshot;
+use crate::players::player::TempoSnapshot;
 use crate::song::song::Song;
 use crate::VolcaKeys;
 use std::process::exit;

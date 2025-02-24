@@ -1,8 +1,8 @@
-use crate::player::{BPM_DEFAULT, DUR_1_16};
+use crate::players::player::{BPM_DEFAULT, DUR_1_16};
+use crate::song::song::Song;
 use std::slice::Iter;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use crate::song::song::Song;
 
 pub fn get_moments_vec_from_song_start(song: &Song, first_moment_millis: u128) -> Vec<u128> {
     // Assuming no BPM change during the song.
