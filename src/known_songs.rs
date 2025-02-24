@@ -15,16 +15,39 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             bpm: 68,
             time_signature: (4, 4),
         },
-        drum_patterns: HashMap::from([(
-            "A".into(),
-            DrumPattern {
-                key: "A".into(),
-                num_1_4: 4,
-                hh: "x x x x x x x x ".into(),
-                sn: "    x       x   ".into(),
-                kk: "x  x  x  xx   x ".into(),
-            },
-        )]),
+        drum_patterns: HashMap::from([
+            (
+                "A".into(),
+                DrumPattern {
+                    key: "A".into(),
+                    num_1_4: 4,
+                    hh: "x x x x x x x x ".into(),
+                    sn: "    x       x   ".into(),
+                    kk: "x  x  x  xx   x ".into(),
+                },
+            ),
+            (
+                "B".into(),
+                DrumPattern {
+                    key: "B".into(),
+                    num_1_4: 4,
+                    // Should be on Ride and with Accents on every 1/4ths.
+                    hh: "x x x x x x x x ".into(),
+                    sn: "    x       x   ".into(),
+                    kk: "x  x  x  xx   x ".into(),
+                },
+            ),
+            (
+                "C".into(),
+                DrumPattern {
+                    key: "C".into(),
+                    num_1_4: 2,
+                    hh: "x x x x x x x x ".into(),
+                    sn: "                ".into(),
+                    kk: "                ".into(),
+                },
+            ),
+        ]),
         keyboard_patterns: HashMap::from([(
             "A".into(),
             KeyboardPattern {
@@ -82,15 +105,128 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 .into(),
             },
         )]),
-        sections: [SongSection {
-            kind: SongSectionKind::Intro,
-            bars: 4,
-            time_signature: (4, 4),
-            num_1_16s_in_a_quarter: 4,
-            drum_pattern_key: None,
-            keyboard_pattern_key: Some("A".into()),
-            notes: None,
-        }]
+        sections: [
+            // Intro 3+1*, no drums + *fill
+            SongSection {
+                kind: SongSectionKind::Intro,
+                bars: 3 + 1,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Verse 4+2
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4 + 2,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Chorus 4+4*, *strong
+            SongSection {
+                kind: SongSectionKind::Chorus,
+                bars: 4 + 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: Some("B".into()),
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Post-chorus 2
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 2,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: Some("C".into()),
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Verse 4+2
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4 + 2,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: Some("A".into()),
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Chorus 4+4*, *strong
+            SongSection {
+                kind: SongSectionKind::Chorus,
+                bars: 4 + 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: Some("B".into()),
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Verse 4, no drums
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None, // Avoid having no drums at all!
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Verse 4, "Distant Drums"
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None, // Have "Distant Drums"!
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Verse 4
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: Some("C".into()),
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Verse 4, no drums
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None, // Avoid having no drums at all!
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Chorus 8
+            SongSection {
+                kind: SongSectionKind::Chorus,
+                bars: 8,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: Some("B".into()),
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Outro 2, no drums
+            SongSection {
+                kind: SongSectionKind::Outro,
+                bars: 2,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None, // Avoid having no drums at all!
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+        ]
         .into(),
     }
 }
