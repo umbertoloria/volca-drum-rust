@@ -20,10 +20,10 @@ impl Keyboard {
     pub fn new(song: Song, volca_keys: VolcaKeys) -> Self {
         Self {
             song,
+            curr_section_index: 0,
             pattern: None,
             chord_index: 0,
             volca_keys,
-            curr_section_index: 0,
         }
     }
     fn update_pattern_from_song_section(&mut self) {
@@ -45,9 +45,20 @@ impl Keyboard {
             self.pattern = None;
         }
     }
-    pub fn play_notes(&mut self, notes: &Vec<String>) {
+    fn play_notes_start(&mut self, notes: &Vec<String>) {
         for note in notes {
-            self.volca_keys.note_play_start(note);
+            // TODO: Avoid cloning note
+            let note_clone = note.clone();
+
+            self.volca_keys.note_play_start(note_clone);
+        }
+    }
+    fn play_notes_stop(&mut self, notes: &Vec<String>) {
+        for note in notes {
+            // TODO: Avoid cloning note
+            let note_clone = note.clone();
+
+            self.volca_keys.note_play_stop(note_clone);
         }
     }
 }
@@ -78,9 +89,8 @@ impl Instrument for Keyboard {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
             let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
             // Adjusting because we may have 4 bars patter onto 8 bars section.
-            let index_1_16th_for_pattern = index_1_16th % (bars_covered_by_pattern * 16);
+            let index_1_16th_for_pattern = (index_1_16th - 1) % (bars_covered_by_pattern * 16) + 1;
 
-            // TODO: Avoid cloning pattern
             // TODO: This is slow
             let mut i = 0;
             for chord in &pattern.chords {
@@ -94,9 +104,18 @@ impl Instrument for Keyboard {
             }
 
             if 0 <= self.chord_index && self.chord_index < pattern.chords.len() {
+                // TODO: Avoid cloning pattern
                 let pattern = self.pattern.clone().unwrap();
                 let chord = &pattern.chords[self.chord_index];
-                self.play_notes(&chord.notes);
+
+                if index_1_16th_for_pattern == chord.from_1_16th_incl {
+                    self.play_notes_start(&chord.notes);
+                } else if index_1_16th_for_pattern == chord.to_1_16th_incl {
+                    // FIXME: Chord notes should not stop now, but at the *END* of this 1/16th
+                    self.play_notes_stop(&chord.notes);
+                } else {
+                    // Notes are still playing.
+                }
             }
         }
 

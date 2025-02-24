@@ -2,6 +2,11 @@ use crate::midi_device::MidiDevice;
 
 const ONE_OCTAVE_OFFSET: u8 = 12;
 
+const PROGRAM_CHANGE: u8 = 0xC0;
+const NOTE_ON_MSG: u8 = 0x90;
+const NOTE_OFF_MSG: u8 = 0x80;
+const VELOCITY: u8 = 0x70;
+
 pub struct VolcaKeys {
     pub device: Box<dyn MidiDevice>,
 }
@@ -13,15 +18,7 @@ impl VolcaKeys {
     }
 
     // HIGH LEVEL
-    pub fn note_play_start(&mut self, note_str: &String) {
-        // TODO: Start playing note "note"
-
-        // TODO: Improve if possible
-        const PROGRAM_CHANGE: u8 = 0xC0;
-        const NOTE_ON_MSG: u8 = 0x90;
-        const NOTE_OFF_MSG: u8 = 0x80;
-        const VELOCITY: u8 = 0x70;
-
+    fn get_note_from_str(note_str: String) -> u8 {
         let note_bytes = note_str.as_bytes();
         let note_bytes_param: [u8; 2] = [
             note_bytes[0],
@@ -42,15 +39,30 @@ impl VolcaKeys {
 
         // println!("note_bytes_param {:?}, NOTE={}", note_bytes_param, note);
 
+        note
+    }
+    pub fn note_play_start(&mut self, note_str: String) {
+        // println!("VolcaKeys: note_play_start {}", note_str);
+
         // TODO: Set sounds
         let instr = 1;
         self.send_plain_message(PROGRAM_CHANGE, instr, 0);
-        // let _ = volca_drum.send(&[PROGRAM_CHANGE, instr]);
 
+        let note = Self::get_note_from_str(note_str);
         self.send_plain_message(NOTE_ON_MSG, note, VELOCITY);
 
-        // Are we sure that no wait is fine?
         // sleep(duration.mul_f64(BPM_DEFAULT).div_f64(self.bpm));
+        // self.note_play_stop(note_str);
+    }
+
+    pub fn note_play_stop(&mut self, note_str: String) {
+        // println!("VolcaKeys: note_play_stop {}", note_str);
+
+        // TODO: Set sounds
+        let instr = 1;
+        self.send_plain_message(PROGRAM_CHANGE, instr, 0);
+
+        let note = Self::get_note_from_str(note_str);
         self.send_plain_message(NOTE_OFF_MSG, note, VELOCITY);
     }
 

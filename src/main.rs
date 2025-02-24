@@ -86,7 +86,9 @@ fn main() {
     });
 
     // PLAYER
+    // TODO: Enable Interactive CLI or not
     let enable_interactive_cli = true;
+    // let enable_interactive_cli = false;
     let instr_comm = InstrComm {
         tx_list: vec![
             // List of Instruments Communicators

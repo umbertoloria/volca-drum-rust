@@ -1,6 +1,5 @@
 use crate::player::{BPM_DEFAULT, DUR_1_16};
 use crate::song::Song;
-use std::cmp::max;
 use std::slice::Iter;
 use std::thread::sleep;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};

@@ -33,40 +33,48 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                     KeyboardPatternChord {
                         chord_name: "Am".into(),
                         from_1_16th_incl: 1,
-                        to_1_16th_incl: 16,
+                        to_1_16th_incl: 6,
                         notes: [
                             //
                             "A3".into(),
+                            "C4".into(),
+                            "E4".into(),
                         ]
                         .into(),
                     },
                     KeyboardPatternChord {
                         chord_name: "G".into(),
-                        from_1_16th_incl: 16 + 1,
-                        to_1_16th_incl: 16 + 16,
+                        from_1_16th_incl: 7,
+                        to_1_16th_incl: 16,
                         notes: [
                             //
                             "G3".into(),
+                            "B3".into(),
+                            "D4".into(),
                         ]
                         .into(),
                     },
                     KeyboardPatternChord {
                         chord_name: "F".into(),
-                        from_1_16th_incl: 16 + 16 + 1,
-                        to_1_16th_incl: 16 + 16 + 16,
+                        from_1_16th_incl: 16 + 1,
+                        to_1_16th_incl: 16 + 6,
                         notes: [
                             //
                             "F3".into(),
+                            "A3".into(),
+                            "C4".into(),
                         ]
                         .into(),
                     },
                     KeyboardPatternChord {
                         chord_name: "C".into(),
-                        from_1_16th_incl: 16 + 16 + 16 + 1,
-                        to_1_16th_incl: 16 + 16 + 16 + 16,
+                        from_1_16th_incl: 16 + 7,
+                        to_1_16th_incl: 16 + 16,
                         notes: [
                             //
-                            "C3".into(),
+                            "G3".into(),
+                            "C4".into(),
+                            "E4".into(),
                         ]
                         .into(),
                     },
