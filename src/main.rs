@@ -2,6 +2,7 @@ use crate::drummer::Drummer;
 use crate::instr_comm::{create_instr_comm, start_listening_to_instr_comm_commands, InstrComm};
 use crate::keyboard::Keyboard;
 use crate::known_songs::get_song_coez_la_musica_non_c_e;
+use crate::metronome::Metronome;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
 use crate::player::Player;
@@ -19,6 +20,7 @@ mod instr_comm;
 mod instrument;
 mod keyboard;
 mod known_songs;
+mod metronome;
 mod midi_controller;
 mod midi_device;
 mod player;
@@ -54,10 +56,10 @@ fn main() {
     let clone_song_drummer = song1.clone();
     let (tx_drummer, rx_drummer) = create_instr_comm();
     let drummer_thread = thread::spawn(move || {
-        // let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
-        // let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
-        let midi_device_1 = MidiDeviceGhost::new(false);
-        let mut volca_drum = VolcaDrum::new(midi_device_1);
+        // let midi_controller = init_midi_controller(Some(1)).unwrap();
+        // let midi_device = MidiDeviceConcrete::new(midi_controller.connect_and_get());
+        let midi_device = MidiDeviceGhost::new(false);
+        let mut volca_drum = VolcaDrum::new(midi_device);
 
         // Sounds
         let mut sound_panel = SoundPanel {
@@ -76,13 +78,27 @@ fn main() {
     let clone_song_keyboard = song1.clone();
     let (tx_keyboard, rx_keyboard) = create_instr_comm();
     let keyboard_thread = thread::spawn(move || {
-        let midi_controller_2 = init_midi_controller(Some(0)).unwrap();
-        let midi_device_2 = MidiDeviceConcrete::new(midi_controller_2.connect_and_get());
-        let volca_keys = VolcaKeys::new(midi_device_2);
+        // let midi_controller = init_midi_controller(Some(0)).unwrap();
+        // let midi_device = MidiDeviceConcrete::new(midi_controller.connect_and_get());
+        let midi_device = MidiDeviceGhost::new(false);
+        let volca_keys = VolcaKeys::new(midi_device);
 
         // Instrument
         let mut keyboard = Keyboard::new(clone_song_keyboard, volca_keys);
         start_listening_to_instr_comm_commands(rx_keyboard, &mut keyboard);
+    });
+
+    // Metronome
+    let clone_song_metronome = song1.clone();
+    let (tx_metronome, rx_metronome) = create_instr_comm();
+    let metronome_thread = thread::spawn(move || {
+        let midi_controller = init_midi_controller(Some(0)).unwrap();
+        let midi_device = MidiDeviceConcrete::new(midi_controller.connect_and_get());
+        let volca_keys = VolcaKeys::new(midi_device);
+
+        // Instrument
+        let mut metronome = Metronome::new(clone_song_metronome, volca_keys);
+        start_listening_to_instr_comm_commands(rx_metronome, &mut metronome);
     });
 
     // PLAYER
@@ -94,6 +110,7 @@ fn main() {
             // List of Instruments Communicators
             tx_drummer,
             tx_keyboard,
+            tx_metronome,
         ],
     };
     let mut player = Player::new(enable_interactive_cli, instr_comm);
@@ -102,4 +119,5 @@ fn main() {
     // CLOSE THREADS
     drummer_thread.join().unwrap();
     keyboard_thread.join().unwrap();
+    metronome_thread.join().unwrap();
 }
