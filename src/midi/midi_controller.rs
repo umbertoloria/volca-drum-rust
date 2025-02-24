@@ -1,23 +1,14 @@
-use midir::{MidiOutput, MidiOutputConnection, MidiOutputPort};
+use midir::{MidiOutput, MidiOutputConnection};
 use std::io::{stdin, stdout, Write};
 
-pub struct MidiController {
-    pub output: MidiOutput,
-    pub output_port: MidiOutputPort,
-}
-impl MidiController {
-    pub fn connect_and_get(self) -> MidiOutputConnection {
-        self.output
-            .connect(&self.output_port, "rust-midi-volca-drum")
-            .unwrap()
-    }
-}
+const MIDI_CLIENT_NAME: &str = "Dummy MIDI Client Name";
+const MIDI_PORT_NAME: &str = "dummy-midi-port-name";
 
 pub fn init_midi_controller(
     preferred_output_port_index: Option<usize>,
-) -> Result<MidiController, String> {
+) -> Result<MidiOutputConnection, String> {
     let midi_output =
-        MidiOutput::new("RUST MIDI Output").expect("Midi controller: unable to create output");
+        MidiOutput::new(MIDI_CLIENT_NAME).expect("Midi controller: unable to create output");
 
     let mut midi_output_ports = midi_output.ports();
     let mut midi_port_index = None;
@@ -56,9 +47,10 @@ pub fn init_midi_controller(
 
     match midi_port_index {
         None => Err("Midi controller: unable to find output port".into()),
-        Some(index) => Ok(MidiController {
-            output: midi_output,
-            output_port: midi_output_ports.remove(index),
-        }),
+        Some(index) => {
+            let output_port = midi_output_ports.remove(index);
+            let midi_output_connection = midi_output.connect(&output_port, MIDI_PORT_NAME).unwrap();
+            Ok(midi_output_connection)
+        }
     }
 }
