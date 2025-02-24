@@ -26,16 +26,18 @@ impl MidiDevice for MidiDeviceConcrete {
 }
 
 // MIDI Device Ghost
-pub struct MidiDeviceGhost {}
-
+pub struct MidiDeviceGhost {
+    verbose: bool,
+}
 impl MidiDeviceGhost {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(verbose: bool) -> Self {
+        Self { verbose }
     }
 }
-
 impl MidiDevice for MidiDeviceGhost {
     fn send(&mut self, a: u8, b: u8, c: u8) {
-        println!("send to MIDI device ghost: {} {} {}", a, b, c)
+        if self.verbose {
+            println!("send to MIDI device ghost: {} {} {}", a, b, c)
+        }
     }
 }

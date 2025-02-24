@@ -40,11 +40,15 @@ pub fn get_now_millis() -> u128 {
 
 // BPM Timing Sync Monitor
 pub fn wait_around_bpm(moments_iter: &mut Iter<u128>) {
-    if let Some(next_hit_millis) = moments_iter.next() {
+    if let Some(&next_hit_millis) = moments_iter.next() {
         let now_millis = get_now_millis();
 
-        let wait_until_next_millis = max(0, next_hit_millis - now_millis);
-        sleep(Duration::from_millis(wait_until_next_millis as u64));
+        if next_hit_millis > now_millis {
+            let wait_until_next_millis = next_hit_millis - now_millis;
+            sleep(Duration::from_millis(wait_until_next_millis as u64));
+        } else {
+            // No sleep. It would have gone to overflow.
+        }
     } else {
         // This should be the last 1/16th.
     }

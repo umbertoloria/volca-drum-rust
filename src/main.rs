@@ -3,7 +3,7 @@ use crate::drummer::Drummer;
 use crate::instr_comm::{create_instr_comm, start_listening_to_instr_comm_commands, InstrComm};
 use crate::keyboard::Keyboard;
 use crate::midi_controller::init_midi_controller;
-use crate::midi_device::MidiDeviceConcrete;
+use crate::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
 use crate::player::Player;
 use crate::sound_panel::SoundPanel;
 use crate::volca_drum::VolcaDrum;
@@ -48,9 +48,9 @@ fn main() {
     let clone_song_drummer = song1.clone();
     let (tx_drummer, rx_drummer) = create_instr_comm();
     let drummer_thread = thread::spawn(move || {
-        let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
-        let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
-        // let midi_device_1 = MidiDeviceGhost::new();
+        // let midi_controller_1 = init_midi_controller(Some(1)).unwrap();
+        // let midi_device_1 = MidiDeviceConcrete::new(midi_controller_1.connect_and_get());
+        let midi_device_1 = MidiDeviceGhost::new(false);
         let mut volca_drum = VolcaDrum::new(midi_device_1);
 
         // Sounds
