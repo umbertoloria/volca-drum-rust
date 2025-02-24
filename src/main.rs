@@ -1,7 +1,7 @@
-use crate::composer::{Composer, TonalityMode, TonalityNote};
 use crate::drummer::Drummer;
 use crate::instr_comm::{create_instr_comm, start_listening_to_instr_comm_commands, InstrComm};
 use crate::keyboard::Keyboard;
+use crate::known_songs::get_song_coez_la_musica_non_c_e;
 use crate::midi_controller::init_midi_controller;
 use crate::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
 use crate::player::Player;
@@ -18,6 +18,7 @@ mod input;
 mod instr_comm;
 mod instrument;
 mod keyboard;
+mod known_songs;
 mod midi_controller;
 mod midi_device;
 mod player;
@@ -31,9 +32,13 @@ mod yaml_song_reader;
 
 fn main() {
     // SONG
-    // let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
-    // let song1 = convert_yaml_into_song(song1_yaml);
+    /*
+    let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
+    let song1 = convert_yaml_into_song(song1_yaml);
+    */
     // let song1 = get_dummy_song();
+    let song1 = get_song_coez_la_musica_non_c_e();
+    /*
     let composer = Composer {
         bpm: 50,
         num_sections: 10,
@@ -42,6 +47,7 @@ fn main() {
         tonality_mode: TonalityMode::Major,
     };
     let song1 = composer.compose_new_song();
+    */
 
     // INSTRUMENTS
     // Drummer
