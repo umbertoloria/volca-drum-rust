@@ -1,4 +1,4 @@
-use crate::instrument::Instrument;
+use crate::instruments::instrument::Instrument;
 use crate::player::TempoSnapshot;
 use crate::song::{DrumPattern, Song};
 use crate::volca_drum::VolcaDrum;

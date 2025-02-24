@@ -1,4 +1,4 @@
-use crate::instrument::Instrument;
+use crate::instruments::instrument::Instrument;
 use crate::player::TempoSnapshot;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
