@@ -78,9 +78,9 @@ fn main() {
     let clone_song_keyboard = song1.clone();
     let (tx_keyboard, rx_keyboard) = create_instr_comm();
     let keyboard_thread = thread::spawn(move || {
-        // let midi_controller = init_midi_controller(Some(0)).unwrap();
-        // let midi_device = MidiDeviceConcrete::new(midi_controller.connect_and_get());
-        let midi_device = MidiDeviceGhost::new(false);
+        let midi_device =
+            MidiDeviceConcrete::new(init_midi_controller(Some(0)).unwrap().connect_and_get());
+        // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
         // Instrument
@@ -92,8 +92,9 @@ fn main() {
     let clone_song_metronome = song1.clone();
     let (tx_metronome, rx_metronome) = create_instr_comm();
     let metronome_thread = thread::spawn(move || {
-        let midi_controller = init_midi_controller(Some(0)).unwrap();
-        let midi_device = MidiDeviceConcrete::new(midi_controller.connect_and_get());
+        // let midi_device =
+        //     MidiDeviceConcrete::new(init_midi_controller(Some(0)).unwrap().connect_and_get());
+        let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
         // Instrument
