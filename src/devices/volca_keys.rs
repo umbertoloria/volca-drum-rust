@@ -1,4 +1,4 @@
-use crate::midi_device::MidiDevice;
+use crate::midi::midi_device::MidiDevice;
 
 const ONE_OCTAVE_OFFSET: u8 = 12;
 

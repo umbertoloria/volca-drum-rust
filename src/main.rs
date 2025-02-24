@@ -1,31 +1,28 @@
+use crate::devices::volca_drum::VolcaDrum;
+use crate::devices::volca_keys::VolcaKeys;
 use crate::instr_comm::{create_instr_comm, start_listening_to_instr_comm_commands, InstrComm};
 use crate::instruments::keyboard::Keyboard;
 use crate::known_songs::get_song_coez_la_musica_non_c_e;
-use crate::midi_controller::init_midi_controller;
-use crate::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
 use crate::player::Player;
 use crate::sound_panel::SoundPanel;
-use crate::volca_drum::VolcaDrum;
-use crate::volca_keys::VolcaKeys;
 use crate::yaml_patch_reader::read_patch_from_yaml;
 use instruments::drummer::Drummer;
 use instruments::metronome::Metronome;
+use midi::midi_controller::init_midi_controller;
+use midi::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
 use std::thread;
 
 mod cli;
-mod composer;
+mod devices;
 mod input;
 mod instr_comm;
 mod instruments;
 mod known_songs;
-mod midi_controller;
-mod midi_device;
+mod midi;
 mod player;
 mod song;
 mod sound_panel;
 mod timing;
-mod volca_drum;
-mod volca_keys;
 mod yaml_patch_reader;
 mod yaml_song_reader;
 

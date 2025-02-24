@@ -1,7 +1,7 @@
 use crate::instruments::instrument::Instrument;
 use crate::player::TempoSnapshot;
-use crate::song::Song;
-use crate::volca_keys::VolcaKeys;
+use crate::song::song::Song;
+use crate::VolcaKeys;
 use std::process::exit;
 use std::thread::sleep;
 use std::time::Duration;

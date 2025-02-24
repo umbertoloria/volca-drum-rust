@@ -1,4 +1,4 @@
-use crate::volca_drum::{VolcaDrum, DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE};
+use crate::devices::volca_drum::{VolcaDrum, DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE};
 use crate::yaml_patch_reader::{
     YamlPatchFile, YamlPatchLayout, YamlPatchLayoutAmpEg, YamlPatchLayoutModulationType,
     YamlPatchLayoutSoundSrcType,

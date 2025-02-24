@@ -1,4 +1,4 @@
-use crate::midi_device::MidiDevice;
+use crate::midi::midi_device::MidiDevice;
 
 pub const DRUM_CH_KICK: u8 = 0;
 pub const DRUM_CH_HH: u8 = 1;

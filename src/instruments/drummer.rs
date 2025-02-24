@@ -1,7 +1,7 @@
+use crate::devices::volca_drum::VolcaDrum;
 use crate::instruments::instrument::Instrument;
 use crate::player::TempoSnapshot;
-use crate::song::{DrumPattern, Song};
-use crate::volca_drum::VolcaDrum;
+use crate::song::song::{DrumPattern, Song};
 use std::process::exit;
 
 pub struct Drummer {

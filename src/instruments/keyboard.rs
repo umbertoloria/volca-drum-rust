@@ -1,7 +1,7 @@
+use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::instrument::Instrument;
 use crate::player::TempoSnapshot;
-use crate::song::{KeyboardPattern, Song};
-use crate::volca_keys::VolcaKeys;
+use crate::song::song::{KeyboardPattern, Song};
 use std::collections::{HashMap, HashSet};
 use std::process::exit;
 

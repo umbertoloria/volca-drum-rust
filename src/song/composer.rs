@@ -1,6 +1,6 @@
-use crate::song;
-use crate::song::{
-    DrumPattern, KeyboardPattern, KeyboardPatternChord, Song, SongDetails, SongSection, SongTempo,
+use crate::song::song::{
+    DrumPattern, KeyboardPattern, KeyboardPatternChord, Song, SongDetails, SongSection,
+    SongSectionKind, SongTempo,
 };
 use std::collections::HashMap;
 
@@ -75,7 +75,7 @@ impl Composer {
                 },
             )]),
             sections: [SongSection {
-                kind: song::SongSectionKind::Verse,
+                kind: SongSectionKind::Verse,
                 bars: self.num_sections,
                 time_signature: (4, 4),
                 num_1_16s_in_a_quarter: 4,

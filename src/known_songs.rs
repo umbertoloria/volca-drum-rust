@@ -1,4 +1,4 @@
-use crate::song::{
+use crate::song::song::{
     DrumPattern, KeyboardPattern, KeyboardPatternChord, Song, SongDetails, SongSection,
     SongSectionKind, SongTempo,
 };
