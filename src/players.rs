@@ -1,3 +1,3 @@
 pub mod cli;
-pub mod player;
+pub mod conductor;
 pub mod realtime_player;

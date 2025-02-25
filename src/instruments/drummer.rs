@@ -1,6 +1,6 @@
 use crate::devices::volca_drum::VolcaDrum;
 use crate::instruments::instrument::Instrument;
-use crate::players::player::TempoSnapshot;
+use crate::players::conductor::TempoSnapshot;
 use crate::players::realtime_player::create_realtime_player;
 use crate::song::song::{DrumPattern, Song};
 use std::process::exit;

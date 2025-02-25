@@ -1,4 +1,4 @@
-use crate::players::player::{TempoSnapshot, BPM_DEFAULT, DUR_1_16};
+use crate::players::conductor::{TempoSnapshot, BPM_DEFAULT, DUR_1_16};
 use crate::song::song::Song;
 use crate::utils::timing::wait_until_millis;
 

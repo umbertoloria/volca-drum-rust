@@ -1,6 +1,6 @@
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::instrument::Instrument;
-use crate::players::player::TempoSnapshot;
+use crate::players::conductor::TempoSnapshot;
 use crate::players::realtime_player::create_realtime_player;
 use crate::song::song::{KeyboardPattern, Song};
 use std::collections::{HashMap, HashSet};

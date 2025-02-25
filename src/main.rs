@@ -1,15 +1,14 @@
 use crate::devices::volca_drum::VolcaDrum;
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::keyboard::Keyboard;
-use crate::players::player::Player;
+use crate::players::conductor::Conductor;
 use devices::sound_panel::SoundPanel;
 use instruments::drummer::Drummer;
 use instruments::instr_comm::{
     create_instr_comm, start_listening_to_instr_comm_commands, InstrComm,
 };
-use instruments::metronome::Metronome;
 use midi::midi_controller::init_midi_controller;
-use midi::midi_device::{MidiDeviceConcrete, MidiDeviceGhost};
+use midi::midi_device::MidiDeviceConcrete;
 use song::known_songs::get_song_coez_la_musica_non_c_e;
 use song::yaml_patch_reader::read_patch_from_yaml;
 use std::thread;
@@ -89,7 +88,7 @@ fn main() {
         start_listening_to_instr_comm_commands(rx_keyboard, &mut keyboard);
     });
 
-    // PLAYER
+    // CONDUCTOR
     // TODO: Enable Interactive CLI or not
     let enable_interactive_cli = true;
     // let enable_interactive_cli = false;
@@ -101,8 +100,8 @@ fn main() {
             tx_keyboard,
         ],
     };
-    let mut player = Player::new(enable_interactive_cli, instr_comm);
-    player.play_song(song1).unwrap();
+    let mut conductor = Conductor::new(instr_comm, enable_interactive_cli);
+    conductor.play_song(song1).unwrap();
 
     // CLOSE THREADS
     // metronome_thread.join().unwrap();
