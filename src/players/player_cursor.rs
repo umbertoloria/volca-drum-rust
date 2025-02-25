@@ -1,8 +1,6 @@
-use crate::players::player::TempoSnapshot;
+use crate::players::player::{TempoSnapshot, BPM_DEFAULT, DUR_1_16};
 use crate::song::song::Song;
-use crate::utils::timing::{
-    get_now_millis_sub_second, get_song_instant_list_from_song_and_start_from_millis, SongInstant,
-};
+use crate::utils::timing::{get_now_millis_sub_second, wait_until_millis};
 
 pub struct PlayerCursor {
     tempo_snapshot: TempoSnapshot,
@@ -14,7 +12,7 @@ pub struct PlayerCursor {
 impl PlayerCursor {
     pub fn new(song: Song, start_from_millis: u128, instrument_name: String) -> Self {
         let song_instants =
-            get_song_instant_list_from_song_and_start_from_millis(&song, start_from_millis);
+            create_song_instant_list_from_song_and_start_from_millis(&song, start_from_millis);
 
         println!("{}: starts at {}", instrument_name, start_from_millis);
 
@@ -90,4 +88,84 @@ impl PlayerCursor {
         // TODO: Avoid cloning Tempo Snapshot
         self.tempo_snapshot.clone()
     }
+}
+
+#[derive(Debug, Clone)]
+pub struct SongInstant {
+    pub i_section: usize,
+    i_section_bar: usize,
+    i_quarter: usize,
+    i_quarter_1_16th: usize,
+    millis: u128,
+}
+impl SongInstant {
+    pub fn new(
+        i_section: usize,
+        i_section_bar: usize,
+        i_quarter: usize,
+        i_quarter_1_16th: usize,
+        millis: u128,
+    ) -> Self {
+        Self {
+            i_section,
+            i_section_bar,
+            i_quarter,
+            i_quarter_1_16th,
+            millis,
+        }
+    }
+    pub fn is_first_of_section(&self) -> bool {
+        self.i_section_bar == 0 && self.i_quarter == 0 && self.i_quarter_1_16th == 0
+    }
+    pub fn wait_for_this_moment_to_arrive(&self) {
+        wait_until_millis(self.millis);
+    }
+}
+pub fn create_song_instant_list_from_song_and_start_from_millis(
+    song: &Song,
+    start_from_millis: u128,
+) -> Vec<SongInstant> {
+    // Assuming no BPM change during the song.
+    let millis_1_16th = DUR_1_16
+        .mul_f64(BPM_DEFAULT)
+        .div_f64((&song.tempo).bpm as f64)
+        .as_millis();
+
+    let mut result = Vec::new();
+
+    let mut next_instant_millis = start_from_millis;
+    for i_section in 0..song.sections.len() {
+        // Beginning of a new section.
+        let section = &song.sections[i_section];
+
+        for i_section_bar in 0..section.bars {
+            // Beginning of a new bar.
+
+            for i_quarter in 0..song.tempo.time_signature.0 {
+                // Beginning of a quarter.
+
+                for i_quarter_1_16th in 0..4 {
+                    // Beginning of a 1/16th.
+
+                    let song_instant = SongInstant::new(
+                        i_section,
+                        i_section_bar,
+                        i_quarter,
+                        i_quarter_1_16th,
+                        next_instant_millis,
+                    );
+                    result.push(song_instant);
+
+                    next_instant_millis += millis_1_16th;
+                }
+            }
+        }
+    }
+    /*
+    for result_item in &result {
+        println!("{:?}", result_item);
+    }
+    */
+
+    result
 }
