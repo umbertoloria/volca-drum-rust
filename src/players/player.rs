@@ -1,5 +1,6 @@
 use crate::instruments::instr_comm::InstrComm;
 use crate::players::cli::clear_terminal_screen;
+use crate::players::player_cursor::PlayerCursor;
 use crate::song::song::{Song, SongSection};
 use crate::utils::timing::{get_moments_vec_from_song_start, get_now_millis, wait_around_bpm};
 use std::time::Duration;
@@ -12,21 +13,14 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub struct Player {
-    tempo_snapshot: TempoSnapshot,
+    player_cursor: PlayerCursor,
     enable_interactive_cli: bool,
     instr_comm: InstrComm,
 }
 impl Player {
     pub fn new(enable_interactive_cli: bool, instr_comm: InstrComm) -> Self {
         Self {
-            tempo_snapshot: TempoSnapshot {
-                cur_bar: 1,
-                cur_quarter: 1,
-                cur_1_8: 1,
-                cur_1_16: 1,
-                section_bar_first: 0,
-                section_bar_last: 0,
-            },
+            player_cursor: PlayerCursor::new(),
             enable_interactive_cli,
             instr_comm,
         }
@@ -52,7 +46,8 @@ impl Player {
             if section.bars < 1 {
                 continue;
             }
-            self.starts_new_section_with_many_bars(section.bars);
+            self.player_cursor
+                .starts_new_section_with_many_bars(section.bars);
 
             // Play section
             for _ in 0..section.bars {
@@ -61,8 +56,11 @@ impl Player {
                     // Beginning of a quarter.
                     for _ in 0..4 {
                         // Beginning of a 1/16th.
-                        self.play_1_16th_now(section);
-                        self.next_1_16th();
+                        let tempo_snapshot = self.player_cursor.get_tempo_snapshot();
+
+                        self.play_1_16th_now(tempo_snapshot, section);
+
+                        self.player_cursor.next_1_16th();
 
                         // Waiting for BPM sync
                         wait_around_bpm(&mut moments_iter);
@@ -76,17 +74,9 @@ impl Player {
         Ok(())
     }
 
-    pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {
-        self.tempo_snapshot.section_bar_first = self.tempo_snapshot.cur_bar;
-        self.tempo_snapshot.section_bar_last =
-            self.tempo_snapshot.section_bar_first + bars_count - 1;
-    }
-
-    pub fn play_1_16th_now(&mut self, section: &SongSection) {
-        let tempo_snapshot = &self.tempo_snapshot;
-
+    pub fn play_1_16th_now(&mut self, tempo_snapshot: TempoSnapshot, section: &SongSection) {
         // Play music
-        self.instr_comm.play_1_16th(tempo_snapshot);
+        self.instr_comm.play_1_16th(&tempo_snapshot);
 
         // Interactive CLI
         if self.enable_interactive_cli {
@@ -118,24 +108,6 @@ impl Player {
                 "-".repeat(cur_1_16ths_in_section),
                 " ".repeat(tot_1_16ths_in_section - cur_1_16ths_in_section - 1)
             );
-        }
-    }
-
-    pub fn next_1_16th(&mut self) {
-        self.tempo_snapshot.cur_1_16 += 1;
-        self.tempo_snapshot.cur_1_8 = if self.tempo_snapshot.cur_1_16 > 2 {
-            2
-        } else {
-            1
-        };
-        if self.tempo_snapshot.cur_1_16 > 4 {
-            self.tempo_snapshot.cur_1_16 = 1;
-            self.tempo_snapshot.cur_1_8 = 1;
-            self.tempo_snapshot.cur_quarter += 1;
-        }
-        if self.tempo_snapshot.cur_quarter > 4 {
-            self.tempo_snapshot.cur_quarter = 1;
-            self.tempo_snapshot.cur_bar += 1;
         }
     }
 }
