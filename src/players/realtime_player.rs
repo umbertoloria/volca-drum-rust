@@ -2,14 +2,14 @@ use crate::players::player::{TempoSnapshot, BPM_DEFAULT, DUR_1_16};
 use crate::song::song::Song;
 use crate::utils::timing::wait_until_millis;
 
-pub struct PlayerCursor {
+pub struct RealtimePlayer {
     tempo_snapshot: TempoSnapshot,
     start_from_millis: u128,
     song_instants: Vec<SongInstant>,
     i_next_song_instant: usize,
 }
-impl PlayerCursor {
-    pub fn new(song: &Song, start_from_millis: u128) -> Self {
+impl RealtimePlayer {
+    fn new(song: &Song, start_from_millis: u128) -> Self {
         let song_instants =
             create_song_instant_list_from_song_and_start_from_millis(song, start_from_millis);
 
@@ -32,7 +32,7 @@ impl PlayerCursor {
     pub fn has_next_song_instant(&self) -> bool {
         self.i_next_song_instant < self.song_instants.len()
     }
-    pub fn want_and_get_next_tempo_snapshot(&mut self) -> TempoSnapshot {
+    pub fn want_and_get_next_tempo_snapshot(&mut self) -> &TempoSnapshot {
         // Assuming "self.has_next_song_instant()" is *TRUE*.
         let song_instant = &self.song_instants[self.i_next_song_instant];
         self.i_next_song_instant += 1;
@@ -42,10 +42,13 @@ impl PlayerCursor {
 
         // Tempo Signature update
         if song_instant.is_first_of_section() {
-            self.starts_new_section_with_many_bars(song_instant.num_bars_in_current_section);
+            let bars_count = song_instant.num_bars_in_current_section;
+            self.tempo_snapshot.section_bar_first = self.tempo_snapshot.cur_bar;
+            self.tempo_snapshot.section_bar_last =
+                self.tempo_snapshot.section_bar_first + bars_count - 1;
         }
 
-        let tempo_snapshot = self.get_tempo_snapshot();
+        let tempo_snapshot = &self.tempo_snapshot;
 
         /*
         let now = get_now_millis_sub_second();
@@ -59,11 +62,6 @@ impl PlayerCursor {
         */
 
         tempo_snapshot
-    }
-    pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {
-        self.tempo_snapshot.section_bar_first = self.tempo_snapshot.cur_bar;
-        self.tempo_snapshot.section_bar_last =
-            self.tempo_snapshot.section_bar_first + bars_count - 1;
     }
     pub fn prepare_next_1_16th(&mut self) {
         self.tempo_snapshot.cur_1_16 += 1;
@@ -81,10 +79,6 @@ impl PlayerCursor {
             self.tempo_snapshot.cur_quarter = 1;
             self.tempo_snapshot.cur_bar += 1;
         }
-    }
-    pub fn get_tempo_snapshot(&self) -> TempoSnapshot {
-        // TODO: Avoid cloning Tempo Snapshot
-        self.tempo_snapshot.clone()
     }
 }
 
@@ -122,7 +116,7 @@ impl SongInstant {
         wait_until_millis(self.millis);
     }
 }
-pub fn create_song_instant_list_from_song_and_start_from_millis(
+fn create_song_instant_list_from_song_and_start_from_millis(
     song: &Song,
     start_from_millis: u128,
 ) -> Vec<SongInstant> {
@@ -170,4 +164,8 @@ pub fn create_song_instant_list_from_song_and_start_from_millis(
     */
 
     result
+}
+
+pub fn create_realtime_player(song: &Song, start_from_millis: u128) -> RealtimePlayer {
+    RealtimePlayer::new(song, start_from_millis)
 }

@@ -1,6 +1,6 @@
 use crate::instruments::instrument::Instrument;
 use crate::players::player::TempoSnapshot;
-use crate::players::player_cursor::PlayerCursor;
+use crate::players::realtime_player::create_realtime_player;
 use crate::song::song::Song;
 use crate::VolcaKeys;
 use std::process::exit;
@@ -41,14 +41,13 @@ impl Instrument for Metronome {
             exit(0x0100);
         }
 
-        let mut player_cursor = PlayerCursor::new(&self.song, start_from_millis);
+        let mut realtime_player = create_realtime_player(&self.song, start_from_millis);
+        while realtime_player.has_next_song_instant() {
+            let tempo_snapshot = realtime_player.want_and_get_next_tempo_snapshot();
 
-        while player_cursor.has_next_song_instant() {
-            let tempo_snapshot = player_cursor.want_and_get_next_tempo_snapshot();
+            self.play_1_16th(tempo_snapshot);
 
-            self.play_1_16th(&tempo_snapshot);
-
-            player_cursor.prepare_next_1_16th();
+            realtime_player.prepare_next_1_16th();
         }
     }
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
