@@ -38,6 +38,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 },
             ),
             (
+                // HH on 1/8ths.
                 "C".into(),
                 DrumPattern {
                     key: "C".into(),
@@ -112,7 +113,8 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 bars: 3 + 1,
                 time_signature: (4, 4),
                 num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: None,
+                // drum_pattern_key: None, //Always have HH or some sort of click.
+                drum_pattern_key: Some("C".into()),
                 keyboard_pattern_key: Some("A".into()),
                 notes: None,
             },
