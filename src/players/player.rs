@@ -12,14 +12,13 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub struct Player {
-    enable_interactive_cli: bool,
     tempo_snapshot: TempoSnapshot,
+    enable_interactive_cli: bool,
     instr_comm: InstrComm,
 }
 impl Player {
     pub fn new(enable_interactive_cli: bool, instr_comm: InstrComm) -> Self {
         Self {
-            enable_interactive_cli,
             tempo_snapshot: TempoSnapshot {
                 cur_bar: 1,
                 cur_quarter: 1,
@@ -28,6 +27,7 @@ impl Player {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
+            enable_interactive_cli,
             instr_comm,
         }
     }
@@ -37,7 +37,8 @@ impl Player {
             return Err("Song has no sections".into());
         }
 
-        let song_id: String = (&song.id).into();
+        // TODO: Avoid cloning Song ID
+        let song_id: String = song.id.clone();
         self.instr_comm.teach_songs(song_id);
 
         // The song starts *NOW*!
