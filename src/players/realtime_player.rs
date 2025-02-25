@@ -1,7 +1,8 @@
-use crate::players::conductor::{TempoSnapshot, BPM_DEFAULT, DUR_1_16};
+use crate::players::conductor::{BPM_DEFAULT, DUR_1_16};
 use crate::song::song::Song;
 use crate::utils::timing::wait_until_millis;
 
+// REALTIME PLAYER
 pub struct RealtimePlayer {
     tempo_snapshot: TempoSnapshot,
     start_from_millis: u128,
@@ -168,4 +169,52 @@ fn create_song_instant_list_from_song_and_start_from_millis(
 
 pub fn create_realtime_player(song: &Song, start_from_millis: u128) -> RealtimePlayer {
     RealtimePlayer::new(song, start_from_millis)
+}
+
+// TEMPO SNAPSHOT
+#[derive(Debug, Clone)]
+pub struct TempoSnapshot {
+    pub cur_bar: usize,
+    pub cur_quarter: usize,
+    pub cur_1_8: usize,
+    pub cur_1_16: usize,
+    pub section_bar_first: usize,
+    pub section_bar_last: usize,
+}
+impl TempoSnapshot {
+    pub fn get_tot_1_16ths_in_section(&self) -> usize {
+        // Assuming 4/4 and four 1/16ths in 1/4th.
+        self.get_tot_bars_in_section() * 16
+    }
+    pub fn get_cur_1_16ths_in_section_from_1(&self) -> usize {
+        // From 1 to...
+        (self.get_cur_bar_in_section() - 1) * 16 + self.get_cur_1_16ths_in_bar_from_1()
+    }
+    pub fn get_cur_1_16ths_in_bar_from_1(&self) -> usize {
+        // From 1 to...
+        (self.cur_quarter - 1) * 4 + self.cur_1_16
+    }
+    fn get_cur_bar_in_section(&self) -> usize {
+        self.cur_bar - self.section_bar_first + 1
+    }
+    pub fn get_tot_bars_in_section(&self) -> usize {
+        self.section_bar_last - self.section_bar_first + 1
+    }
+    pub fn is_this_the_last_1_16th_of_this_section(&self, song: &Song) -> bool {
+        // Assuming this is the last hit (what if there was a "6/8"?)
+        self.cur_bar == self.section_bar_last
+            && self.cur_quarter == song.tempo.time_signature.0
+            && self.cur_1_16 == 4
+    }
+    pub fn string_info(&self) -> String {
+        format!(
+            "{}th of {} bars in section / {}.{} / {}th global bar",
+            self.get_cur_bar_in_section(),
+            self.get_tot_bars_in_section(),
+            self.cur_quarter,
+            self.cur_1_16,
+            self.cur_bar
+        )
+        .into()
+    }
 }

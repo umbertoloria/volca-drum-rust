@@ -1,6 +1,5 @@
 use crate::instruments::instrument::Instrument;
-use crate::players::conductor::TempoSnapshot;
-use crate::players::realtime_player::create_realtime_player;
+use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::Song;
 use crate::VolcaKeys;
 use std::process::exit;

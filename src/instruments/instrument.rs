@@ -1,4 +1,4 @@
-use crate::players::conductor::TempoSnapshot;
+use crate::players::realtime_player::TempoSnapshot;
 
 pub trait Instrument {
     fn get_instrument_name_16_chars(&self) -> String;
