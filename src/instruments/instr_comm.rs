@@ -7,12 +7,6 @@ pub struct InstrComm {
     pub tx_list: Vec<Sender<InstrCommCommand>>,
 }
 impl InstrComm {
-    pub fn teach_song(&mut self, song_id: String) {
-        for tx in &self.tx_list {
-            tx.send(InstrCommCommand::TeachSong(song_id.clone()))
-                .unwrap();
-        }
-    }
     pub fn play_song(&mut self, song_id: String, start_from_millis: u128) {
         for tx in &self.tx_list {
             tx.send(InstrCommCommand::PlaySong(
@@ -38,7 +32,6 @@ impl InstrComm {
 
 #[derive(Debug)]
 pub enum InstrCommCommand {
-    TeachSong(String),
     PlaySong(String, u128),
     PlayHit(TempoSnapshot), // TODO: Disable this for now
     Shutdown,
@@ -52,9 +45,6 @@ pub fn start_listening_to_instr_comm_commands(
 ) {
     for received in rx_instrument {
         match received {
-            InstrCommCommand::TeachSong(song_id) => {
-                instrument.teach_song(song_id);
-            }
             InstrCommCommand::PlaySong(song_id, start_from_millis) => {
                 instrument.play_song(song_id, start_from_millis);
             }

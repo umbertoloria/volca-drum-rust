@@ -28,14 +28,11 @@ impl Player {
             return Err("Song has no sections".into());
         }
 
-        // TODO: Merge Teach and Play Song steps
-        // TODO: Avoid cloning Song ID
-        let song_id: String = song.id.clone();
-        self.instr_comm.teach_song(song_id.clone());
+        // Play song!
+        let global_delay = 1000; // Wait one second.
+        let start_from_millis = get_now_millis() + global_delay;
+        self.instr_comm.play_song(song.id, start_from_millis);
 
-        // Play song after *ONE SECOND*!
-        let start_from_millis = get_now_millis() + 1000; // Wait one second.
-        self.instr_comm.play_song(song_id, start_from_millis);
         // TODO: Restore Interactive CLI feature
 
         self.instr_comm.shutdown();

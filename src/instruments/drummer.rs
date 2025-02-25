@@ -56,7 +56,7 @@ impl Instrument for Drummer {
             "no drums".to_string()
         }
     }
-    fn teach_song(&mut self, song_id: String) {
+    fn play_song(&mut self, song_id: String, start_from_millis: u128) {
         if self.song.id != song_id {
             println!("Drummer doesn't know the song");
             exit(0x0100);
@@ -64,12 +64,6 @@ impl Instrument for Drummer {
         // Start from beginning.
         self.curr_section_index = 0;
         self.update_pattern_from_song_section();
-    }
-    fn play_song(&mut self, song_id: String, start_from_millis: u128) {
-        if self.song.id != song_id {
-            println!("Drummer wasn't taught the song");
-            exit(0x0100);
-        }
 
         // TODO: Avoid cloning Song
         let mut player_cursor = PlayerCursor::new(

@@ -35,15 +35,9 @@ impl Instrument for Metronome {
     fn get_short_info(&self) -> String {
         "Metronome".to_string()
     }
-    fn teach_song(&mut self, song_id: String) {
-        if self.song.id != song_id {
-            println!("Metronome doesn't know the song");
-            exit(0x0100);
-        }
-    }
     fn play_song(&mut self, song_id: String, start_from_millis: u128) {
         if self.song.id != song_id {
-            println!("Metronome wasn't taught the song");
+            println!("Metronome doesn't know the song");
             exit(0x0100);
         }
 
