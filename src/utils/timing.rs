@@ -31,7 +31,7 @@ pub fn wait_until_millis(next_hit_millis: u128) {
 }
 
 // BPM Timing Sync Monitor
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SongInstant {
     pub i_section: usize,
     i_section_bar: usize,

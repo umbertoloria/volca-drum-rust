@@ -2,7 +2,7 @@ use crate::instruments::instr_comm::InstrComm;
 use crate::players::cli::clear_terminal_screen;
 use crate::players::player_cursor::PlayerCursor;
 use crate::song::song::{Song, SongSection};
-use crate::utils::timing::{get_now_millis, get_song_instant_list_from_song_and_start_from_millis};
+use crate::utils::timing::get_now_millis;
 use std::time::Duration;
 
 // Durations
@@ -33,25 +33,18 @@ impl Player {
         let song_id: String = song.id.clone();
         self.instr_comm.teach_songs(song_id);
 
-        // TODO: Avoid cloning Song
-        let mut player_cursor = PlayerCursor::new(song.clone());
-
+        // Play song after *ONE SECOND*!
         let start_from_millis = get_now_millis() + 1000; // Wait one second.
-        let song_instants_list =
-            get_song_instant_list_from_song_and_start_from_millis(&song, start_from_millis);
-        for song_instant in song_instants_list {
-            // Waiting for BPM sync
-            song_instant.wait_for_this_moment_to_arrive();
 
-            let section = &song.sections[song_instant.i_section];
-            if song_instant.is_first_of_section() {
-                player_cursor.starts_new_section_with_many_bars(section.bars);
-            }
+        // TODO: Avoid cloning Song
+        let mut player_cursor = PlayerCursor::new(song.clone(), start_from_millis);
 
-            let tempo_snapshot = player_cursor.get_tempo_snapshot();
-            self.play_1_16th_now(tempo_snapshot, section);
+        while player_cursor.has_next_song_instant() {
+            let (tempo_snapshot, section) = player_cursor.want_and_get_next_song_instant();
 
-            player_cursor.next_1_16th();
+            self.play_1_16th_now(tempo_snapshot, &section);
+
+            player_cursor.prepare_next_1_16th();
         }
 
         self.instr_comm.shutdown();
