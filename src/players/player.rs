@@ -49,11 +49,14 @@ impl Player {
             player_cursor.starts_new_section_with_many_bars(section.bars);
 
             // Play section
-            for _ in 0..section.bars {
+            let mut i_section_bar = 0;
+            while i_section_bar < section.bars {
                 // Beginning of a new bar.
-                for _ in 0..song.tempo.time_signature.0 {
+                let mut i_section_bar_quarter = 0;
+                while i_section_bar_quarter < song.tempo.time_signature.0 {
                     // Beginning of a quarter.
-                    for _ in 0..4 {
+                    let mut i_section_bar_quarter_1_16th = 0;
+                    while i_section_bar_quarter_1_16th < 4 {
                         // Beginning of a 1/16th.
                         let tempo_snapshot = player_cursor.get_tempo_snapshot();
 
@@ -63,8 +66,14 @@ impl Player {
 
                         // Waiting for BPM sync
                         wait_around_bpm(&mut moments_iter);
+
+                        i_section_bar_quarter_1_16th += 1;
                     }
+
+                    i_section_bar_quarter += 1;
                 }
+
+                i_section_bar += 1;
             }
         }
 
