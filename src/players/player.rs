@@ -1,6 +1,5 @@
 use crate::instruments::instr_comm::InstrComm;
 use crate::players::cli::clear_terminal_screen;
-use crate::players::player_cursor::PlayerCursor;
 use crate::song::song::{Song, SongSection};
 use crate::utils::timing::get_now_millis;
 use std::time::Duration;
@@ -29,23 +28,15 @@ impl Player {
             return Err("Song has no sections".into());
         }
 
+        // TODO: Merge Teach and Play Song steps
         // TODO: Avoid cloning Song ID
         let song_id: String = song.id.clone();
-        self.instr_comm.teach_songs(song_id);
+        self.instr_comm.teach_song(song_id.clone());
 
         // Play song after *ONE SECOND*!
         let start_from_millis = get_now_millis() + 1000; // Wait one second.
-
-        // TODO: Avoid cloning Song
-        let mut player_cursor = PlayerCursor::new(song.clone(), start_from_millis);
-
-        while player_cursor.has_next_song_instant() {
-            let (tempo_snapshot, section) = player_cursor.want_and_get_next_song_instant();
-
-            self.play_1_16th_now(tempo_snapshot, &section);
-
-            player_cursor.prepare_next_1_16th();
-        }
+        self.instr_comm.play_song(song_id, start_from_millis);
+        // TODO: Restore Interactive CLI feature
 
         self.instr_comm.shutdown();
 

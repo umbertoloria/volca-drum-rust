@@ -1,5 +1,5 @@
 use crate::players::player::TempoSnapshot;
-use crate::song::song::{Song, SongSection};
+use crate::song::song::Song;
 use crate::utils::timing::{get_song_instant_list_from_song_and_start_from_millis, SongInstant};
 
 pub struct PlayerCursor {
@@ -31,7 +31,7 @@ impl PlayerCursor {
     pub fn has_next_song_instant(&self) -> bool {
         self.i_next_song_instant < self.song_instants.len()
     }
-    pub fn want_and_get_next_song_instant(&mut self) -> (TempoSnapshot, SongSection) {
+    pub fn want_and_get_next_tempo_snapshot(&mut self) -> TempoSnapshot {
         // Assuming "self.has_next_song_instant()" is *TRUE*.
         let song_instant = &self.song_instants[self.i_next_song_instant];
         self.i_next_song_instant += 1;
@@ -48,7 +48,7 @@ impl PlayerCursor {
 
         let tempo_snapshot = self.get_tempo_snapshot();
 
-        (tempo_snapshot, section)
+        tempo_snapshot
     }
     pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {
         self.tempo_snapshot.section_bar_first = self.tempo_snapshot.cur_bar;

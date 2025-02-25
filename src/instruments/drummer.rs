@@ -1,6 +1,7 @@
 use crate::devices::volca_drum::VolcaDrum;
 use crate::instruments::instrument::Instrument;
 use crate::players::player::TempoSnapshot;
+use crate::players::player_cursor::PlayerCursor;
 use crate::song::song::{DrumPattern, Song};
 use std::process::exit;
 
@@ -63,6 +64,23 @@ impl Instrument for Drummer {
         // Start from beginning.
         self.curr_section_index = 0;
         self.update_pattern_from_song_section();
+    }
+    fn play_song(&mut self, song_id: String, start_from_millis: u128) {
+        if self.song.id != song_id {
+            println!("Drummer wasn't taught the song");
+            exit(0x0100);
+        }
+
+        // TODO: Avoid cloning Song
+        let mut player_cursor = PlayerCursor::new(self.song.clone(), start_from_millis);
+
+        while player_cursor.has_next_song_instant() {
+            let tempo_snapshot = player_cursor.want_and_get_next_tempo_snapshot();
+
+            self.play_1_16th(&tempo_snapshot);
+
+            player_cursor.prepare_next_1_16th();
+        }
     }
     fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         if let Some(pattern) = &self.pattern {
