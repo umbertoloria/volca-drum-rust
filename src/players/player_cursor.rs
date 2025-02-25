@@ -1,6 +1,8 @@
 use crate::players::player::TempoSnapshot;
 use crate::song::song::Song;
-use crate::utils::timing::{get_song_instant_list_from_song_and_start_from_millis, SongInstant};
+use crate::utils::timing::{
+    get_now_millis_sub_second, get_song_instant_list_from_song_and_start_from_millis, SongInstant,
+};
 
 pub struct PlayerCursor {
     tempo_snapshot: TempoSnapshot,
@@ -10,9 +12,12 @@ pub struct PlayerCursor {
     i_next_song_instant: usize,
 }
 impl PlayerCursor {
-    pub fn new(song: Song, start_from_millis: u128) -> Self {
+    pub fn new(song: Song, start_from_millis: u128, instrument_name: String) -> Self {
         let song_instants =
             get_song_instant_list_from_song_and_start_from_millis(&song, start_from_millis);
+
+        println!("{}: starts at {}", instrument_name, start_from_millis);
+
         Self {
             tempo_snapshot: TempoSnapshot {
                 cur_bar: 1,
@@ -31,7 +36,7 @@ impl PlayerCursor {
     pub fn has_next_song_instant(&self) -> bool {
         self.i_next_song_instant < self.song_instants.len()
     }
-    pub fn want_and_get_next_tempo_snapshot(&mut self) -> TempoSnapshot {
+    pub fn want_and_get_next_tempo_snapshot(&mut self, instrument_name: String) -> TempoSnapshot {
         // Assuming "self.has_next_song_instant()" is *TRUE*.
         let song_instant = &self.song_instants[self.i_next_song_instant];
         self.i_next_song_instant += 1;
@@ -47,6 +52,15 @@ impl PlayerCursor {
         }
 
         let tempo_snapshot = self.get_tempo_snapshot();
+
+        let now = get_now_millis_sub_second();
+        println!(
+            "{}{}: hit {} at {}",
+            " ".repeat(tempo_snapshot.cur_1_16),
+            instrument_name,
+            tempo_snapshot.cur_1_16,
+            now
+        );
 
         tempo_snapshot
     }
