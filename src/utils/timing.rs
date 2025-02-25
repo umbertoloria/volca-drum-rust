@@ -36,6 +36,13 @@ pub fn get_now_millis() -> u128 {
     (since_the_epoch.as_secs() as u128) * 1000
         + (since_the_epoch.subsec_nanos() as u128) / 1_000_000
 }
+pub fn get_now_millis_sub_second() -> u128 {
+    let start = SystemTime::now();
+    let since_the_epoch = start
+        .duration_since(UNIX_EPOCH)
+        .expect("Time went backwards");
+    (since_the_epoch.subsec_nanos() as u128) / 1_000_000
+}
 
 // BPM Timing Sync Monitor
 pub fn wait_around_bpm(moments_iter: &mut Iter<u128>) {

@@ -16,8 +16,8 @@ impl InstrComm {
     pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         for tx in &self.tx_list {
             let cloned_tempo_snapshot = tempo_snapshot.clone();
-            tx.send(InstrCommCommand::PlayHit(cloned_tempo_snapshot))
-                .unwrap();
+            let instr_comm_command = InstrCommCommand::PlayHit(cloned_tempo_snapshot);
+            tx.send(instr_comm_command).unwrap();
         }
     }
     pub fn shutdown(&self) {
@@ -37,10 +37,10 @@ pub fn create_instr_comm() -> (Sender<InstrCommCommand>, Receiver<InstrCommComma
     mpsc::channel::<InstrCommCommand>()
 }
 pub fn start_listening_to_instr_comm_commands(
-    rx_keyboard: Receiver<InstrCommCommand>,
+    rx_instrument: Receiver<InstrCommCommand>,
     instrument: &mut impl Instrument,
 ) {
-    for received in rx_keyboard {
+    for received in rx_instrument {
         match received {
             InstrCommCommand::TeachSong(song_id) => {
                 instrument.teach_song(song_id);

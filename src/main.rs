@@ -41,12 +41,26 @@ fn main() {
     */
 
     // INSTRUMENTS
+
+    // Metronome
+    let clone_song_metronome = song1.clone();
+    let (tx_metronome, rx_metronome) = create_instr_comm();
+    let metronome_thread = thread::spawn(move || {
+        // let midi_device = MidiDeviceConcrete::new(init_midi_controller(Some(0)).unwrap());
+        let midi_device = MidiDeviceGhost::new(false);
+        let volca_keys = VolcaKeys::new(midi_device);
+
+        // Instrument
+        let mut metronome = Metronome::new(clone_song_metronome, volca_keys);
+        start_listening_to_instr_comm_commands(rx_metronome, &mut metronome);
+    });
+
     // Drummer
     let clone_song_drummer = song1.clone();
     let (tx_drummer, rx_drummer) = create_instr_comm();
     let drummer_thread = thread::spawn(move || {
-        // let midi_device = MidiDeviceConcrete::new(init_midi_controller(Some(1)).unwrap());
-        let midi_device = MidiDeviceGhost::new(false);
+        let midi_device = MidiDeviceConcrete::new(init_midi_controller(Some(1)).unwrap());
+        // let midi_device = MidiDeviceGhost::new(false);
         let mut volca_drum = VolcaDrum::new(midi_device);
 
         // Sounds
@@ -75,19 +89,6 @@ fn main() {
         start_listening_to_instr_comm_commands(rx_keyboard, &mut keyboard);
     });
 
-    // Metronome
-    let clone_song_metronome = song1.clone();
-    let (tx_metronome, rx_metronome) = create_instr_comm();
-    let metronome_thread = thread::spawn(move || {
-        // let midi_device = MidiDeviceConcrete::new(init_midi_controller(Some(0)).unwrap());
-        let midi_device = MidiDeviceGhost::new(false);
-        let volca_keys = VolcaKeys::new(midi_device);
-
-        // Instrument
-        let mut metronome = Metronome::new(clone_song_metronome, volca_keys);
-        start_listening_to_instr_comm_commands(rx_metronome, &mut metronome);
-    });
-
     // PLAYER
     // TODO: Enable Interactive CLI or not
     let enable_interactive_cli = true;
@@ -95,16 +96,16 @@ fn main() {
     let instr_comm = InstrComm {
         tx_list: vec![
             // List of Instruments Communicators
+            tx_metronome,
             tx_drummer,
             tx_keyboard,
-            tx_metronome,
         ],
     };
     let mut player = Player::new(enable_interactive_cli, instr_comm);
     player.play_song(song1).unwrap();
 
     // CLOSE THREADS
+    metronome_thread.join().unwrap();
     drummer_thread.join().unwrap();
     keyboard_thread.join().unwrap();
-    metronome_thread.join().unwrap();
 }

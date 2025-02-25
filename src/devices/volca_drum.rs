@@ -39,7 +39,7 @@ impl VolcaDrum {
         self.send_plain_message(NOTE_ON_MSG, note, VELOCITY);
 
         // Are we sure that no wait is fine?
-        // sleep(duration.mul_f64(BPM_DEFAULT).div_f64(self.bpm));
+        // sleep(Duration::from_millis(50));
         self.send_plain_message(NOTE_OFF_MSG, note, VELOCITY);
     }
 
