@@ -2,7 +2,7 @@ use crate::instruments::instr_comm::InstrComm;
 use crate::players::cli::clear_terminal_screen;
 use crate::players::player_cursor::PlayerCursor;
 use crate::song::song::{Song, SongSection};
-use crate::utils::timing::{get_moments_vec_from_song_start, get_now_millis, wait_around_bpm};
+use crate::utils::timing::{get_now_millis, get_song_instant_list_from_song_and_start_from_millis};
 use std::time::Duration;
 
 // Durations
@@ -33,48 +33,25 @@ impl Player {
         let song_id: String = song.id.clone();
         self.instr_comm.teach_songs(song_id);
 
+        // TODO: Avoid cloning Song
         let mut player_cursor = PlayerCursor::new(song.clone());
 
-        // The song starts *NOW*!
-        let moments_vec = get_moments_vec_from_song_start(&song, get_now_millis());
-        let mut moments_iter = moments_vec.iter();
-        moments_iter.next().unwrap(); // Assuming there is at least one millis.
+        let start_from_millis = get_now_millis() + 1000; // Wait one second.
+        let song_instants_list =
+            get_song_instant_list_from_song_and_start_from_millis(&song, start_from_millis);
+        for song_instant in song_instants_list {
+            // Waiting for BPM sync
+            song_instant.wait_for_this_moment_to_arrive();
 
-        for section in &song.sections {
-            // Beginning of a new section.
-
-            if section.bars < 1 {
-                continue;
+            let section = &song.sections[song_instant.i_section];
+            if song_instant.is_first_of_section() {
+                player_cursor.starts_new_section_with_many_bars(section.bars);
             }
-            player_cursor.starts_new_section_with_many_bars(section.bars);
 
-            // Play section
-            let mut i_section_bar = 0;
-            while i_section_bar < section.bars {
-                // Beginning of a new bar.
-                let mut i_section_bar_quarter = 0;
-                while i_section_bar_quarter < song.tempo.time_signature.0 {
-                    // Beginning of a quarter.
-                    let mut i_section_bar_quarter_1_16th = 0;
-                    while i_section_bar_quarter_1_16th < 4 {
-                        // Beginning of a 1/16th.
-                        let tempo_snapshot = player_cursor.get_tempo_snapshot();
+            let tempo_snapshot = player_cursor.get_tempo_snapshot();
+            self.play_1_16th_now(tempo_snapshot, section);
 
-                        self.play_1_16th_now(tempo_snapshot, section);
-
-                        player_cursor.next_1_16th();
-
-                        // Waiting for BPM sync
-                        wait_around_bpm(&mut moments_iter);
-
-                        i_section_bar_quarter_1_16th += 1;
-                    }
-
-                    i_section_bar_quarter += 1;
-                }
-
-                i_section_bar += 1;
-            }
+            player_cursor.next_1_16th();
         }
 
         self.instr_comm.shutdown();
