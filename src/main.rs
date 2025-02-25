@@ -80,7 +80,7 @@ fn main() {
     let clone_song_keyboard = song1.clone();
     let (tx_keyboard, rx_keyboard) = create_instr_comm();
     let keyboard_thread = thread::spawn(move || {
-        let midi_device = MidiDeviceConcrete::new(init_midi_controller(Some(0)).unwrap());
+        let midi_device = MidiDeviceConcrete::new(init_midi_controller(Some(2)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 

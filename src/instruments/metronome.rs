@@ -41,16 +41,10 @@ impl Instrument for Metronome {
             exit(0x0100);
         }
 
-        // TODO: Avoid cloning Song
-        let mut player_cursor = PlayerCursor::new(
-            self.song.clone(),
-            start_from_millis,
-            self.get_instrument_name_16_chars(),
-        );
+        let mut player_cursor = PlayerCursor::new(&self.song, start_from_millis);
 
         while player_cursor.has_next_song_instant() {
-            let tempo_snapshot =
-                player_cursor.want_and_get_next_tempo_snapshot(self.get_instrument_name_16_chars());
+            let tempo_snapshot = player_cursor.want_and_get_next_tempo_snapshot();
 
             self.play_1_16th(&tempo_snapshot);
 

@@ -1,5 +1,4 @@
 use crate::instruments::instrument::Instrument;
-use crate::players::player::TempoSnapshot;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 
@@ -16,13 +15,13 @@ impl InstrComm {
             .unwrap();
         }
     }
-    pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
+    /*pub fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         for tx in &self.tx_list {
             let cloned_tempo_snapshot = tempo_snapshot.clone();
             let instr_comm_command = InstrCommCommand::PlayHit(cloned_tempo_snapshot);
             tx.send(instr_comm_command).unwrap();
         }
-    }
+    }*/
     pub fn shutdown(&self) {
         for tx in &self.tx_list {
             tx.send(InstrCommCommand::Shutdown).unwrap();
@@ -33,7 +32,7 @@ impl InstrComm {
 #[derive(Debug)]
 pub enum InstrCommCommand {
     PlaySong(String, u128),
-    PlayHit(TempoSnapshot), // TODO: Disable this for now
+    // PlayHit(TempoSnapshot), // Deprecated.
     Shutdown,
 }
 pub fn create_instr_comm() -> (Sender<InstrCommCommand>, Receiver<InstrCommCommand>) {
@@ -47,9 +46,6 @@ pub fn start_listening_to_instr_comm_commands(
         match received {
             InstrCommCommand::PlaySong(song_id, start_from_millis) => {
                 instrument.play_song(song_id, start_from_millis);
-            }
-            InstrCommCommand::PlayHit(tempo_signature) => {
-                instrument.play_1_16th(&tempo_signature);
             }
             InstrCommCommand::Shutdown => {
                 break;

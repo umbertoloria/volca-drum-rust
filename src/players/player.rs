@@ -1,6 +1,5 @@
 use crate::instruments::instr_comm::InstrComm;
-use crate::players::cli::clear_terminal_screen;
-use crate::song::song::{Song, SongSection};
+use crate::song::song::Song;
 use crate::utils::timing::get_now_millis;
 use std::time::Duration;
 
@@ -40,6 +39,7 @@ impl Player {
         Ok(())
     }
 
+    /*
     pub fn play_1_16th_now(&mut self, tempo_snapshot: TempoSnapshot, section: &SongSection) {
         // Play music
         self.instr_comm.play_1_16th(&tempo_snapshot);
@@ -76,6 +76,7 @@ impl Player {
             );
         }
     }
+    */
 }
 
 // Tempo Snapshot

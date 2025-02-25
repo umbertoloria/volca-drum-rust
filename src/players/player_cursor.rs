@@ -1,20 +1,19 @@
 use crate::players::player::{TempoSnapshot, BPM_DEFAULT, DUR_1_16};
 use crate::song::song::Song;
-use crate::utils::timing::{get_now_millis_sub_second, wait_until_millis};
+use crate::utils::timing::wait_until_millis;
 
 pub struct PlayerCursor {
     tempo_snapshot: TempoSnapshot,
-    song: Song,
     start_from_millis: u128,
     song_instants: Vec<SongInstant>,
     i_next_song_instant: usize,
 }
 impl PlayerCursor {
-    pub fn new(song: Song, start_from_millis: u128, instrument_name: String) -> Self {
+    pub fn new(song: &Song, start_from_millis: u128) -> Self {
         let song_instants =
-            create_song_instant_list_from_song_and_start_from_millis(&song, start_from_millis);
+            create_song_instant_list_from_song_and_start_from_millis(song, start_from_millis);
 
-        println!("{}: starts at {}", instrument_name, start_from_millis);
+        // println!("{}: starts at {}", instrument_name, start_from_millis);
 
         Self {
             tempo_snapshot: TempoSnapshot {
@@ -25,7 +24,6 @@ impl PlayerCursor {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
-            song,
             start_from_millis,
             song_instants,
             i_next_song_instant: 0,
@@ -34,7 +32,7 @@ impl PlayerCursor {
     pub fn has_next_song_instant(&self) -> bool {
         self.i_next_song_instant < self.song_instants.len()
     }
-    pub fn want_and_get_next_tempo_snapshot(&mut self, instrument_name: String) -> TempoSnapshot {
+    pub fn want_and_get_next_tempo_snapshot(&mut self) -> TempoSnapshot {
         // Assuming "self.has_next_song_instant()" is *TRUE*.
         let song_instant = &self.song_instants[self.i_next_song_instant];
         self.i_next_song_instant += 1;
@@ -43,14 +41,13 @@ impl PlayerCursor {
         song_instant.wait_for_this_moment_to_arrive();
 
         // Tempo Signature update
-        // TODO: Avoid cloning Song Section
-        let section = self.song.sections[song_instant.i_section].clone();
         if song_instant.is_first_of_section() {
-            self.starts_new_section_with_many_bars(section.bars);
+            self.starts_new_section_with_many_bars(song_instant.num_bars_in_current_section);
         }
 
         let tempo_snapshot = self.get_tempo_snapshot();
 
+        /*
         let now = get_now_millis_sub_second();
         println!(
             "{}{}: hit {} at {}",
@@ -59,6 +56,7 @@ impl PlayerCursor {
             tempo_snapshot.cur_1_16,
             now
         );
+        */
 
         tempo_snapshot
     }
@@ -96,6 +94,7 @@ pub struct SongInstant {
     i_section_bar: usize,
     i_quarter: usize,
     i_quarter_1_16th: usize,
+    num_bars_in_current_section: usize,
     millis: u128,
 }
 impl SongInstant {
@@ -104,6 +103,7 @@ impl SongInstant {
         i_section_bar: usize,
         i_quarter: usize,
         i_quarter_1_16th: usize,
+        num_bars_in_current_section: usize,
         millis: u128,
     ) -> Self {
         Self {
@@ -111,6 +111,7 @@ impl SongInstant {
             i_section_bar,
             i_quarter,
             i_quarter_1_16th,
+            num_bars_in_current_section,
             millis,
         }
     }
@@ -152,6 +153,7 @@ pub fn create_song_instant_list_from_song_and_start_from_millis(
                         i_section_bar,
                         i_quarter,
                         i_quarter_1_16th,
+                        section.bars,
                         next_instant_millis,
                     );
                     result.push(song_instant);
