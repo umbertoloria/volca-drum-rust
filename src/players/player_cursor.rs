@@ -1,10 +1,12 @@
 use crate::players::player::TempoSnapshot;
+use crate::song::song::Song;
 
 pub struct PlayerCursor {
     tempo_snapshot: TempoSnapshot,
+    song: Song,
 }
 impl PlayerCursor {
-    pub fn new() -> Self {
+    pub fn new(song: Song) -> Self {
         Self {
             tempo_snapshot: TempoSnapshot {
                 cur_bar: 1,
@@ -14,6 +16,7 @@ impl PlayerCursor {
                 section_bar_first: 0,
                 section_bar_last: 0,
             },
+            song,
         }
     }
     pub fn starts_new_section_with_many_bars(&mut self, bars_count: usize) {

@@ -13,14 +13,12 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub struct Player {
-    player_cursor: PlayerCursor,
     enable_interactive_cli: bool,
     instr_comm: InstrComm,
 }
 impl Player {
     pub fn new(enable_interactive_cli: bool, instr_comm: InstrComm) -> Self {
         Self {
-            player_cursor: PlayerCursor::new(),
             enable_interactive_cli,
             instr_comm,
         }
@@ -35,6 +33,8 @@ impl Player {
         let song_id: String = song.id.clone();
         self.instr_comm.teach_songs(song_id);
 
+        let mut player_cursor = PlayerCursor::new(song.clone());
+
         // The song starts *NOW*!
         let moments_vec = get_moments_vec_from_song_start(&song, get_now_millis());
         let mut moments_iter = moments_vec.iter();
@@ -46,8 +46,7 @@ impl Player {
             if section.bars < 1 {
                 continue;
             }
-            self.player_cursor
-                .starts_new_section_with_many_bars(section.bars);
+            player_cursor.starts_new_section_with_many_bars(section.bars);
 
             // Play section
             for _ in 0..section.bars {
@@ -56,11 +55,11 @@ impl Player {
                     // Beginning of a quarter.
                     for _ in 0..4 {
                         // Beginning of a 1/16th.
-                        let tempo_snapshot = self.player_cursor.get_tempo_snapshot();
+                        let tempo_snapshot = player_cursor.get_tempo_snapshot();
 
                         self.play_1_16th_now(tempo_snapshot, section);
 
-                        self.player_cursor.next_1_16th();
+                        player_cursor.next_1_16th();
 
                         // Waiting for BPM sync
                         wait_around_bpm(&mut moments_iter);
