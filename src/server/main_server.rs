@@ -1,31 +1,58 @@
-use std::io::{BufRead, BufReader, Write};
-use std::net::{TcpListener, TcpStream};
-use std::thread;
-use std::thread::JoinHandle;
+use futures::{SinkExt, StreamExt};
+use std::env;
+use std::net::SocketAddr;
+use tokio::net::{TcpListener, TcpStream};
+use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
 
-pub fn main_server() -> JoinHandle<()> {
-    thread::spawn(move || {
-        let listener = TcpListener::bind("127.0.0.1:9666").unwrap();
+#[tokio::main]
+pub async fn main_server() {
+    // Get the address to bind to
+    let addr = env::args()
+        .nth(1)
+        .unwrap_or_else(|| "127.0.0.1:8666".to_string());
+    let addr: SocketAddr = addr.parse().expect("Invalid address");
 
-        for stream in listener.incoming() {
-            let stream = stream.unwrap();
+    // Create the TCP listener
+    let listener = TcpListener::bind(&addr).await.expect("Failed to bind");
 
-            handle_connection(stream);
-        }
-    })
+    println!("Listening on: {}", addr);
+
+    while let Ok((stream, _)) = listener.accept().await {
+        // Spawn a new task for each connection
+        tokio::spawn(handle_connection(stream));
+    }
 }
 
-fn handle_connection(mut stream: TcpStream) {
-    let buf_reader = BufReader::new(&stream);
-    let http_request: Vec<_> = buf_reader
-        .lines()
-        .map(|result| result.unwrap())
-        .take_while(|line| !line.is_empty())
-        .collect();
+async fn handle_connection(stream: TcpStream) {
+    // Accept the WebSocket connection
+    let ws_stream = match accept_async(stream).await {
+        Ok(ws) => ws,
+        Err(e) => {
+            println!("Error during the websocket handshake: {}", e);
+            return;
+        }
+    };
 
-    println!("Request: {http_request:#?}");
+    // Split the WebSocket stream into a sender and receiver
+    let (mut sender, mut receiver) = ws_stream.split();
 
-    let response = "HTTP/1.1 200 OK\r\n\r\n";
-
-    stream.write_all(response.as_bytes()).unwrap();
+    // Handle incoming messages
+    while let Some(msg) = receiver.next().await {
+        match msg {
+            Ok(Message::Text(text)) => {
+                // Reverse the received string and send it back
+                let reversed = text.chars().rev().collect::<String>();
+                let message = Message::Text(reversed.into());
+                if let Err(e) = sender.send(message).await {
+                    println!("Error sending message: {}", e);
+                }
+            }
+            Ok(Message::Close(_)) => break,
+            Ok(_) => (),
+            Err(e) => {
+                println!("Error processing message: {}", e);
+                break;
+            }
+        }
+    }
 }

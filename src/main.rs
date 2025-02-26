@@ -24,7 +24,8 @@ mod utils;
 
 fn main() {
     // SERVER
-    let server_thread = main_server();
+    // let server_thread = main_server();
+    main_server();
 
     // SONG
     /*
@@ -112,5 +113,5 @@ fn main() {
     // metronome_thread.join().unwrap();
     drummer_thread.join().unwrap();
     keyboard_thread.join().unwrap();
-    server_thread.join().unwrap();
+    // server_thread.join().unwrap();
 }
