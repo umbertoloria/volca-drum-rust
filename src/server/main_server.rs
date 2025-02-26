@@ -3,7 +3,12 @@ use futures::{SinkExt, StreamExt};
 use std::env;
 use std::net::SocketAddr;
 use tokio::net::{TcpListener, TcpStream};
+use tokio::sync::mpsc;
+use tokio::sync::mpsc::Sender;
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
+
+// TODO: Adjust BUFFER_SIZE
+const BUFFER_SIZE: usize = 32;
 
 #[tokio::main]
 pub async fn main_server() {
@@ -16,13 +21,17 @@ pub async fn main_server() {
     // Create the TCP listener
     let listener = TcpListener::bind(&addr).await.expect("Failed to bind");
 
-    while let Ok((stream, _)) = listener.accept().await {
+    while let Ok((stream, socket_addr)) = listener.accept().await {
+        println!("{:?}", socket_addr);
+        let (tx, mut rx) = mpsc::channel(BUFFER_SIZE);
         // Spawn a new task for each connection
-        tokio::spawn(handle_connection(stream));
+        tokio::spawn(handle_connection(stream, tx));
     }
 }
 
-async fn handle_connection(stream: TcpStream) {
+pub enum WSThreadComm {}
+
+async fn handle_connection(stream: TcpStream, tx: Sender<WSThreadComm>) {
     // Accept the WebSocket connection
     let ws_stream = match accept_async(stream).await {
         Ok(ws) => ws,
@@ -54,4 +63,6 @@ async fn handle_connection(stream: TcpStream) {
             }
         }
     }
+
+    // println!("Closing connection");
 }

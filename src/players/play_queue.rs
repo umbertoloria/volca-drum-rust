@@ -18,7 +18,7 @@ pub fn play_song_in_queue() {
     add_playing_song_to_list(thread);
 }
 
-struct PlayQueueState {
+pub struct PlayQueueState {
     items: Vec<PlayQueueStateItem>,
 }
 struct PlayQueueStateItem {

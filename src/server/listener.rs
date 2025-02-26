@@ -8,7 +8,7 @@ pub fn listener_manage(request: String) -> String {
             "OK".into()
         }
         Some(WSRequest::GetPlayQueueState) => {
-            play_song_in_queue();
+            // get_play_queue_state();
             // TODO: Try to send asynchronously these data
             "PLAY QUEUE info..".into()
         }
