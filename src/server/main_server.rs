@@ -1,3 +1,4 @@
+use crate::server::listener::listener_manage;
 use futures::{SinkExt, StreamExt};
 use std::env;
 use std::net::SocketAddr;
@@ -38,9 +39,9 @@ async fn handle_connection(stream: TcpStream) {
     while let Some(msg) = receiver.next().await {
         match msg {
             Ok(Message::Text(text)) => {
-                // Reverse the received string and send it back
-                let reversed = text.chars().rev().collect::<String>();
-                let message = Message::Text(reversed.into());
+                let request = text.chars().collect::<String>();
+                let response = listener_manage(request);
+                let message = Message::Text(response.into());
                 if let Err(e) = sender.send(message).await {
                     println!("Error sending message: {}", e);
                 }
