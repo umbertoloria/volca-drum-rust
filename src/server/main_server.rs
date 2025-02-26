@@ -1,17 +1,32 @@
+use crate::music_thread::music_thread::CommFromMusicThread;
 use crate::server::listener::listener_manage;
 use futures::{SinkExt, StreamExt};
-use std::env;
+use std::fmt::Debug;
 use std::net::SocketAddr;
-use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::mpsc;
-use tokio::sync::mpsc::Sender;
+use std::thread::JoinHandle;
+use std::{env, thread};
+use tokio::net::TcpListener;
+use tokio::sync::broadcast;
+use tokio::sync::broadcast::Receiver;
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
 
 // TODO: Adjust BUFFER_SIZE
 const BUFFER_SIZE: usize = 32;
 
+pub type CommFromMusicThreadBroadcastRx = broadcast::Sender<CommFromMusicThread>;
+pub fn main_server_thread() -> (JoinHandle<()>, CommFromMusicThreadBroadcastRx) {
+    let (tx_to_web_server, mut rx_to_web_server) =
+        broadcast::channel::<CommFromMusicThread>(BUFFER_SIZE);
+    let thread = thread::spawn(move || {
+        // let new_rx = tx_to_web_server.clone().subscribe();
+        // new_rx.resubscribe();
+        main_server(rx_to_web_server);
+    });
+    (thread, tx_to_web_server)
+}
+
 #[tokio::main]
-pub async fn main_server() {
+pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
     // Get the address to bind to
     let addr = env::args()
         .nth(1)
@@ -22,47 +37,83 @@ pub async fn main_server() {
     let listener = TcpListener::bind(&addr).await.expect("Failed to bind");
 
     while let Ok((stream, socket_addr)) = listener.accept().await {
-        println!("{:?}", socket_addr);
-        let (tx, mut rx) = mpsc::channel(BUFFER_SIZE);
-        // Spawn a new task for each connection
-        tokio::spawn(handle_connection(stream, tx));
-    }
-}
+        println!("Connection with {:?}", socket_addr);
 
-pub enum WSThreadComm {}
+        let mut rx_to_web_server_for_him = rx_to_web_server.resubscribe();
 
-async fn handle_connection(stream: TcpStream, tx: Sender<WSThreadComm>) {
-    // Accept the WebSocket connection
-    let ws_stream = match accept_async(stream).await {
-        Ok(ws) => ws,
-        Err(e) => {
-            println!("Error during the websocket handshake: {}", e);
-            return;
-        }
-    };
+        tokio::spawn(async {
+            // Accept the WebSocket connection
+            let ws_stream = match accept_async(stream).await {
+                Ok(ws) => ws,
+                Err(e) => {
+                    println!("Error during the websocket handshake: {}", e);
+                    return;
+                }
+            };
 
-    // Split the WebSocket stream into a sender and receiver
-    let (mut sender, mut receiver) = ws_stream.split();
+            // Split the WebSocket stream into a sender and receiver
+            let (mut sender, mut receiver) = ws_stream.split();
+            // Sending first message to client.
+            sender.send("Welcome!".into()).await.unwrap();
 
-    // Handle incoming messages
-    while let Some(msg) = receiver.next().await {
-        match msg {
-            Ok(Message::Text(text)) => {
-                let request = text.chars().collect::<String>();
-                let response = listener_manage(request);
-                let message = Message::Text(response.into());
-                if let Err(e) = sender.send(message).await {
-                    println!("Error sending message: {}", e);
+            // TODO: Try to use "sender" in multiple threads
+            // let arc_sender = Arc::new(Mutex::new(sender));
+            // Update clients
+            /*
+            let mut sender_1 = arc_sender.clone();
+            let thread_connection_recv_from_outside = tokio::spawn(async move {
+                loop {
+                    let message = rx_to_web_server_for_him.recv().await;
+                    match message {
+                        Ok(message) => {
+                            let payload = match message {
+                                CommFromMusicThread::SongStarted => "Song started".into(),
+                                CommFromMusicThread::SongPlayingUpdate => {
+                                    "Song playing update".into()
+                                }
+                                CommFromMusicThread::SongEnded => "Song ended".into(),
+                            };
+                            let mut sender = sender_1.lock().unwrap();
+                            if let Err(e) = sender.send(payload).await {
+                                println!("Error sending message: {}", e);
+                            }
+                        }
+                        Err(_) => {}
+                    }
+                }
+            });
+            */
+
+            // Handle incoming messages
+            // let mut sender_2 = arc_sender.clone();
+            while let Some(msg) = receiver.next().await {
+                match msg {
+                    Ok(Message::Text(text)) => {
+                        let request = text.chars().collect::<String>();
+                        let response = listener_manage(request);
+                        let message = Message::Text(response.into());
+                        // let mut sender = sender_2.lock().unwrap();
+                        if let Err(e) = sender.send(message).await {
+                            println!("Error sending message: {}", e);
+                        }
+                    }
+                    Ok(Message::Close(_)) => {
+                        // TODO: Abort is best here?
+                        // thread_connection_recv_from_outside.abort();
+                        break;
+                    }
+                    Ok(_) => (),
+                    Err(e) => {
+                        println!("Error processing message: {}", e);
+                        break;
+                    }
                 }
             }
-            Ok(Message::Close(_)) => break,
-            Ok(_) => (),
-            Err(e) => {
-                println!("Error processing message: {}", e);
-                break;
-            }
-        }
-    }
 
-    // println!("Closing connection");
+            // TODO: Abort is best here?
+            // thread_connection_recv_from_outside.abort();
+
+            // println!("Closing connection");
+        });
+    }
 }

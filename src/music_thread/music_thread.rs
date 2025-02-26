@@ -4,13 +4,14 @@ use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
 use std::thread::JoinHandle;
 
+#[derive(Clone, Debug)]
 pub enum CommFromMusicThread {
     SongStarted,
     SongPlayingUpdate,
     SongEnded,
 }
 type CommFromMusicThreadTx = Sender<CommFromMusicThread>;
-type CommFromMusicThreadRx = Receiver<CommFromMusicThread>;
+pub type CommFromMusicThreadRx = Receiver<CommFromMusicThread>;
 pub fn main_music_thread() -> (JoinHandle<()>, CommFromMusicThreadRx) {
     let (tx, rx) = mpsc::channel::<CommFromMusicThread>();
     let thread = thread::spawn(|| {
