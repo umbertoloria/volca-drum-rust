@@ -2,6 +2,7 @@ use crate::devices::volca_drum::VolcaDrum;
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::keyboard::Keyboard;
 use crate::players::conductor::Conductor;
+use crate::server::main_server::main_server;
 use devices::sound_panel::SoundPanel;
 use instruments::drummer::Drummer;
 use instruments::instr_comm::{
@@ -17,10 +18,14 @@ mod devices;
 mod instruments;
 mod midi;
 mod players;
+mod server;
 mod song;
 mod utils;
 
 fn main() {
+    // SERVER
+    let server_thread = main_server();
+
     // SONG
     /*
     let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
@@ -107,4 +112,5 @@ fn main() {
     // metronome_thread.join().unwrap();
     drummer_thread.join().unwrap();
     keyboard_thread.join().unwrap();
+    server_thread.join().unwrap();
 }
