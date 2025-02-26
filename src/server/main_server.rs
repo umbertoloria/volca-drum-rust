@@ -15,8 +15,6 @@ pub async fn main_server() {
     // Create the TCP listener
     let listener = TcpListener::bind(&addr).await.expect("Failed to bind");
 
-    println!("Listening on: {}", addr);
-
     while let Ok((stream, _)) = listener.accept().await {
         // Spawn a new task for each connection
         tokio::spawn(handle_connection(stream));
