@@ -13,18 +13,23 @@ use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
 // TODO: Adjust BUFFER_SIZE
 const BUFFER_SIZE: usize = 32;
 
-pub type CommFromMusicThreadBroadcastRx = broadcast::Sender<CommFromMusicThread>;
-pub fn main_server_thread() -> (JoinHandle<()>, CommFromMusicThreadBroadcastRx) {
+pub type CommFromMusicThreadBroadcastTx = broadcast::Sender<CommFromMusicThread>;
+pub fn main_server_thread() -> (JoinHandle<()>, CommFromMusicThreadBroadcastTx) {
     let (tx_to_web_server, rx_to_web_server) =
         broadcast::channel::<CommFromMusicThread>(BUFFER_SIZE);
+    // TODO: It is wise to clone this TX?
+    let tx_to_web_server_clone = tx_to_web_server.clone();
     let thread = thread::spawn(move || {
-        main_server(rx_to_web_server);
+        main_server(tx_to_web_server_clone, rx_to_web_server);
     });
     (thread, tx_to_web_server)
 }
 
 #[tokio::main]
-pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
+pub async fn main_server(
+    tx_to_web_server: CommFromMusicThreadBroadcastTx,
+    mut rx_to_web_server: Receiver<CommFromMusicThread>,
+) {
     // Get the address to bind to
     /*let addr = env::args()
     .nth(1)
@@ -38,9 +43,10 @@ pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
     while let Ok((stream, socket_addr)) = listener.accept().await {
         println!("Connection with {:?}", socket_addr);
 
+        let tx_to_web_server_for_him = tx_to_web_server.clone();
         let mut rx_to_web_server_for_him = rx_to_web_server.resubscribe();
 
-        tokio::spawn(async {
+        tokio::spawn(async move {
             // Accept the WebSocket connection
             let ws_stream = match accept_async(stream).await {
                 Ok(ws) => ws,
@@ -58,8 +64,7 @@ pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
             // TODO: Try to use "sender" in multiple threads
             // let arc_sender = Arc::new(Mutex::new(sender));
             // Update clients
-            /*
-            let mut sender_1 = arc_sender.clone();
+
             let thread_connection_recv_from_outside = tokio::spawn(async move {
                 loop {
                     let message = rx_to_web_server_for_him.recv().await;
@@ -71,6 +76,7 @@ pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
                                     "Song playing update".into()
                                 }
                                 CommFromMusicThread::SongEnded => "Song ended".into(),
+                                CommFromMusicThread::SimpleResponse(message) => message,
                             };
                             let mut sender = sender_1.lock().unwrap();
                             if let Err(e) = sender.send(payload).await {
@@ -81,7 +87,6 @@ pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
                     }
                 }
             });
-            */
 
             // Handle incoming messages
             // let mut sender_2 = arc_sender.clone();
@@ -94,10 +99,13 @@ pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
                             Some(client_response) => Message::Text(client_response.into()),
                             None => Message::Text("KO".into()),
                         };
-                        // let mut sender = sender_2.lock().unwrap();
+                        tx_to_web_server_for_him
+                            .send(CommFromMusicThread::SimpleResponse(message))
+                            .unwrap();
+                        /*// let mut sender = sender_2.lock().unwrap();
                         if let Err(e) = sender.send(message).await {
                             println!("Error sending message: {}", e);
-                        }
+                        }*/
                     }
                     Ok(Message::Close(_)) => {
                         // TODO: Abort is best here?
