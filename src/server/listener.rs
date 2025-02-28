@@ -1,3 +1,5 @@
+use crate::music_thread::music_thread::{MusicThreadRequest, MusicThreadRequestsTx};
+
 enum WSClientRequest {
     PlaySong,
     GetPlayQueueState,
@@ -11,10 +13,17 @@ fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
     }
     None
 }
-pub fn manage_client_request_if_valid(request: String) -> Option<String> {
+pub fn manage_client_request_if_valid(
+    request: String,
+    music_thread_requests_tx: &MusicThreadRequestsTx,
+) -> Option<String> {
     match sanitize_client_request(request) {
         Some(WSClientRequest::PlaySong) => {
-            // FIXME: Ask Music Thread to Play a Song
+            // TODO: Extract method in class wrapper
+            music_thread_requests_tx
+                .send(MusicThreadRequest::PlaySong())
+                .unwrap();
+
             Some("OK".into())
         }
         Some(WSClientRequest::GetPlayQueueState) => {

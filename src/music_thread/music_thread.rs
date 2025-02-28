@@ -16,10 +16,9 @@ pub enum MusicThreadRequest {
     PlaySong(),
 }
 
-type MusicThreadRequestsTx = Sender<MusicThreadRequest>;
-pub type MusicThreadRequestsRx = Receiver<MusicThreadRequest>;
-pub fn create_channel_for_music_thread(
-) -> (Sender<MusicThreadRequest>, Receiver<MusicThreadRequest>) {
+pub type MusicThreadRequestsTx = Sender<MusicThreadRequest>;
+type MusicThreadRequestsRx = Receiver<MusicThreadRequest>;
+pub fn create_channel_for_music_thread() -> (MusicThreadRequestsTx, MusicThreadRequestsRx) {
     let (music_thread_requests_tx, music_thread_requests_rx) =
         mpsc::channel::<MusicThreadRequest>();
     (music_thread_requests_tx, music_thread_requests_rx)

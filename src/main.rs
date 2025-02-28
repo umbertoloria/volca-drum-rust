@@ -18,7 +18,11 @@ fn main() {
     // SOCKET SERVER
     // TODO: It is wise to clone this TX?
     let tx_to_web_server_clone = tx_to_web_server.clone();
-    let server_thread = main_server_thread(tx_to_web_server_clone, rx_to_web_server);
+    let server_thread = main_server_thread(
+        rx_to_web_server,
+        tx_to_web_server_clone,
+        music_thread_requests_tx,
+    );
 
     // MUSIC THREAD
     let music_thread = main_music_thread(music_thread_requests_rx, tx_to_web_server);

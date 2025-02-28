@@ -1,4 +1,4 @@
-use crate::music_thread::music_thread::WSMusicThreadResponse;
+use crate::music_thread::music_thread::{MusicThreadRequestsTx, WSMusicThreadResponse};
 use crate::server::listener::manage_client_request_if_valid;
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
@@ -42,18 +42,20 @@ pub fn create_channel_for_server_thread() -> (
     (tx_to_web_server, rx_to_web_server)
 }
 pub fn main_server_thread(
-    tx_to_web_server: BroadcastSenderToServerThread,
     rx_to_web_server: BroadcastReceiverToServerThread,
+    tx_to_web_server: BroadcastSenderToServerThread,
+    music_thread_requests_tx: MusicThreadRequestsTx,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
-        main_server(tx_to_web_server, rx_to_web_server);
+        main_server(rx_to_web_server, tx_to_web_server, music_thread_requests_tx);
     })
 }
 
 #[tokio::main]
 pub async fn main_server(
+    rx_to_web_server: BroadcastReceiverToServerThread,
     tx_to_web_server: BroadcastSenderToServerThread,
-    mut rx_to_web_server: BroadcastReceiverToServerThread,
+    music_thread_requests_tx: MusicThreadRequestsTx,
 ) {
     // Get the address to bind to
     /*let addr = env::args()
@@ -70,6 +72,7 @@ pub async fn main_server(
 
         let tx_to_web_server_for_him = tx_to_web_server.clone();
         let mut rx_to_web_server_for_him = rx_to_web_server.resubscribe();
+        let music_thread_requests_tx_for_him = music_thread_requests_tx.clone();
 
         tokio::spawn(async move {
             // Accept the WebSocket connection
@@ -121,8 +124,13 @@ pub async fn main_server(
                 match msg {
                     Ok(Message::Text(text)) => {
                         let request = text.chars().collect::<String>();
-                        let client_response = manage_client_request_if_valid(request);
+                        // TODO: Extract class
+                        let client_response = manage_client_request_if_valid(
+                            request,
+                            &music_thread_requests_tx_for_him,
+                        );
                         let message = client_response.unwrap_or("KO".into());
+
                         // send_message_to_sender(&mut sender, message).await; // Direct send.
                         tx_to_web_server_for_him
                             .send(wrap_ws_response_from_ws_client_message(message))
