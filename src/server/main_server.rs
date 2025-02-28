@@ -1,10 +1,10 @@
 use crate::music_thread::music_thread::CommFromMusicThread;
-use crate::server::listener::listener_manage;
+use crate::server::listener::manage_client_request_if_valid;
 use futures::{SinkExt, StreamExt};
 use std::fmt::Debug;
 use std::net::SocketAddr;
+use std::thread;
 use std::thread::JoinHandle;
-use std::{env, thread};
 use tokio::net::TcpListener;
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::Receiver;
@@ -15,11 +15,9 @@ const BUFFER_SIZE: usize = 32;
 
 pub type CommFromMusicThreadBroadcastRx = broadcast::Sender<CommFromMusicThread>;
 pub fn main_server_thread() -> (JoinHandle<()>, CommFromMusicThreadBroadcastRx) {
-    let (tx_to_web_server, mut rx_to_web_server) =
+    let (tx_to_web_server, rx_to_web_server) =
         broadcast::channel::<CommFromMusicThread>(BUFFER_SIZE);
     let thread = thread::spawn(move || {
-        // let new_rx = tx_to_web_server.clone().subscribe();
-        // new_rx.resubscribe();
         main_server(rx_to_web_server);
     });
     (thread, tx_to_web_server)
@@ -28,9 +26,10 @@ pub fn main_server_thread() -> (JoinHandle<()>, CommFromMusicThreadBroadcastRx) 
 #[tokio::main]
 pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
     // Get the address to bind to
-    let addr = env::args()
-        .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:8666".to_string());
+    /*let addr = env::args()
+    .nth(1)
+    .unwrap_or_else(|| "127.0.0.1:8666".to_string());*/
+    let addr = "127.0.0.1:8666".to_string();
     let addr: SocketAddr = addr.parse().expect("Invalid address");
 
     // Create the TCP listener
@@ -90,8 +89,11 @@ pub async fn main_server(mut rx_to_web_server: Receiver<CommFromMusicThread>) {
                 match msg {
                     Ok(Message::Text(text)) => {
                         let request = text.chars().collect::<String>();
-                        let response = listener_manage(request);
-                        let message = Message::Text(response.into());
+                        let client_response = manage_client_request_if_valid(request);
+                        let message = match client_response {
+                            Some(client_response) => Message::Text(client_response.into()),
+                            None => Message::Text("KO".into()),
+                        };
                         // let mut sender = sender_2.lock().unwrap();
                         if let Err(e) = sender.send(message).await {
                             println!("Error sending message: {}", e);

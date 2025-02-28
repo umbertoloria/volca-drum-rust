@@ -1,30 +1,32 @@
 use crate::players::play_queue::play_song_in_queue;
 
-pub fn listener_manage(request: String) -> String {
-    let request = sanitize_request(request);
-    match request {
-        Some(WSRequest::PlaySong) => {
+pub fn manage_client_request_if_valid(request: String) -> Option<String> {
+    let client_request = sanitize_client_request(request);
+    match client_request {
+        Some(WSClientRequest::PlaySong) => {
             play_song_in_queue();
-            "OK".into()
+            Some("OK".into())
         }
-        Some(WSRequest::GetPlayQueueState) => {
+        Some(WSClientRequest::GetPlayQueueState) => {
             // get_play_queue_state();
             // TODO: Try to send asynchronously these data
-            "PLAY QUEUE info..".into()
+            Some("PLAY QUEUE info..".into())
         }
-        _ => "KO".into(),
+        _ => None,
     }
 }
-enum WSRequest {
+
+// Web Socket: Client Request
+enum WSClientRequest {
     PlaySong,
     GetPlayQueueState,
 }
-fn sanitize_request(request: String) -> Option<WSRequest> {
+fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
     if request == "PLAY_SONG" {
-        return Some(WSRequest::PlaySong);
+        return Some(WSClientRequest::PlaySong);
     }
     if request == "GET_PLAY_QUEUE_STATE" {
-        return Some(WSRequest::GetPlayQueueState);
+        return Some(WSClientRequest::GetPlayQueueState);
     }
     None
 }

@@ -72,7 +72,7 @@ pub fn play_song_example() {
     let clone_song_keyboard = song1.clone();
     let (tx_keyboard, rx_keyboard) = create_instr_comm();
     let keyboard_thread = thread::spawn(move || {
-        let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(2)).unwrap());
+        let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
@@ -83,8 +83,8 @@ pub fn play_song_example() {
 
     // CONDUCTOR
     // TODO: Enable Interactive CLI or not
-    let enable_interactive_cli = true;
-    // let enable_interactive_cli = false;
+    // let enable_interactive_cli = true;
+    let enable_interactive_cli = false;
     let instr_comm = InstrComm {
         tx_list: vec![
             // List of Instruments Communicators
@@ -94,6 +94,9 @@ pub fn play_song_example() {
         ],
     };
     let mut conductor = Conductor::new(instr_comm, enable_interactive_cli);
+    if !enable_interactive_cli {
+        println!("Playing song now...");
+    }
     conductor.play_song(song1).unwrap();
 
     // CLOSE THREADS

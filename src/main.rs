@@ -19,6 +19,10 @@ fn main() {
     for msg in rx_music_thread {
         tx_to_web_server.send(msg.clone()).unwrap();
     }
+
+    // CLOSE THREADS
+    server_thread.join().unwrap();
+    println!("Server thread ended!");
     music_thread.join().unwrap();
     println!("Music thread ended!");
 }
