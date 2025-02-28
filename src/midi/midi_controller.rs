@@ -5,6 +5,7 @@ const MIDI_CLIENT_NAME: &str = "Dummy MIDI Client Name";
 const MIDI_PORT_NAME: &str = "dummy-midi-port-name";
 
 pub fn init_midi_controller(
+    midi_device_name: &str,
     preferred_output_port_index: Option<usize>,
 ) -> Result<MidiOutputConnection, String> {
     let midi_output =
@@ -20,22 +21,23 @@ pub fn init_midi_controller(
     if midi_port_index.is_none() {
         midi_port_index = match midi_output_ports.len() {
             0 => {
-                println!("no output port found");
+                println!("MIDI \"{}\": no output port found", midi_device_name);
                 None
             }
             1 => {
                 println!(
-                    "Choosing the only available output port: {}",
+                    "MIDI \"{}\": choosing the only available output port: {}",
+                    midi_device_name,
                     midi_output.port_name(&midi_output_ports[0]).unwrap()
                 );
                 Some(0)
             }
             _ => {
-                println!("\nAvailable output ports:");
+                println!("MIDI \"{}\": available output ports:", midi_device_name);
                 for (i, p) in midi_output_ports.iter().enumerate() {
                     println!("{}: {}", i, midi_output.port_name(p).unwrap());
                 }
-                print!("Please select output port: ");
+                print!(" > please select output port: ");
                 stdout().flush().unwrap();
                 let mut input = String::new();
                 stdin().read_line(&mut input).unwrap();
@@ -46,7 +48,10 @@ pub fn init_midi_controller(
     }
 
     match midi_port_index {
-        None => Err("Midi controller: unable to find output port".into()),
+        None => Err(format!(
+            "MIDI \"{}\": unable to find output port",
+            midi_device_name
+        )),
         Some(index) => {
             let output_port = midi_output_ports.remove(index);
             let midi_output_connection = midi_output.connect(&output_port, MIDI_PORT_NAME).unwrap();
