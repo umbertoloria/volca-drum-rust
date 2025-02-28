@@ -18,15 +18,20 @@ pub enum MusicThreadRequest {
 
 type MusicThreadRequestsTx = Sender<MusicThreadRequest>;
 pub type MusicThreadRequestsRx = Receiver<MusicThreadRequest>;
-pub fn main_music_thread(
-    tx_to_web_server: BroadcastSenderToServerThread,
-) -> (JoinHandle<()>, MusicThreadRequestsTx) {
+pub fn create_channel_for_music_thread(
+) -> (Sender<MusicThreadRequest>, Receiver<MusicThreadRequest>) {
     let (music_thread_requests_tx, music_thread_requests_rx) =
         mpsc::channel::<MusicThreadRequest>();
-    let music_thread = thread::spawn(move || {
+    (music_thread_requests_tx, music_thread_requests_rx)
+}
+
+pub fn main_music_thread(
+    music_thread_requests_rx: MusicThreadRequestsRx,
+    tx_to_web_server: BroadcastSenderToServerThread,
+) -> JoinHandle<()> {
+    thread::spawn(move || {
         music_thread_logics(music_thread_requests_rx, tx_to_web_server);
-    });
-    (music_thread, music_thread_requests_tx)
+    })
 }
 
 fn music_thread_logics(
