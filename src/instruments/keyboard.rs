@@ -105,7 +105,7 @@ impl Instrument for Keyboard {
     fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
             if self.chord_index < pattern.chords.len() {
-                let mut chord = &pattern.chords[self.chord_index];
+                let chord = &pattern.chords[self.chord_index];
                 return format!("part \"{}\" / {} chord", pattern.key, chord.chord_name);
             }
         }

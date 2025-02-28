@@ -36,13 +36,15 @@ pub fn play_song_in_queue(tx_to_web_server: BroadcastSenderToServerThread) {
         }
     }
 }
-fn play_song_example_with_updates(tx_to_web_server: BroadcastSenderToServerThread) {
+pub fn play_song_example_with_updates(tx_to_web_server: BroadcastSenderToServerThread) {
     tx_to_web_server
         .send(wrap_ws_response_from_music_thread(
             WSMusicThreadResponse::SongStarted,
         ))
         .unwrap();
+
     play_song_example();
+
     tx_to_web_server
         .send(wrap_ws_response_from_music_thread(
             WSMusicThreadResponse::SongEnded,
