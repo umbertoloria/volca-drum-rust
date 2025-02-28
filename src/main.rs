@@ -1,5 +1,5 @@
 use crate::music_thread::music_thread::main_music_thread;
-use crate::server::main_server::main_server_thread;
+use crate::server::main_server::{main_server_thread, wrap_ws_response_from_music_thread};
 
 mod devices;
 mod instruments;
@@ -16,8 +16,9 @@ fn main() {
 
     // MUSIC THREAD
     let (music_thread, rx_music_thread) = main_music_thread();
-    for msg in rx_music_thread {
-        tx_to_web_server.send(msg.clone()).unwrap();
+    for message in rx_music_thread {
+        let payload = wrap_ws_response_from_music_thread(message);
+        tx_to_web_server.send(payload).unwrap();
     }
 
     // CLOSE THREADS

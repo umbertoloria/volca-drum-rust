@@ -1,4 +1,4 @@
-use crate::music_thread::music_thread::CommFromMusicThread;
+use crate::music_thread::music_thread::WSMusicThreadResponse;
 use crate::server::listener::manage_client_request_if_valid;
 use futures::{SinkExt, StreamExt};
 use std::fmt::Debug;
@@ -10,13 +10,30 @@ use tokio::sync::broadcast;
 use tokio::sync::broadcast::Receiver;
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message};
 
+// Server Thread Communications
+#[derive(Clone, Debug)]
+pub enum WSResponse {
+    FromMusicThread(WSMusicThreadResponse),
+    FromWSClient(WSClientResponse),
+}
+#[derive(Clone, Debug)]
+enum WSClientResponse {
+    SimpleResponse(Message),
+}
+pub fn wrap_ws_response_from_music_thread(
+    ws_music_thread_response: WSMusicThreadResponse,
+) -> WSResponse {
+    WSResponse::FromMusicThread(ws_music_thread_response)
+}
+pub fn wrap_ws_response_from_ws_client_message(message: Message) -> WSResponse {
+    WSResponse::FromWSClient(WSClientResponse::SimpleResponse(message))
+}
+
 // TODO: Adjust BUFFER_SIZE
 const BUFFER_SIZE: usize = 32;
-
-pub type CommFromMusicThreadBroadcastTx = broadcast::Sender<CommFromMusicThread>;
-pub fn main_server_thread() -> (JoinHandle<()>, CommFromMusicThreadBroadcastTx) {
-    let (tx_to_web_server, rx_to_web_server) =
-        broadcast::channel::<CommFromMusicThread>(BUFFER_SIZE);
+type BroadcastSenderToServerThread = broadcast::Sender<WSResponse>;
+pub fn main_server_thread() -> (JoinHandle<()>, BroadcastSenderToServerThread) {
+    let (tx_to_web_server, rx_to_web_server) = broadcast::channel::<WSResponse>(BUFFER_SIZE);
     // TODO: It is wise to clone this TX?
     let tx_to_web_server_clone = tx_to_web_server.clone();
     let thread = thread::spawn(move || {
@@ -27,8 +44,8 @@ pub fn main_server_thread() -> (JoinHandle<()>, CommFromMusicThreadBroadcastTx) 
 
 #[tokio::main]
 pub async fn main_server(
-    tx_to_web_server: CommFromMusicThreadBroadcastTx,
-    mut rx_to_web_server: Receiver<CommFromMusicThread>,
+    tx_to_web_server: BroadcastSenderToServerThread,
+    mut rx_to_web_server: Receiver<WSResponse>,
 ) {
     // Get the address to bind to
     /*let addr = env::args()
@@ -71,14 +88,21 @@ pub async fn main_server(
                     match message {
                         Ok(message) => {
                             let payload = match message {
-                                CommFromMusicThread::SongStarted => "Song started".into(),
-                                CommFromMusicThread::SongPlayingUpdate => {
-                                    "Song playing update".into()
+                                WSResponse::FromMusicThread(music_thread_response) => {
+                                    match music_thread_response {
+                                        WSMusicThreadResponse::SongStarted => "Song started".into(),
+                                        WSMusicThreadResponse::SongPlayingUpdate => {
+                                            "Song playing update".into()
+                                        }
+                                        WSMusicThreadResponse::SongEnded => "Song ended".into(),
+                                    }
                                 }
-                                CommFromMusicThread::SongEnded => "Song ended".into(),
-                                CommFromMusicThread::SimpleResponse(message) => message,
+                                WSResponse::FromWSClient(client_response) => {
+                                    match client_response {
+                                        WSClientResponse::SimpleResponse(message) => message,
+                                    }
+                                }
                             };
-                            let mut sender = sender_1.lock().unwrap();
                             if let Err(e) = sender.send(payload).await {
                                 println!("Error sending message: {}", e);
                             }
@@ -100,7 +124,7 @@ pub async fn main_server(
                             None => Message::Text("KO".into()),
                         };
                         tx_to_web_server_for_him
-                            .send(CommFromMusicThread::SimpleResponse(message))
+                            .send(wrap_ws_response_from_ws_client_message(message))
                             .unwrap();
                         /*// let mut sender = sender_2.lock().unwrap();
                         if let Err(e) = sender.send(message).await {
