@@ -15,11 +15,7 @@ fn main() {
     let (server_thread, tx_to_web_server) = main_server_thread();
 
     // MUSIC THREAD
-    let (music_thread, rx_music_thread) = main_music_thread();
-    for message in rx_music_thread {
-        let payload = wrap_ws_response_from_music_thread(message);
-        tx_to_web_server.send(payload).unwrap();
-    }
+    let (music_thread, rx_music_thread) = main_music_thread(tx_to_web_server);
 
     // CLOSE THREADS
     server_thread.join().unwrap();

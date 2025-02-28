@@ -1,5 +1,3 @@
-use crate::players::play_queue::play_song_in_queue;
-
 enum WSClientRequest {
     PlaySong,
     GetPlayQueueState,
@@ -16,7 +14,7 @@ fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
 pub fn manage_client_request_if_valid(request: String) -> Option<String> {
     match sanitize_client_request(request) {
         Some(WSClientRequest::PlaySong) => {
-            play_song_in_queue();
+            // FIXME: Ask Music Thread to Play a Song
             Some("OK".into())
         }
         Some(WSClientRequest::GetPlayQueueState) => {

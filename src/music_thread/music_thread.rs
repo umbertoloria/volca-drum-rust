@@ -1,3 +1,5 @@
+use crate::players::play_queue::play_song_in_queue;
+use crate::server::main_server::BroadcastSenderToServerThread;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 use std::thread;
@@ -9,20 +11,35 @@ pub enum WSMusicThreadResponse {
     SongPlayingUpdate,
     SongEnded,
 }
-type CommFromMusicThreadTx = Sender<WSMusicThreadResponse>;
-pub type CommFromMusicThreadRx = Receiver<WSMusicThreadResponse>;
-pub fn main_music_thread() -> (JoinHandle<()>, CommFromMusicThreadRx) {
-    let (tx, rx) = mpsc::channel::<WSMusicThreadResponse>();
-    let thread = thread::spawn(|| {
-        music_thread(tx);
-    });
-    (thread, rx)
+
+pub enum MusicThreadRequest {
+    PlaySong(),
 }
 
-fn music_thread(tx: CommFromMusicThreadTx) {
-    /*
-    tx.send(CommFromMusicThread::SongStarted).unwrap();
-    play_song_example();
-    tx.send(CommFromMusicThread::SongEnded).unwrap();
-    */
+type MusicThreadRequestsTx = Sender<MusicThreadRequest>;
+pub type MusicThreadRequestsRx = Receiver<MusicThreadRequest>;
+pub fn main_music_thread(
+    tx_to_web_server: BroadcastSenderToServerThread,
+) -> (JoinHandle<()>, MusicThreadRequestsTx) {
+    let (music_thread_requests_tx, music_thread_requests_rx) =
+        mpsc::channel::<MusicThreadRequest>();
+    let music_thread = thread::spawn(move || {
+        music_thread_logics(music_thread_requests_rx, tx_to_web_server);
+    });
+    (music_thread, music_thread_requests_tx)
+}
+
+fn music_thread_logics(
+    music_thread_requests_rx: MusicThreadRequestsRx,
+    tx_to_web_server: BroadcastSenderToServerThread,
+) {
+    for music_thread_request in music_thread_requests_rx {
+        // TODO: Avoid cloning every time...
+        let tx_to_web_server_cloned = tx_to_web_server.clone();
+        match music_thread_request {
+            MusicThreadRequest::PlaySong() => {
+                play_song_in_queue(tx_to_web_server_cloned);
+            }
+        }
+    }
 }

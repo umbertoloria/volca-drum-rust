@@ -1,4 +1,8 @@
+use crate::music_thread::music_thread::WSMusicThreadResponse;
 use crate::players::player::play_song_example;
+use crate::server::main_server::{
+    wrap_ws_response_from_music_thread, BroadcastSenderToServerThread,
+};
 use std::sync::Mutex;
 use std::thread;
 use std::thread::JoinHandle;
@@ -9,11 +13,11 @@ static PLAY_QUEUE: Mutex<Vec<PlayQueueThread>> = Mutex::new(Vec::new());
 const DEFAULT_SONG_ID: usize = 7;
 
 // EXPOSED
-pub fn play_song_in_queue() {
+pub fn play_song_in_queue(tx_to_web_server: BroadcastSenderToServerThread) {
     let mut play_queue = PLAY_QUEUE.lock().unwrap();
     if play_queue.is_empty() {
         let play_queue_thread: PlayQueueThread = thread::spawn(move || {
-            play_song_example();
+            play_song_example_with_updates(tx_to_web_server);
         });
         // Inserting as first element.
         play_queue.push(play_queue_thread);
@@ -22,7 +26,7 @@ pub fn play_song_in_queue() {
         let last_thread = play_queue.last().unwrap();
         if last_thread.is_finished() {
             let play_queue_thread: PlayQueueThread = thread::spawn(move || {
-                play_song_example();
+                play_song_example_with_updates(tx_to_web_server);
             });
             // Inserting as last element.
             play_queue.push(play_queue_thread);
@@ -31,6 +35,19 @@ pub fn play_song_in_queue() {
             println!("Unable to play another song!");
         }
     }
+}
+fn play_song_example_with_updates(tx_to_web_server: BroadcastSenderToServerThread) {
+    tx_to_web_server
+        .send(wrap_ws_response_from_music_thread(
+            WSMusicThreadResponse::SongStarted,
+        ))
+        .unwrap();
+    play_song_example();
+    tx_to_web_server
+        .send(wrap_ws_response_from_music_thread(
+            WSMusicThreadResponse::SongEnded,
+        ))
+        .unwrap();
 }
 
 pub struct PlayQueueState {
