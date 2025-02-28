@@ -13,7 +13,7 @@ mod utils;
 fn main() {
     // COMMUNICATIONS
     let (tx_to_web_server, rx_to_web_server) = create_channel_for_server_thread();
-    let (music_thread_requests_tx, music_thread_requests_rx) = create_channel_for_music_thread();
+    let (music_thread_comm_sender, music_thread_requests_rx) = create_channel_for_music_thread();
 
     // SOCKET SERVER
     // TODO: It is wise to clone this TX?
@@ -21,7 +21,7 @@ fn main() {
     let server_thread = main_server_thread(
         rx_to_web_server,
         tx_to_web_server_clone,
-        music_thread_requests_tx,
+        music_thread_comm_sender,
     );
 
     // MUSIC THREAD

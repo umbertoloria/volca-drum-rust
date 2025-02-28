@@ -1,3 +1,4 @@
+use crate::music_thread::music_thread_comm::MusicThreadCommSender;
 use crate::players::play_queue::play_song_in_queue;
 use crate::server::main_server::BroadcastSenderToServerThread;
 use std::sync::mpsc;
@@ -18,10 +19,11 @@ pub enum MusicThreadRequest {
 
 pub type MusicThreadRequestsTx = Sender<MusicThreadRequest>;
 type MusicThreadRequestsRx = Receiver<MusicThreadRequest>;
-pub fn create_channel_for_music_thread() -> (MusicThreadRequestsTx, MusicThreadRequestsRx) {
+pub fn create_channel_for_music_thread() -> (MusicThreadCommSender, MusicThreadRequestsRx) {
     let (music_thread_requests_tx, music_thread_requests_rx) =
         mpsc::channel::<MusicThreadRequest>();
-    (music_thread_requests_tx, music_thread_requests_rx)
+    let music_thread_comm_sender = MusicThreadCommSender::new(music_thread_requests_tx);
+    (music_thread_comm_sender, music_thread_requests_rx)
 }
 
 pub fn main_music_thread(

@@ -1,5 +1,6 @@
-use crate::music_thread::music_thread::{MusicThreadRequestsTx, WSMusicThreadResponse};
-use crate::server::listener::manage_client_request_if_valid;
+use crate::music_thread::music_thread::WSMusicThreadResponse;
+use crate::music_thread::music_thread_comm::MusicThreadCommSender;
+use crate::server::server_request_manager::ServerRequestManager;
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
 use std::fmt::Debug;
@@ -44,10 +45,10 @@ pub fn create_channel_for_server_thread() -> (
 pub fn main_server_thread(
     rx_to_web_server: BroadcastReceiverToServerThread,
     tx_to_web_server: BroadcastSenderToServerThread,
-    music_thread_requests_tx: MusicThreadRequestsTx,
+    music_thread_comm_sender: MusicThreadCommSender,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
-        main_server(rx_to_web_server, tx_to_web_server, music_thread_requests_tx);
+        main_server(rx_to_web_server, tx_to_web_server, music_thread_comm_sender);
     })
 }
 
@@ -55,7 +56,7 @@ pub fn main_server_thread(
 pub async fn main_server(
     rx_to_web_server: BroadcastReceiverToServerThread,
     tx_to_web_server: BroadcastSenderToServerThread,
-    music_thread_requests_tx: MusicThreadRequestsTx,
+    music_thread_comm_sender: MusicThreadCommSender,
 ) {
     // Get the address to bind to
     /*let addr = env::args()
@@ -72,7 +73,7 @@ pub async fn main_server(
 
         let tx_to_web_server_for_him = tx_to_web_server.clone();
         let mut rx_to_web_server_for_him = rx_to_web_server.resubscribe();
-        let music_thread_requests_tx_for_him = music_thread_requests_tx.clone();
+        let server_request_manager = ServerRequestManager::new(music_thread_comm_sender.clone());
 
         tokio::spawn(async move {
             // Accept the WebSocket connection
@@ -119,17 +120,11 @@ pub async fn main_server(
             });
 
             // Handle incoming messages
-            // let mut sender_2 = arc_sender.clone();
             while let Some(msg) = receiver.next().await {
                 match msg {
                     Ok(Message::Text(text)) => {
                         let request = text.chars().collect::<String>();
-                        // TODO: Extract class
-                        let client_response = manage_client_request_if_valid(
-                            request,
-                            &music_thread_requests_tx_for_him,
-                        );
-                        let message = client_response.unwrap_or("KO".into());
+                        let message = server_request_manager.manage(request);
 
                         // send_message_to_sender(&mut sender, message).await; // Direct send.
                         tx_to_web_server_for_him
@@ -137,7 +132,6 @@ pub async fn main_server(
                             .unwrap();
                     }
                     Ok(Message::Close(_)) => {
-                        // TODO: Abort is best here?
                         thread_connection_recv_from_outside.abort();
                         break;
                     }
@@ -149,7 +143,6 @@ pub async fn main_server(
                 }
             }
 
-            // TODO: Abort is best here?
             thread_connection_recv_from_outside.abort();
 
             // println!("Closing connection");
