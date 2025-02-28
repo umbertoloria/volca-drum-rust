@@ -1,5 +1,5 @@
 use crate::music_thread::music_thread::main_music_thread;
-use crate::server::main_server::{main_server_thread, wrap_ws_response_from_music_thread};
+use crate::server::main_server::{create_channel_for_server_thread, main_server_thread};
 
 mod devices;
 mod instruments;
@@ -11,8 +11,13 @@ mod song;
 mod utils;
 
 fn main() {
+    // COMMUNICATIONS
+    let (tx_to_web_server, rx_to_web_server) = create_channel_for_server_thread();
+
     // SOCKET SERVER
-    let (server_thread, tx_to_web_server) = main_server_thread();
+    // TODO: It is wise to clone this TX?
+    let tx_to_web_server_clone = tx_to_web_server.clone();
+    let server_thread = main_server_thread(tx_to_web_server_clone, rx_to_web_server);
 
     // MUSIC THREAD
     let (music_thread, rx_music_thread) = main_music_thread(tx_to_web_server);

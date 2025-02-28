@@ -8,7 +8,7 @@ use std::thread;
 use std::thread::JoinHandle;
 use tokio::net::{TcpListener, TcpStream};
 use tokio::sync::broadcast;
-use tokio::sync::broadcast::Receiver;
+use tokio::sync::broadcast::{Receiver, Sender};
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message, WebSocketStream};
 
 // Server Thread Communications
@@ -30,23 +30,30 @@ pub fn wrap_ws_response_from_ws_client_message(message: String) -> WSResponse {
     WSResponse::FromWSClient(WSClientResponse::SimpleResponse(message))
 }
 
-// TODO: Adjust BUFFER_SIZE
-const BUFFER_SIZE: usize = 32;
-pub type BroadcastSenderToServerThread = broadcast::Sender<WSResponse>;
-pub fn main_server_thread() -> (JoinHandle<()>, BroadcastSenderToServerThread) {
+pub type BroadcastSenderToServerThread = Sender<WSResponse>;
+pub type BroadcastReceiverToServerThread = Receiver<WSResponse>;
+pub fn create_channel_for_server_thread() -> (
+    BroadcastSenderToServerThread,
+    BroadcastReceiverToServerThread,
+) {
+    // TODO: Adjust BUFFER_SIZE
+    const BUFFER_SIZE: usize = 32;
     let (tx_to_web_server, rx_to_web_server) = broadcast::channel::<WSResponse>(BUFFER_SIZE);
-    // TODO: It is wise to clone this TX?
-    let tx_to_web_server_clone = tx_to_web_server.clone();
-    let thread = thread::spawn(move || {
-        main_server(tx_to_web_server_clone, rx_to_web_server);
-    });
-    (thread, tx_to_web_server)
+    (tx_to_web_server, rx_to_web_server)
+}
+pub fn main_server_thread(
+    tx_to_web_server: BroadcastSenderToServerThread,
+    rx_to_web_server: BroadcastReceiverToServerThread,
+) -> JoinHandle<()> {
+    thread::spawn(move || {
+        main_server(tx_to_web_server, rx_to_web_server);
+    })
 }
 
 #[tokio::main]
 pub async fn main_server(
     tx_to_web_server: BroadcastSenderToServerThread,
-    mut rx_to_web_server: Receiver<WSResponse>,
+    mut rx_to_web_server: BroadcastReceiverToServerThread,
 ) {
     // Get the address to bind to
     /*let addr = env::args()
