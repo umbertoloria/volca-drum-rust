@@ -24,6 +24,7 @@ fn music_thread_logics(
     music_thread_comm_receiver: MusicThreadCommReceiver,
     main_thread_comm_sender: MainThreadCommSender,
 ) {
+    // Play Queue Thread
     let (tx, rx) = mpsc::channel::<PlayQueueRequest>();
     let play_queue_thread = play_queue_thread(rx, main_thread_comm_sender);
 

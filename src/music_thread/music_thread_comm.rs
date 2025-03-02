@@ -1,45 +1,46 @@
-use std::sync::mpsc;
-use std::sync::mpsc::{Receiver, Sender};
+use crate::thread_comm::thread_comm::{
+    create_thread_comm_instances, ThreadCommReceiver, ThreadCommReceiverTrait, ThreadCommSender,
+    ThreadCommSenderTrait, ThreadCommSenderWrapperTrait,
+};
+use std::sync::mpsc::Receiver;
 
 pub enum MusicThreadRequest {
     // TODO: Add Song ID here
     PlaySong(),
 }
 pub fn create_music_thread_comm_instances() -> (MusicThreadCommSender, MusicThreadCommReceiver) {
-    let (tx, rx) = mpsc::channel::<MusicThreadRequest>();
-    let music_thread_comm_sender = MusicThreadCommSender::new(tx);
-    let music_thread_comm_receiver = MusicThreadCommReceiver::new(rx);
+    let (sender, receiver) = create_thread_comm_instances::<MusicThreadRequest>();
+    let music_thread_comm_sender = MusicThreadCommSender::new(sender);
+    let music_thread_comm_receiver = MusicThreadCommReceiver::new(receiver);
     (music_thread_comm_sender, music_thread_comm_receiver)
 }
 
-// SENDER
 pub struct MusicThreadCommSender {
-    tx: Sender<MusicThreadRequest>,
+    sender: ThreadCommSender<MusicThreadRequest>,
+}
+impl ThreadCommSenderWrapperTrait<MusicThreadRequest> for MusicThreadCommSender {
+    fn new(sender: ThreadCommSender<MusicThreadRequest>) -> Self {
+        Self { sender }
+    }
+    fn get_sender(&self) -> &ThreadCommSender<MusicThreadRequest> {
+        &self.sender
+    }
 }
 impl MusicThreadCommSender {
-    pub fn new(tx: Sender<MusicThreadRequest>) -> Self {
-        Self { tx }
-    }
-    pub fn clone(&self) -> Self {
-        Self {
-            tx: self.tx.clone(),
-        }
-    }
     pub fn request_play_song(&self) {
         let music_thread_request = MusicThreadRequest::PlaySong();
-        self.tx.send(music_thread_request).unwrap();
+        self.sender.send(music_thread_request);
     }
 }
 
-// RECEIVER
 pub struct MusicThreadCommReceiver {
-    rx: Receiver<MusicThreadRequest>,
+    receiver: ThreadCommReceiver<MusicThreadRequest>,
 }
 impl MusicThreadCommReceiver {
-    pub fn new(rx: Receiver<MusicThreadRequest>) -> Self {
-        Self { rx }
+    pub fn new(receiver: ThreadCommReceiver<MusicThreadRequest>) -> Self {
+        Self { receiver }
     }
     pub fn loop_requests(self) -> Receiver<MusicThreadRequest> {
-        self.rx
+        self.receiver.get_recv_iter()
     }
 }

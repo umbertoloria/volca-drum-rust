@@ -10,6 +10,7 @@ mod music_thread;
 mod players;
 mod server;
 mod song;
+mod thread_comm;
 mod utils;
 
 fn main() {

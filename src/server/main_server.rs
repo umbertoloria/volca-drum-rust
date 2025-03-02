@@ -4,6 +4,7 @@ use crate::server::main_server_comm::{
     WSResponse,
 };
 use crate::server::server_request_manager::ServerRequestManager;
+use crate::thread_comm::thread_comm::ThreadCommSenderWrapperTrait;
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
 use std::fmt::Debug;
