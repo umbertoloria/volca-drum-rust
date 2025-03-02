@@ -1,9 +1,11 @@
 use crate::music_thread::music_thread_comm::{MusicThreadCommReceiver, MusicThreadRequest};
 use crate::players::play_queue::play_song_example_with_updates;
 use crate::server::main_server_comm::MainThreadCommSender;
+use crate::thread_comm::thread_comm::{
+    create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
+};
 use std::sync::atomic::AtomicBool;
-use std::sync::mpsc::Receiver;
-use std::sync::{mpsc, Arc, Mutex};
+use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 
@@ -25,28 +27,38 @@ fn music_thread_logics(
     main_thread_comm_sender: MainThreadCommSender,
 ) {
     // Play Queue Thread
-    let (tx, rx) = mpsc::channel::<PlayQueueRequest>();
-    let play_queue_thread = play_queue_thread(rx, main_thread_comm_sender);
+    let (play_queue_request_sender, play_queue_request_receiver) = create_play_queue_request_comm();
+    let play_queue_thread = play_queue_thread(play_queue_request_receiver, main_thread_comm_sender);
 
     for music_thread_request in music_thread_comm_receiver.get_recv_iter() {
         match music_thread_request {
             MusicThreadRequest::PlaySong() => {
-                tx.send(PlayQueueRequest::RequestToPlay).unwrap();
+                play_queue_request_sender.send(PlayQueueRequest::RequestToPlay);
             }
         }
     }
 
-    tx.send(PlayQueueRequest::CloseThread).unwrap();
+    play_queue_request_sender.send(PlayQueueRequest::CloseThread);
     play_queue_thread.join().unwrap();
 }
 
+// PLAY QUEUE THREAD
+type PlayQueueRequestReceiver = ThreadCommReceiver<PlayQueueRequest>;
+fn create_play_queue_request_comm() -> (
+    ThreadCommSender<PlayQueueRequest>,
+    ThreadCommReceiver<PlayQueueRequest>,
+) {
+    let (play_queue_request_sender, play_queue_request_receiver) =
+        create_thread_comm_instances::<PlayQueueRequest>();
+    (play_queue_request_sender, play_queue_request_receiver)
+}
 fn play_queue_thread(
-    rx: Receiver<PlayQueueRequest>,
+    play_queue_request_receiver: PlayQueueRequestReceiver,
     main_thread_comm_sender: MainThreadCommSender,
 ) -> JoinHandle<()> {
     let is_playing = Arc::new(Mutex::new(AtomicBool::new(false)));
     thread::spawn(move || {
-        for request in rx {
+        for request in play_queue_request_receiver.get_recv_iter() {
             match request {
                 PlayQueueRequest::RequestToPlay => {
                     let main_thread_comm_sender_clone = main_thread_comm_sender.clone();
