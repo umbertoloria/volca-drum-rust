@@ -3,7 +3,7 @@ use crate::devices::volca_drum::VolcaDrum;
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::drummer::Drummer;
 use crate::instruments::instr_comm::{
-    create_instr_comm, start_listening_to_instr_comm_commands, InstrComm,
+    create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
 };
 use crate::instruments::keyboard::Keyboard;
 use crate::midi::midi_controller::init_midi_controller;
@@ -49,7 +49,7 @@ pub fn play_song_example() {
 
     // Drummer
     let clone_song_drummer = song1.clone();
-    let (tx_drummer, rx_drummer) = create_instr_comm();
+    let (tx_drummer, rx_drummer) = create_instrument_comm();
     let drummer_thread = thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
@@ -65,12 +65,12 @@ pub fn play_song_example() {
 
         // Instrument
         let mut drummer = Drummer::new(clone_song_drummer, volca_drum);
-        start_listening_to_instr_comm_commands(rx_drummer, &mut drummer);
+        start_listening_to_instrument_comm_commands(rx_drummer, &mut drummer);
     });
 
     // Keyboard
     let clone_song_keyboard = song1.clone();
-    let (tx_keyboard, rx_keyboard) = create_instr_comm();
+    let (tx_keyboard, rx_keyboard) = create_instrument_comm();
     let keyboard_thread = thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
@@ -78,14 +78,14 @@ pub fn play_song_example() {
 
         // Instrument
         let mut keyboard = Keyboard::new(clone_song_keyboard, volca_keys);
-        start_listening_to_instr_comm_commands(rx_keyboard, &mut keyboard);
+        start_listening_to_instrument_comm_commands(rx_keyboard, &mut keyboard);
     });
 
     // CONDUCTOR
     // TODO: Enable Interactive CLI or not
     // let enable_interactive_cli = true;
     let enable_interactive_cli = false;
-    let instr_comm = InstrComm {
+    let instrument_broadcast_comm = InstrumentBroadcastComm {
         tx_list: vec![
             // List of Instruments Communicators
             // tx_metronome,
@@ -93,7 +93,7 @@ pub fn play_song_example() {
             tx_keyboard,
         ],
     };
-    let mut conductor = Conductor::new(instr_comm, enable_interactive_cli);
+    let mut conductor = Conductor::new(instrument_broadcast_comm, enable_interactive_cli);
     if !enable_interactive_cli {
         println!("Playing song now...");
     }

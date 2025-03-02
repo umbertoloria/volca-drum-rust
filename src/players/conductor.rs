@@ -1,4 +1,4 @@
-use crate::instruments::instr_comm::InstrComm;
+use crate::instruments::instr_comm::InstrumentBroadcastComm;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::Song;
 use crate::utils::timing::get_now_millis;
@@ -12,13 +12,16 @@ pub const DUR_1_32: Duration = Duration::from_millis(125);
 pub const BPM_DEFAULT: f64 = 60.0;
 
 pub struct Conductor {
-    instr_comm: InstrComm,
+    instrument_broadcast_comm: InstrumentBroadcastComm,
     enable_interactive_cli: bool,
 }
 impl Conductor {
-    pub fn new(instr_comm: InstrComm, enable_interactive_cli: bool) -> Self {
+    pub fn new(
+        instrument_broadcast_comm: InstrumentBroadcastComm,
+        enable_interactive_cli: bool,
+    ) -> Self {
         Self {
-            instr_comm,
+            instrument_broadcast_comm,
             enable_interactive_cli,
         }
     }
@@ -32,7 +35,7 @@ impl Conductor {
         let global_delay = 1_000; // Wait one second.
         let start_from_millis = get_now_millis() + global_delay;
         // TODO: Avoid cloning Song ID
-        self.instr_comm
+        self.instrument_broadcast_comm
             .play_song(song.id.clone(), start_from_millis);
 
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
@@ -46,7 +49,7 @@ impl Conductor {
 
         // TODO: Restore Interactive CLI feature
 
-        self.instr_comm.shutdown();
+        self.instrument_broadcast_comm.shutdown();
 
         Ok(())
     }

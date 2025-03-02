@@ -2,13 +2,13 @@ use crate::instruments::instrument::Instrument;
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 
-pub struct InstrComm {
-    pub tx_list: Vec<Sender<InstrCommCommand>>,
+pub struct InstrumentBroadcastComm {
+    pub tx_list: Vec<Sender<InstrumentCommCommand>>,
 }
-impl InstrComm {
+impl InstrumentBroadcastComm {
     pub fn play_song(&mut self, song_id: String, start_from_millis: u128) {
         for tx in &self.tx_list {
-            tx.send(InstrCommCommand::PlaySong(
+            tx.send(InstrumentCommCommand::PlaySong(
                 song_id.clone(),
                 start_from_millis,
             ))
@@ -24,30 +24,34 @@ impl InstrComm {
     }*/
     pub fn shutdown(&self) {
         for tx in &self.tx_list {
-            tx.send(InstrCommCommand::Shutdown).unwrap();
+            tx.send(InstrumentCommCommand::Shutdown).unwrap();
         }
     }
 }
 
 #[derive(Debug)]
-pub enum InstrCommCommand {
+pub enum InstrumentCommCommand {
     PlaySong(String, u128),
     // PlayHit(TempoSnapshot), // Deprecated.
     Shutdown,
 }
-pub fn create_instr_comm() -> (Sender<InstrCommCommand>, Receiver<InstrCommCommand>) {
-    mpsc::channel::<InstrCommCommand>()
+pub fn create_instrument_comm() -> (
+    Sender<InstrumentCommCommand>,
+    Receiver<InstrumentCommCommand>,
+) {
+    mpsc::channel::<InstrumentCommCommand>()
 }
-pub fn start_listening_to_instr_comm_commands(
-    rx_instrument: Receiver<InstrCommCommand>,
+
+pub fn start_listening_to_instrument_comm_commands(
+    rx_instrument: Receiver<InstrumentCommCommand>,
     instrument: &mut impl Instrument,
 ) {
     for received in rx_instrument {
         match received {
-            InstrCommCommand::PlaySong(song_id, start_from_millis) => {
+            InstrumentCommCommand::PlaySong(song_id, start_from_millis) => {
                 instrument.play_song(song_id, start_from_millis);
             }
-            InstrCommCommand::Shutdown => {
+            InstrumentCommCommand::Shutdown => {
                 break;
             }
         }
