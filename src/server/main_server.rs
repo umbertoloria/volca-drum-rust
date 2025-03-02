@@ -1,7 +1,7 @@
 use crate::music_thread::music_thread::WSMusicThreadResponse;
 use crate::music_thread::music_thread_comm::MusicThreadCommSender;
 use crate::server::main_server_comm::{
-    BroadcastReceiverToServerThread, MainThreadCommSender, WSClientResponse, WSResponse,
+    MainThreadCommReceiver, MainThreadCommSender, WSClientResponse, WSResponse,
 };
 use crate::server::server_request_manager::ServerRequestManager;
 use futures::stream::SplitSink;
@@ -14,13 +14,13 @@ use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message, WebSocketStream};
 
 pub fn main_server_thread(
-    rx_to_web_server: BroadcastReceiverToServerThread,
+    main_thread_comm_receiver: MainThreadCommReceiver,
     main_thread_comm_sender: MainThreadCommSender,
     music_thread_comm_sender: MusicThreadCommSender,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
         main_server(
-            rx_to_web_server,
+            main_thread_comm_receiver,
             main_thread_comm_sender,
             music_thread_comm_sender,
         );
@@ -29,7 +29,7 @@ pub fn main_server_thread(
 
 #[tokio::main]
 pub async fn main_server(
-    rx_to_web_server: BroadcastReceiverToServerThread,
+    main_thread_comm_receiver: MainThreadCommReceiver,
     main_thread_comm_sender: MainThreadCommSender,
     music_thread_comm_sender: MusicThreadCommSender,
 ) {
@@ -47,7 +47,7 @@ pub async fn main_server(
         println!("Connection with {:?}", socket_addr);
 
         let main_thread_comm_sender_for_him = main_thread_comm_sender.clone();
-        let mut rx_to_web_server_for_him = rx_to_web_server.resubscribe();
+        let mut main_thread_comm_receiver_for_him = main_thread_comm_receiver.resubscribe();
         let server_request_manager = ServerRequestManager::new(music_thread_comm_sender.clone());
 
         tokio::spawn(async move {
@@ -68,7 +68,7 @@ pub async fn main_server(
             // Update clients
             let thread_connection_recv_from_outside = tokio::spawn(async move {
                 loop {
-                    let message = rx_to_web_server_for_him.recv().await;
+                    let message = main_thread_comm_receiver_for_him.async_new_message().await;
                     match message {
                         Ok(message) => {
                             let payload = match message {

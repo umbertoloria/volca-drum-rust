@@ -14,7 +14,7 @@ mod utils;
 
 fn main() {
     // COMMUNICATIONS
-    let (main_thread_comm_sender, rx_to_web_server) = create_channel_for_server_thread();
+    let (main_thread_comm_sender, main_thread_comm_receiver) = create_channel_for_server_thread();
     let (music_thread_comm_sender, music_thread_comm_receiver) =
         create_music_thread_comm_instances();
 
@@ -22,7 +22,7 @@ fn main() {
     // TODO: It is wise to clone this TX?
     let main_thread_comm_sender_clone = main_thread_comm_sender.clone();
     let server_thread = main_server_thread(
-        rx_to_web_server,
+        main_thread_comm_receiver,
         main_thread_comm_sender_clone,
         music_thread_comm_sender,
     );
