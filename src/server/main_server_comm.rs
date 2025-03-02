@@ -1,4 +1,3 @@
-use crate::music_thread::music_thread::WSMusicThreadResponse;
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::error::RecvError;
 use tokio::sync::broadcast::{Receiver, Sender};
@@ -7,6 +6,12 @@ use tokio::sync::broadcast::{Receiver, Sender};
 pub enum WSResponse {
     FromMusicThread(WSMusicThreadResponse),
     FromWSClient(WSClientResponse),
+}
+#[derive(Clone, Debug)]
+pub enum WSMusicThreadResponse {
+    SongStarted,
+    SongPlayingUpdate,
+    SongEnded,
 }
 #[derive(Clone, Debug)]
 pub enum WSClientResponse {

@@ -6,13 +6,6 @@ use std::sync::{mpsc, Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 
-#[derive(Clone, Debug)]
-pub enum WSMusicThreadResponse {
-    SongStarted,
-    SongPlayingUpdate,
-    SongEnded,
-}
-
 pub fn main_music_thread(
     music_thread_comm_receiver: MusicThreadCommReceiver,
     main_thread_comm_sender: MainThreadCommSender,

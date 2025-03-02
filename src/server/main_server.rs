@@ -1,7 +1,7 @@
-use crate::music_thread::music_thread::WSMusicThreadResponse;
 use crate::music_thread::music_thread_comm::MusicThreadCommSender;
 use crate::server::main_server_comm::{
-    MainThreadCommReceiver, MainThreadCommSender, WSClientResponse, WSResponse,
+    MainThreadCommReceiver, MainThreadCommSender, WSClientResponse, WSMusicThreadResponse,
+    WSResponse,
 };
 use crate::server::server_request_manager::ServerRequestManager;
 use futures::stream::SplitSink;
