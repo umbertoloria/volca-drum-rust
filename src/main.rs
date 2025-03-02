@@ -1,4 +1,5 @@
-use crate::music_thread::music_thread::{create_channel_for_music_thread, main_music_thread};
+use crate::music_thread::music_thread::main_music_thread;
+use crate::music_thread::music_thread_comm::create_music_thread_comm_instances;
 use crate::server::main_server::{create_channel_for_server_thread, main_server_thread};
 
 mod devices;
@@ -13,7 +14,7 @@ mod utils;
 fn main() {
     // COMMUNICATIONS
     let (tx_to_web_server, rx_to_web_server) = create_channel_for_server_thread();
-    let (music_thread_comm_sender, music_thread_requests_rx) = create_channel_for_music_thread();
+    let (music_thread_comm_sender, music_thread_comm_receiver) = create_music_thread_comm_instances();
 
     // SOCKET SERVER
     // TODO: It is wise to clone this TX?
@@ -25,7 +26,7 @@ fn main() {
     );
 
     // MUSIC THREAD
-    let music_thread = main_music_thread(music_thread_requests_rx, tx_to_web_server);
+    let music_thread = main_music_thread(music_thread_comm_receiver, tx_to_web_server);
 
     // CLOSE THREADS
     server_thread.join().unwrap();
