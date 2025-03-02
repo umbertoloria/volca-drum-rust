@@ -1,8 +1,7 @@
 use crate::music_thread::music_thread::WSMusicThreadResponse;
 use crate::players::player::play_song_example;
-use crate::server::main_server::{
-    wrap_ws_response_from_music_thread, BroadcastSenderToServerThread,
-};
+use crate::server::main_server::wrap_ws_response_from_music_thread;
+use crate::server::main_server_comm::BroadcastSenderToServerThread;
 use std::sync::Mutex;
 use std::thread;
 use std::thread::JoinHandle;

@@ -1,5 +1,8 @@
 use crate::music_thread::music_thread::WSMusicThreadResponse;
 use crate::music_thread::music_thread_comm::MusicThreadCommSender;
+use crate::server::main_server_comm::{
+    BroadcastReceiverToServerThread, BroadcastSenderToServerThread,
+};
 use crate::server::server_request_manager::ServerRequestManager;
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
@@ -8,8 +11,6 @@ use std::net::SocketAddr;
 use std::thread;
 use std::thread::JoinHandle;
 use tokio::net::{TcpListener, TcpStream};
-use tokio::sync::broadcast;
-use tokio::sync::broadcast::{Receiver, Sender};
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message, WebSocketStream};
 
 // Server Thread Communications
@@ -31,17 +32,6 @@ pub fn wrap_ws_response_from_ws_client_message(message: String) -> WSResponse {
     WSResponse::FromWSClient(WSClientResponse::SimpleResponse(message))
 }
 
-pub type BroadcastSenderToServerThread = Sender<WSResponse>;
-pub type BroadcastReceiverToServerThread = Receiver<WSResponse>;
-pub fn create_channel_for_server_thread() -> (
-    BroadcastSenderToServerThread,
-    BroadcastReceiverToServerThread,
-) {
-    // TODO: Adjust BUFFER_SIZE
-    const BUFFER_SIZE: usize = 32;
-    let (tx_to_web_server, rx_to_web_server) = broadcast::channel::<WSResponse>(BUFFER_SIZE);
-    (tx_to_web_server, rx_to_web_server)
-}
 pub fn main_server_thread(
     rx_to_web_server: BroadcastReceiverToServerThread,
     tx_to_web_server: BroadcastSenderToServerThread,
