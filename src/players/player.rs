@@ -49,7 +49,8 @@ pub fn play_song_example() {
 
     // Drummer
     let clone_song_drummer = song1.clone();
-    let (tx_drummer, rx_drummer) = create_instrument_comm();
+    let (instrument_comm_sender_drummer, instrument_comm_receiver_drummer) =
+        create_instrument_comm();
     let drummer_thread = thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
@@ -65,12 +66,13 @@ pub fn play_song_example() {
 
         // Instrument
         let mut drummer = Drummer::new(clone_song_drummer, volca_drum);
-        start_listening_to_instrument_comm_commands(rx_drummer, &mut drummer);
+        start_listening_to_instrument_comm_commands(instrument_comm_receiver_drummer, &mut drummer);
     });
 
     // Keyboard
     let clone_song_keyboard = song1.clone();
-    let (tx_keyboard, rx_keyboard) = create_instrument_comm();
+    let (instrument_comm_sender_keyboard, instrument_comm_receiver_keyboard) =
+        create_instrument_comm();
     let keyboard_thread = thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
@@ -78,7 +80,10 @@ pub fn play_song_example() {
 
         // Instrument
         let mut keyboard = Keyboard::new(clone_song_keyboard, volca_keys);
-        start_listening_to_instrument_comm_commands(rx_keyboard, &mut keyboard);
+        start_listening_to_instrument_comm_commands(
+            instrument_comm_receiver_keyboard,
+            &mut keyboard,
+        );
     });
 
     // CONDUCTOR
@@ -86,11 +91,11 @@ pub fn play_song_example() {
     // let enable_interactive_cli = true;
     let enable_interactive_cli = false;
     let instrument_broadcast_comm = InstrumentBroadcastComm {
-        tx_list: vec![
+        instrument_comm_senders_list: vec![
             // List of Instruments Communicators
             // tx_metronome,
-            tx_drummer,
-            tx_keyboard,
+            instrument_comm_sender_drummer,
+            instrument_comm_sender_keyboard,
         ],
     };
     let mut conductor = Conductor::new(instrument_broadcast_comm, enable_interactive_cli);
