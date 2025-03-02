@@ -1,35 +1,35 @@
 use crate::thread_comm::thread_comm::{
-    create_thread_comm_instances, ThreadCommReceiver, ThreadCommReceiverTrait, ThreadCommSender,
-    ThreadCommSenderTrait, ThreadCommSenderWrapperTrait,
+    create_thread_comm_instances, ThreadCommReceiver, ThreadCommReceiverTrait,
+    ThreadCommSenderTrait,
 };
-use std::sync::mpsc::Receiver;
+use std::sync::mpsc::{Receiver, Sender};
 
 pub enum MusicThreadRequest {
     // TODO: Add Song ID here
     PlaySong(),
 }
 pub fn create_music_thread_comm_instances() -> (MusicThreadCommSender, MusicThreadCommReceiver) {
-    let (sender, receiver) = create_thread_comm_instances::<MusicThreadRequest>();
-    let music_thread_comm_sender = MusicThreadCommSender::new(sender);
+    let (sender, receiver) =
+        create_thread_comm_instances::<MusicThreadRequest, MusicThreadCommSender>();
     let music_thread_comm_receiver = MusicThreadCommReceiver::new(receiver);
-    (music_thread_comm_sender, music_thread_comm_receiver)
+    (sender, music_thread_comm_receiver)
 }
 
 pub struct MusicThreadCommSender {
-    sender: ThreadCommSender<MusicThreadRequest>,
+    tx: Sender<MusicThreadRequest>,
 }
-impl ThreadCommSenderWrapperTrait<MusicThreadRequest> for MusicThreadCommSender {
-    fn new(sender: ThreadCommSender<MusicThreadRequest>) -> Self {
-        Self { sender }
+impl ThreadCommSenderTrait<MusicThreadRequest> for MusicThreadCommSender {
+    fn new(tx: Sender<MusicThreadRequest>) -> Self {
+        Self { tx }
     }
-    fn get_sender(&self) -> &ThreadCommSender<MusicThreadRequest> {
-        &self.sender
+    fn get_tx(&self) -> &Sender<MusicThreadRequest> {
+        &self.tx
     }
 }
 impl MusicThreadCommSender {
     pub fn request_play_song(&self) {
         let music_thread_request = MusicThreadRequest::PlaySong();
-        self.sender.send(music_thread_request);
+        self.tx.send(music_thread_request).unwrap();
     }
 }
 
