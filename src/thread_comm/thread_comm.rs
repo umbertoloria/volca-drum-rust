@@ -1,15 +1,18 @@
 use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 
-pub fn create_thread_comm_instances<RequestType, Sender: ThreadCommSenderTrait<RequestType>>(
-) -> (Sender, ThreadCommReceiver<RequestType>) {
+pub fn create_thread_comm_instances<RequestType>() -> (
+    ThreadCommSenderWrapper<RequestType>,
+    ThreadCommReceiver<RequestType>,
+) {
     let (tx, rx) = mpsc::channel::<RequestType>();
-    let sender = Sender::new(tx);
+    let sender = ThreadCommSenderWrapper::new(tx);
     let receiver = ThreadCommReceiver::new(rx);
     (sender, receiver)
 }
 
 // SENDER
+/*
 pub trait ThreadCommSenderTrait<T>: Sized {
     fn new(tx: Sender<T>) -> Self;
     fn get_tx(&self) -> &Sender<T>;
@@ -18,6 +21,21 @@ pub trait ThreadCommSenderTrait<T>: Sized {
     }
     fn send(&self, message: T) {
         self.get_tx().send(message).unwrap();
+    }
+}
+*/
+pub struct ThreadCommSenderWrapper<RequestType> {
+    tx: Sender<RequestType>,
+}
+impl<RequestType> ThreadCommSenderWrapper<RequestType> {
+    fn new(tx: Sender<RequestType>) -> Self {
+        Self { tx }
+    }
+    pub fn clone(&self) -> ThreadCommSenderWrapper<RequestType> {
+        Self::new(self.tx.clone())
+    }
+    pub fn send(&self, payload: RequestType) {
+        let _ = &self.tx.send(payload).unwrap();
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::music_thread::music_thread_comm::MusicThreadCommSender;
+use crate::music_thread::music_thread_comm::{MusicThreadCommSender, MusicThreadRequest};
 
 pub struct ServerRequestManager {
     music_thread_comm_sender: MusicThreadCommSender,
@@ -12,7 +12,8 @@ impl ServerRequestManager {
     pub fn manage(&self, request: String) -> String {
         match sanitize_client_request(request) {
             Some(WSClientRequest::PlaySong) => {
-                self.music_thread_comm_sender.request_play_song();
+                self.music_thread_comm_sender
+                    .send(MusicThreadRequest::PlaySong());
 
                 "OK".into()
             }
