@@ -6,9 +6,9 @@ pub struct YamlPatchFile {
     pub kick: YamlPatchLayout,
     pub hh: YamlPatchLayout,
     pub snare: YamlPatchLayout,
-    sound4: YamlPatchLayout,
-    sound5: YamlPatchLayout,
-    sound6: YamlPatchLayout,
+    pub sound4: YamlPatchLayout,
+    pub sound5: YamlPatchLayout,
+    pub sound6: YamlPatchLayout,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

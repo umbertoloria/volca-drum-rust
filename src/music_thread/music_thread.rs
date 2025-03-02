@@ -1,4 +1,4 @@
-use crate::music_thread::music_thread_comm::{MusicThreadCommReceiver, MusicThreadRequest};
+use crate::music_thread::music_thread_comm::{MusicThreadCommReceiver, MusicThreadCommand};
 use crate::music_thread::volca_drum_thread::{
     create_volca_drum_thread_comm, volca_drum_thread, VolcaDrumCommand,
 };
@@ -30,18 +30,21 @@ fn music_thread_logics(
     let volca_drum_thread = volca_drum_thread(volca_drum_command_receiver);
 
     // Play Queue Thread
-    let (play_queue_request_sender, play_queue_request_receiver) = create_play_queue_request_comm();
-    let play_queue_thread = play_queue_thread(play_queue_request_receiver, main_thread_comm_sender);
+    let (play_queue_comm_sender, play_queue_comm_receiver) = create_play_queue_comm();
+    let play_queue_thread = play_queue_thread(play_queue_comm_receiver, main_thread_comm_sender);
 
-    for music_thread_request in music_thread_comm_receiver.get_recv_iter() {
-        match music_thread_request {
-            MusicThreadRequest::PlaySong() => {
-                play_queue_request_sender.send(PlayQueueRequest::RequestToPlay);
+    for command in music_thread_comm_receiver.get_recv_iter() {
+        match command {
+            MusicThreadCommand::PlaySong() => {
+                play_queue_comm_sender.send(PlayQueueCommand::RequestToPlay);
+            }
+            MusicThreadCommand::ApplyVolcaDrumPatch(yaml_patch_file) => {
+                volca_drum_command_sender.send(VolcaDrumCommand::ApplyPatch(yaml_patch_file));
             }
         }
     }
 
-    play_queue_request_sender.send(PlayQueueRequest::CloseThread);
+    play_queue_comm_sender.send(PlayQueueCommand::CloseThread);
     play_queue_thread.join().unwrap();
 
     volca_drum_command_sender.send(VolcaDrumCommand::CloseThread);
@@ -49,28 +52,28 @@ fn music_thread_logics(
 }
 
 // PLAY QUEUE THREAD
-enum PlayQueueRequest {
+enum PlayQueueCommand {
     RequestToPlay,
     CloseThread,
 }
-type PlayQueueRequestReceiver = ThreadCommReceiver<PlayQueueRequest>;
-fn create_play_queue_request_comm() -> (
-    ThreadCommSender<PlayQueueRequest>,
-    ThreadCommReceiver<PlayQueueRequest>,
+type PlayQueueRequestReceiver = ThreadCommReceiver<PlayQueueCommand>;
+fn create_play_queue_comm() -> (
+    ThreadCommSender<PlayQueueCommand>,
+    ThreadCommReceiver<PlayQueueCommand>,
 ) {
-    let (play_queue_request_sender, play_queue_request_receiver) =
-        create_thread_comm_instances::<PlayQueueRequest>();
-    (play_queue_request_sender, play_queue_request_receiver)
+    let (play_queue_comm_sender, play_queue_comm_receiver) =
+        create_thread_comm_instances::<PlayQueueCommand>();
+    (play_queue_comm_sender, play_queue_comm_receiver)
 }
 fn play_queue_thread(
-    play_queue_request_receiver: PlayQueueRequestReceiver,
+    play_queue_comm_receiver: PlayQueueRequestReceiver,
     main_thread_comm_sender: MainThreadCommSender,
 ) -> JoinHandle<()> {
     let is_playing = Arc::new(Mutex::new(AtomicBool::new(false)));
     thread::spawn(move || {
-        for request in play_queue_request_receiver.get_recv_iter() {
-            match request {
-                PlayQueueRequest::RequestToPlay => {
+        for command in play_queue_comm_receiver.get_recv_iter() {
+            match command {
+                PlayQueueCommand::RequestToPlay => {
                     let main_thread_comm_sender_clone = main_thread_comm_sender.clone();
 
                     // Atomic Read
@@ -87,7 +90,7 @@ fn play_queue_thread(
                         *value = false;
                     }
                 }
-                PlayQueueRequest::CloseThread => {
+                PlayQueueCommand::CloseThread => {
                     break;
                 }
             }

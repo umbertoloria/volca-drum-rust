@@ -1,3 +1,8 @@
+use crate::devices::sound_panel::SoundPanel;
+use crate::devices::volca_drum::VolcaDrum;
+use crate::midi::midi_controller::init_midi_controller;
+use crate::midi::midi_device::MidiDeviceConcrete;
+use crate::song::yaml_patch_reader::{read_patch_from_yaml, YamlPatchFile};
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -5,6 +10,7 @@ use std::thread;
 use std::thread::JoinHandle;
 
 pub enum VolcaDrumCommand {
+    ApplyPatch(YamlPatchFile),
     CloseThread,
 }
 type VolcaDrumCommandSender = ThreadCommSender<VolcaDrumCommand>;
@@ -14,10 +20,22 @@ pub fn create_volca_drum_thread_comm() -> (VolcaDrumCommandSender, VolcaDrumComm
 }
 
 pub fn volca_drum_thread(volca_drum_command_receiver: VolcaDrumCommandReceiver) -> JoinHandle<()> {
-    // TODO: Use a Volca Drum instance to apply patches
     thread::spawn(move || {
+        let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
+        // let midi_device = MidiDeviceGhost::new(false);
+        let mut volca_drum = VolcaDrum::new(midi_device);
+
+        // Sounds
+        let mut sound_panel = SoundPanel::new(&mut volca_drum);
+        let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
+        // TODO: Make sure it always sounds ok from the first hit
+        sound_panel.set_from_patch(patch1);
+
         for command in volca_drum_command_receiver.get_recv_iter() {
             match command {
+                VolcaDrumCommand::ApplyPatch(yaml_patch_file) => {
+                    sound_panel.set_from_patch(yaml_patch_file);
+                }
                 VolcaDrumCommand::CloseThread => {
                     break;
                 }

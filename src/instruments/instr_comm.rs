@@ -52,8 +52,8 @@ pub fn start_listening_to_instrument_comm_commands(
     instrument_comm_receiver: InstrumentCommReceiver,
     instrument: &mut impl Instrument,
 ) {
-    for instrument_comm_command in instrument_comm_receiver.get_recv_iter() {
-        match instrument_comm_command {
+    for command in instrument_comm_receiver.get_recv_iter() {
+        match command {
             InstrumentCommCommand::PlaySong(song_id, start_from_millis) => {
                 instrument.play_song(song_id, start_from_millis);
             }

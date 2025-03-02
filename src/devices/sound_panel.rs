@@ -10,7 +10,10 @@ const CC_NUMBER_LAYOUT_1_SOUND: u8 = 14;
 pub struct SoundPanel<'a> {
     pub volca_drum: &'a mut VolcaDrum,
 }
-impl SoundPanel<'_> {
+impl<'a> SoundPanel<'a> {
+    pub fn new(volca_drum: &'a mut VolcaDrum) -> SoundPanel<'a> {
+        Self { volca_drum }
+    }
     pub fn set_from_patch(&mut self, patch: YamlPatchFile) {
         self.config_patch_onto_channel_and_layout1(DRUM_CH_KICK, patch.kick);
         self.disable_layout_2_sounds(DRUM_CH_KICK);
