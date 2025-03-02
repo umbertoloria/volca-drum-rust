@@ -4,9 +4,9 @@ use std::sync::mpsc::{Receiver, Sender};
 pub fn create_thread_comm_instances<RequestType, Sender: ThreadCommSenderTrait<RequestType>>(
 ) -> (Sender, ThreadCommReceiver<RequestType>) {
     let (tx, rx) = mpsc::channel::<RequestType>();
-    let thread_comm_sender = Sender::new(tx);
-    let thread_comm_receiver = ThreadCommReceiver::new(rx);
-    (thread_comm_sender, thread_comm_receiver)
+    let sender = Sender::new(tx);
+    let receiver = ThreadCommReceiver::new(rx);
+    (sender, receiver)
 }
 
 // SENDER

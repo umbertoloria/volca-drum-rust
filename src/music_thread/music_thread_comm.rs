@@ -1,8 +1,7 @@
 use crate::thread_comm::thread_comm::{
-    create_thread_comm_instances, ThreadCommReceiver, ThreadCommReceiverTrait,
-    ThreadCommSenderTrait,
+    create_thread_comm_instances, ThreadCommReceiver, ThreadCommSenderTrait,
 };
-use std::sync::mpsc::{Receiver, Sender};
+use std::sync::mpsc::Sender;
 
 pub enum MusicThreadRequest {
     // TODO: Add Song ID here
@@ -11,8 +10,7 @@ pub enum MusicThreadRequest {
 pub fn create_music_thread_comm_instances() -> (MusicThreadCommSender, MusicThreadCommReceiver) {
     let (sender, receiver) =
         create_thread_comm_instances::<MusicThreadRequest, MusicThreadCommSender>();
-    let music_thread_comm_receiver = MusicThreadCommReceiver::new(receiver);
-    (sender, music_thread_comm_receiver)
+    (sender, receiver)
 }
 
 pub struct MusicThreadCommSender {
@@ -33,14 +31,4 @@ impl MusicThreadCommSender {
     }
 }
 
-pub struct MusicThreadCommReceiver {
-    receiver: ThreadCommReceiver<MusicThreadRequest>,
-}
-impl MusicThreadCommReceiver {
-    pub fn new(receiver: ThreadCommReceiver<MusicThreadRequest>) -> Self {
-        Self { receiver }
-    }
-    pub fn loop_requests(self) -> Receiver<MusicThreadRequest> {
-        self.receiver.get_recv_iter()
-    }
-}
+pub type MusicThreadCommReceiver = ThreadCommReceiver<MusicThreadRequest>;
