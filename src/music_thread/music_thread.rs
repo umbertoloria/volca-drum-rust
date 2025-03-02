@@ -1,4 +1,7 @@
 use crate::music_thread::music_thread_comm::{MusicThreadCommReceiver, MusicThreadRequest};
+use crate::music_thread::volca_drum_thread::{
+    create_volca_drum_thread_comm, volca_drum_thread, VolcaDrumCommand,
+};
 use crate::players::play_queue::play_song_example_with_updates;
 use crate::server::main_server_comm::MainThreadCommSender;
 use crate::thread_comm::thread_comm::{
@@ -18,14 +21,14 @@ pub fn main_music_thread(
     })
 }
 
-enum PlayQueueRequest {
-    RequestToPlay,
-    CloseThread,
-}
 fn music_thread_logics(
     music_thread_comm_receiver: MusicThreadCommReceiver,
     main_thread_comm_sender: MainThreadCommSender,
 ) {
+    // Volca Drum Thread
+    let (volca_drum_command_sender, volca_drum_command_receiver) = create_volca_drum_thread_comm();
+    let volca_drum_thread = volca_drum_thread(volca_drum_command_receiver);
+
     // Play Queue Thread
     let (play_queue_request_sender, play_queue_request_receiver) = create_play_queue_request_comm();
     let play_queue_thread = play_queue_thread(play_queue_request_receiver, main_thread_comm_sender);
@@ -40,9 +43,16 @@ fn music_thread_logics(
 
     play_queue_request_sender.send(PlayQueueRequest::CloseThread);
     play_queue_thread.join().unwrap();
+
+    volca_drum_command_sender.send(VolcaDrumCommand::CloseThread);
+    volca_drum_thread.join().unwrap();
 }
 
 // PLAY QUEUE THREAD
+enum PlayQueueRequest {
+    RequestToPlay,
+    CloseThread,
+}
 type PlayQueueRequestReceiver = ThreadCommReceiver<PlayQueueRequest>;
 fn create_play_queue_request_comm() -> (
     ThreadCommSender<PlayQueueRequest>,
