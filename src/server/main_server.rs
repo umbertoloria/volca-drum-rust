@@ -1,7 +1,7 @@
 use crate::music_thread::music_thread::WSMusicThreadResponse;
 use crate::music_thread::music_thread_comm::MusicThreadCommSender;
 use crate::server::main_server_comm::{
-    BroadcastReceiverToServerThread, BroadcastSenderToServerThread,
+    BroadcastReceiverToServerThread, MainThreadCommSender, WSClientResponse, WSResponse,
 };
 use crate::server::server_request_manager::ServerRequestManager;
 use futures::stream::SplitSink;
@@ -13,39 +13,24 @@ use std::thread::JoinHandle;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message, WebSocketStream};
 
-// Server Thread Communications
-#[derive(Clone, Debug)]
-pub enum WSResponse {
-    FromMusicThread(WSMusicThreadResponse),
-    FromWSClient(WSClientResponse),
-}
-#[derive(Clone, Debug)]
-enum WSClientResponse {
-    SimpleResponse(String),
-}
-pub fn wrap_ws_response_from_music_thread(
-    ws_music_thread_response: WSMusicThreadResponse,
-) -> WSResponse {
-    WSResponse::FromMusicThread(ws_music_thread_response)
-}
-pub fn wrap_ws_response_from_ws_client_message(message: String) -> WSResponse {
-    WSResponse::FromWSClient(WSClientResponse::SimpleResponse(message))
-}
-
 pub fn main_server_thread(
     rx_to_web_server: BroadcastReceiverToServerThread,
-    tx_to_web_server: BroadcastSenderToServerThread,
+    main_thread_comm_sender: MainThreadCommSender,
     music_thread_comm_sender: MusicThreadCommSender,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
-        main_server(rx_to_web_server, tx_to_web_server, music_thread_comm_sender);
+        main_server(
+            rx_to_web_server,
+            main_thread_comm_sender,
+            music_thread_comm_sender,
+        );
     })
 }
 
 #[tokio::main]
 pub async fn main_server(
     rx_to_web_server: BroadcastReceiverToServerThread,
-    tx_to_web_server: BroadcastSenderToServerThread,
+    main_thread_comm_sender: MainThreadCommSender,
     music_thread_comm_sender: MusicThreadCommSender,
 ) {
     // Get the address to bind to
@@ -61,7 +46,7 @@ pub async fn main_server(
     while let Ok((stream, socket_addr)) = listener.accept().await {
         println!("Connection with {:?}", socket_addr);
 
-        let tx_to_web_server_for_him = tx_to_web_server.clone();
+        let main_thread_comm_sender_for_him = main_thread_comm_sender.clone();
         let mut rx_to_web_server_for_him = rx_to_web_server.resubscribe();
         let server_request_manager = ServerRequestManager::new(music_thread_comm_sender.clone());
 
@@ -117,9 +102,8 @@ pub async fn main_server(
                         let message = server_request_manager.manage(request);
 
                         // send_message_to_sender(&mut sender, message).await; // Direct send.
-                        tx_to_web_server_for_him
-                            .send(wrap_ws_response_from_ws_client_message(message))
-                            .unwrap();
+                        main_thread_comm_sender_for_him
+                            .notify_from_client_thread_a_response(message);
                     }
                     Ok(Message::Close(_)) => {
                         thread_connection_recv_from_outside.abort();

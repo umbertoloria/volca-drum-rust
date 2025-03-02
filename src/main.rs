@@ -14,21 +14,21 @@ mod utils;
 
 fn main() {
     // COMMUNICATIONS
-    let (tx_to_web_server, rx_to_web_server) = create_channel_for_server_thread();
+    let (main_thread_comm_sender, rx_to_web_server) = create_channel_for_server_thread();
     let (music_thread_comm_sender, music_thread_comm_receiver) =
         create_music_thread_comm_instances();
 
     // SOCKET SERVER
     // TODO: It is wise to clone this TX?
-    let tx_to_web_server_clone = tx_to_web_server.clone();
+    let main_thread_comm_sender_clone = main_thread_comm_sender.clone();
     let server_thread = main_server_thread(
         rx_to_web_server,
-        tx_to_web_server_clone,
+        main_thread_comm_sender_clone,
         music_thread_comm_sender,
     );
 
     // MUSIC THREAD
-    let music_thread = main_music_thread(music_thread_comm_receiver, tx_to_web_server);
+    let music_thread = main_music_thread(music_thread_comm_receiver, main_thread_comm_sender);
 
     // CLOSE THREADS
     server_thread.join().unwrap();
