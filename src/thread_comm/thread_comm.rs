@@ -2,11 +2,11 @@ use std::sync::mpsc;
 use std::sync::mpsc::{Receiver, Sender};
 
 pub fn create_thread_comm_instances<RequestType>() -> (
-    ThreadCommSenderWrapper<RequestType>,
+    ThreadCommSender<RequestType>,
     ThreadCommReceiver<RequestType>,
 ) {
     let (tx, rx) = mpsc::channel::<RequestType>();
-    let sender = ThreadCommSenderWrapper::new(tx);
+    let sender = ThreadCommSender::new(tx);
     let receiver = ThreadCommReceiver::new(rx);
     (sender, receiver)
 }
@@ -24,14 +24,14 @@ pub trait ThreadCommSenderTrait<T>: Sized {
     }
 }
 */
-pub struct ThreadCommSenderWrapper<RequestType> {
+pub struct ThreadCommSender<RequestType> {
     tx: Sender<RequestType>,
 }
-impl<RequestType> ThreadCommSenderWrapper<RequestType> {
+impl<RequestType> ThreadCommSender<RequestType> {
     fn new(tx: Sender<RequestType>) -> Self {
         Self { tx }
     }
-    pub fn clone(&self) -> ThreadCommSenderWrapper<RequestType> {
+    pub fn clone(&self) -> ThreadCommSender<RequestType> {
         Self::new(self.tx.clone())
     }
     pub fn send(&self, payload: RequestType) {
@@ -40,18 +40,20 @@ impl<RequestType> ThreadCommSenderWrapper<RequestType> {
 }
 
 // RECEIVER
+/*
 pub trait ThreadCommReceiverTrait<T> {
     fn new(rx: Receiver<T>) -> Self;
     fn get_recv_iter(self) -> Receiver<T>;
 }
+*/
 pub struct ThreadCommReceiver<T> {
     rx: Receiver<T>,
 }
-impl<T> ThreadCommReceiverTrait<T> for ThreadCommReceiver<T> {
+impl<T> ThreadCommReceiver<T> {
     fn new(rx: Receiver<T>) -> Self {
         Self { rx }
     }
-    fn get_recv_iter(self) -> Receiver<T> {
+    pub fn get_recv_iter(self) -> Receiver<T> {
         self.rx
     }
 }

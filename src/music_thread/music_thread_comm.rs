@@ -1,5 +1,5 @@
 use crate::thread_comm::thread_comm::{
-    create_thread_comm_instances, ThreadCommReceiver, ThreadCommSenderWrapper,
+    create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
 
 pub enum MusicThreadRequest {
@@ -12,5 +12,5 @@ pub fn create_music_thread_comm_instances() -> (MusicThreadCommSender, MusicThre
     (sender, receiver)
 }
 
-pub type MusicThreadCommSender = ThreadCommSenderWrapper<MusicThreadRequest>;
+pub type MusicThreadCommSender = ThreadCommSender<MusicThreadRequest>;
 pub type MusicThreadCommReceiver = ThreadCommReceiver<MusicThreadRequest>;
