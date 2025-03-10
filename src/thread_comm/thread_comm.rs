@@ -35,7 +35,10 @@ impl<RequestType> ThreadCommSender<RequestType> {
         Self::new(self.tx.clone())
     }
     pub fn send(&self, payload: RequestType) {
-        let _ = &self.tx.send(payload).unwrap();
+        // TODO: This causes error. Investigate on that.
+        // let _ = &self.tx.send(payload).unwrap();
+
+        let _ = &self.tx.send(payload);
     }
 }
 

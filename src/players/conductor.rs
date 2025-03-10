@@ -13,20 +13,15 @@ pub const BPM_DEFAULT: f64 = 60.0;
 
 pub struct Conductor {
     instrument_broadcast_comm: InstrumentBroadcastComm,
-    enable_interactive_cli: bool,
 }
 impl Conductor {
-    pub fn new(
-        instrument_broadcast_comm: InstrumentBroadcastComm,
-        enable_interactive_cli: bool,
-    ) -> Self {
+    pub fn new(instrument_broadcast_comm: InstrumentBroadcastComm) -> Self {
         Self {
             instrument_broadcast_comm,
-            enable_interactive_cli,
         }
     }
 
-    pub fn play_song(&mut self, song: Song) -> Result<(), String> {
+    pub fn play_song(&mut self, song: Song, enable_interactive_cli: bool) -> Result<(), String> {
         if song.sections.len() == 0 {
             return Err("Song has no sections".into());
         }
@@ -42,22 +37,23 @@ impl Conductor {
         while realtime_player.has_next_song_instant() {
             let tempo_snapshot = realtime_player.want_and_get_next_tempo_snapshot();
 
-            self.play_1_16th_now(tempo_snapshot);
+            self.play_1_16th_now(tempo_snapshot, enable_interactive_cli);
 
             realtime_player.prepare_next_1_16th();
         }
 
-        // TODO: Restore Interactive CLI feature
-
         // TODO: Think later how to stop Instruments from keep playing due to some bugs
         // self.instrument_broadcast_comm.shutdown();
-
         Ok(())
     }
 
-    pub fn play_1_16th_now(&mut self, tempo_snapshot: &TempoSnapshot) {
+    pub fn play_1_16th_now(
+        &mut self,
+        tempo_snapshot: &TempoSnapshot,
+        enable_interactive_cli: bool,
+    ) {
         // Interactive CLI
-        if self.enable_interactive_cli {
+        if enable_interactive_cli {
             clear_terminal_screen();
             // TODO: Maybe show song author & title here
             // println!("  .:[ {} ]:.", section.kind);

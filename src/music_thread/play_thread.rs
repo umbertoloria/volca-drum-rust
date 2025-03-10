@@ -11,7 +11,6 @@ use crate::midi::midi_controller::init_midi_controller;
 use crate::midi::midi_device::MidiDeviceConcrete;
 use crate::players::conductor::Conductor;
 use crate::server::web_thread_comm::WebThreadCommSender;
-use crate::song::known_songs::get_song_coez_la_musica_non_c_e;
 use crate::song::song::Song;
 use crate::song::yaml_patch_reader::read_patch_from_yaml;
 use crate::thread_comm::thread_comm::{
@@ -23,7 +22,7 @@ use std::thread;
 use std::thread::JoinHandle;
 
 pub enum PlayQueueCommand {
-    RequestToPlay,
+    RequestToPlay(Song),
     CloseThread,
 }
 type PlayQueueRequestReceiver = ThreadCommReceiver<PlayQueueCommand>;
@@ -40,11 +39,31 @@ pub fn play_queue_thread(
     play_queue_comm_receiver: PlayQueueRequestReceiver,
     web_thread_comm_sender: WebThreadCommSender,
 ) -> JoinHandle<()> {
+    // PLAY THREAD
     let is_playing = Arc::new(Mutex::new(AtomicBool::new(false)));
     thread::spawn(move || {
+        // INSTRUMENTS THREADS
+        let (instrument_comm_sender_drummer, instrument_comm_receiver_drummer) =
+            create_instrument_comm();
+        let (instrument_comm_sender_keyboard, instrument_comm_receiver_keyboard) =
+            create_instrument_comm();
+        let (drummer_thread, keyboard_thread) = create_instrument_threads(
+            instrument_comm_receiver_drummer,
+            instrument_comm_receiver_keyboard,
+        );
+        let instrument_broadcast_comm = InstrumentBroadcastComm {
+            instrument_comm_senders_list: vec![
+                // List of Instruments Communicators
+                instrument_comm_sender_drummer,
+                instrument_comm_sender_keyboard,
+            ],
+        };
+        let mut conductor = Conductor::new(instrument_broadcast_comm);
+
+        // PLAY THREAD
         for command in play_queue_comm_receiver.get_recv_iter() {
             match command {
-                PlayQueueCommand::RequestToPlay => {
+                PlayQueueCommand::RequestToPlay(song) => {
                     let web_thread_comm_sender_clone = web_thread_comm_sender.clone();
 
                     // Atomic Read
@@ -56,7 +75,11 @@ pub fn play_queue_thread(
                         *value = true;
 
                         println!("*** can play, now starts");
-                        play_song_example_with_updates(web_thread_comm_sender_clone);
+                        play_song_example_with_updates(
+                            song,
+                            web_thread_comm_sender_clone,
+                            &mut conductor,
+                        );
 
                         *value = false;
                     }
@@ -66,76 +89,32 @@ pub fn play_queue_thread(
                 }
             }
         }
+
+        // CLOSE INSTRUMENTS THREADS
+        drummer_thread.join().unwrap();
+        keyboard_thread.join().unwrap();
     })
 }
 
-fn play_song_example_with_updates(web_thread_comm_sender: WebThreadCommSender) {
+fn play_song_example_with_updates(
+    song: Song,
+    web_thread_comm_sender: WebThreadCommSender,
+    conductor: &mut Conductor,
+) {
     web_thread_comm_sender.notify_from_music_thread_song_started();
 
-    play_song_example();
+    // TODO: Enable Interactive CLI or not
+    // let enable_interactive_cli = true;
+    let enable_interactive_cli = false;
+    if !enable_interactive_cli {
+        println!("Playing song now...");
+    }
+    conductor.play_song(song, enable_interactive_cli).unwrap();
 
     web_thread_comm_sender.notify_from_music_thread_song_ended();
 }
 
-pub fn play_song_example() {
-    let song = get_song_to_play();
-
-    // INSTRUMENTS THREADS COMMS
-    let (instrument_comm_sender_drummer, instrument_comm_receiver_drummer) =
-        create_instrument_comm();
-    let (instrument_comm_sender_keyboard, instrument_comm_receiver_keyboard) =
-        create_instrument_comm();
-
-    // INSTRUMENTS THREADS
-    let (drummer_thread, keyboard_thread) = create_instrument_threads(
-        instrument_comm_receiver_drummer,
-        instrument_comm_receiver_keyboard,
-    );
-
-    // CONDUCTOR
-    // TODO: Enable Interactive CLI or not
-    // let enable_interactive_cli = true;
-    let enable_interactive_cli = false;
-    let instrument_broadcast_comm = InstrumentBroadcastComm {
-        instrument_comm_senders_list: vec![
-            // List of Instruments Communicators
-            // instrument_comm_sender_metronome,
-            instrument_comm_sender_drummer,
-            instrument_comm_sender_keyboard,
-        ],
-    };
-    let mut conductor = Conductor::new(instrument_broadcast_comm, enable_interactive_cli);
-    if !enable_interactive_cli {
-        println!("Playing song now...");
-    }
-    conductor.play_song(song).unwrap();
-
-    // CLOSE THREADS
-    // metronome_thread.join().unwrap();
-    drummer_thread.join().unwrap();
-    keyboard_thread.join().unwrap();
-}
-fn get_song_to_play() -> Song {
-    // SONG
-    /*
-    let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
-    let song1 = convert_yaml_into_song(song1_yaml);
-    */
-    // let song1 = get_dummy_song();
-    let song1 = get_song_coez_la_musica_non_c_e();
-    /*
-    let composer = Composer {
-        bpm: 50,
-        num_sections: 10,
-        click: true,
-        tonality_note: TonalityNote::C,
-        tonality_mode: TonalityMode::Major,
-    };
-    let song1 = composer.compose_new_song();
-    */
-
-    song1
-}
+// INSTRUMENTS THREADS
 type InstrumentThreadType = JoinHandle<()>;
 fn create_instrument_threads(
     instrument_comm_receiver_drummer: InstrumentCommReceiver,

@@ -4,6 +4,8 @@ use crate::music_thread::play_thread::{
 };
 use crate::music_thread::volca_drum_thread::{create_volca_drum_thread_comm, VolcaDrumCommand};
 use crate::server::web_thread_comm::WebThreadCommSender;
+use crate::song::known_songs::get_song_coez_la_musica_non_c_e;
+use crate::song::song::Song;
 use std::thread;
 use std::thread::JoinHandle;
 
@@ -32,7 +34,9 @@ fn music_thread_logics(
     for command in music_thread_comm_receiver.get_recv_iter() {
         match command {
             MusicThreadCommand::PlaySong() => {
-                play_queue_comm_sender.send(PlayQueueCommand::RequestToPlay);
+                // TODO: Pick song using Song ID from Web
+                let song = get_song_to_play();
+                play_queue_comm_sender.send(PlayQueueCommand::RequestToPlay(song));
             }
             MusicThreadCommand::ApplyVolcaDrumPatch(yaml_patch_file) => {
                 volca_drum_command_sender.send(VolcaDrumCommand::ApplyPatch(yaml_patch_file));
@@ -45,4 +49,26 @@ fn music_thread_logics(
 
     volca_drum_command_sender.send(VolcaDrumCommand::CloseThread);
     // volca_drum_thread.join().unwrap();
+}
+
+pub fn get_song_to_play() -> Song {
+    // SONG
+    /*
+    let song1_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
+    let song1 = convert_yaml_into_song(song1_yaml);
+    */
+    // let song1 = get_dummy_song();
+    let song1 = get_song_coez_la_musica_non_c_e();
+    /*
+    let composer = Composer {
+        bpm: 50,
+        num_sections: 10,
+        click: true,
+        tonality_note: TonalityNote::C,
+        tonality_mode: TonalityMode::Major,
+    };
+    let song1 = composer.compose_new_song();
+    */
+
+    song1
 }
