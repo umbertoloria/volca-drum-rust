@@ -1,4 +1,4 @@
-use crate::players::play_queue::play_song_example_with_updates;
+use crate::players::player::play_song_example;
 use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
@@ -53,4 +53,12 @@ pub fn play_queue_thread(
             }
         }
     })
+}
+
+fn play_song_example_with_updates(web_thread_comm_sender: WebThreadCommSender) {
+    web_thread_comm_sender.notify_from_music_thread_song_started();
+
+    play_song_example();
+
+    web_thread_comm_sender.notify_from_music_thread_song_ended();
 }
