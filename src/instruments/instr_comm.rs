@@ -1,12 +1,11 @@
 use crate::instruments::instrument::Instrument;
+use crate::song::song::Song;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
 
-#[derive(Debug)]
 pub enum InstrumentCommCommand {
-    PlaySong(String, u128),
-    Shutdown,
+    PlaySong(Song, u128),
 }
 pub fn create_instrument_comm() -> (InstrumentCommSender, InstrumentCommReceiver) {
     let (sender, receiver) = create_thread_comm_instances::<InstrumentCommCommand>();
@@ -21,14 +20,14 @@ impl InstrumentCommSender {
     pub fn new(sender: ThreadCommSender<InstrumentCommCommand>) -> Self {
         Self { sender }
     }
-    pub fn send_command_play_song(&self, song_id: String, start_from_millis: u128) {
-        let command = InstrumentCommCommand::PlaySong(song_id, start_from_millis);
+    pub fn send_command_play_song(&self, song: Song, start_from_millis: u128) {
+        let command = InstrumentCommCommand::PlaySong(song, start_from_millis);
         self.sender.send(command);
     }
-    pub fn send_command_shutdown(&self) {
+    /*pub fn send_command_shutdown(&self) {
         let command = InstrumentCommCommand::Shutdown;
         self.sender.send(command);
-    }
+    }*/
 }
 pub type InstrumentCommReceiver = ThreadCommReceiver<InstrumentCommCommand>;
 
@@ -37,16 +36,16 @@ pub struct InstrumentBroadcastComm {
     pub instrument_comm_senders_list: Vec<InstrumentCommSender>,
 }
 impl InstrumentBroadcastComm {
-    pub fn play_song(&mut self, song_id: String, start_from_millis: u128) {
+    pub fn play_song(&mut self, song: Song, start_from_millis: u128) {
         for instrument_comm_sender in &self.instrument_comm_senders_list {
-            instrument_comm_sender.send_command_play_song(song_id.clone(), start_from_millis);
+            instrument_comm_sender.send_command_play_song(song.clone(), start_from_millis);
         }
     }
-    pub fn shutdown(&self) {
+    /*pub fn shutdown(&self) {
         for instrument_comm_sender in &self.instrument_comm_senders_list {
             instrument_comm_sender.send_command_shutdown();
         }
-    }
+    }*/
 }
 pub fn start_listening_to_instrument_comm_commands(
     instrument_comm_receiver: InstrumentCommReceiver,
@@ -54,11 +53,8 @@ pub fn start_listening_to_instrument_comm_commands(
 ) {
     for command in instrument_comm_receiver.get_recv_iter() {
         match command {
-            InstrumentCommCommand::PlaySong(song_id, start_from_millis) => {
-                instrument.play_song(song_id, start_from_millis);
-            }
-            InstrumentCommCommand::Shutdown => {
-                break;
+            InstrumentCommCommand::PlaySong(song, start_from_millis) => {
+                instrument.play_song(song, start_from_millis);
             }
         }
     }

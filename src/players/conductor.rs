@@ -34,9 +34,9 @@ impl Conductor {
         // Play song!
         let global_delay = 1_000; // Wait one second.
         let start_from_millis = get_now_millis() + global_delay;
-        // TODO: Avoid cloning Song ID
+        // TODO: Avoid cloning Song
         self.instrument_broadcast_comm
-            .play_song(song.id.clone(), start_from_millis);
+            .play_song(song.clone(), start_from_millis);
 
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
         while realtime_player.has_next_song_instant() {
@@ -49,7 +49,8 @@ impl Conductor {
 
         // TODO: Restore Interactive CLI feature
 
-        self.instrument_broadcast_comm.shutdown();
+        // TODO: Think later how to stop Instruments from keep playing due to some bugs
+        // self.instrument_broadcast_comm.shutdown();
 
         Ok(())
     }

@@ -88,8 +88,6 @@ pub fn play_song_example() {
 
     // INSTRUMENTS THREADS
     let (drummer_thread, keyboard_thread) = create_instrument_threads(
-        // TODO: Avoid cloning Song
-        song.clone(),
         instrument_comm_receiver_drummer,
         instrument_comm_receiver_keyboard,
     );
@@ -140,7 +138,6 @@ fn get_song_to_play() -> Song {
 }
 type InstrumentThreadType = JoinHandle<()>;
 fn create_instrument_threads(
-    song: Song,
     instrument_comm_receiver_drummer: InstrumentCommReceiver,
     instrument_comm_receiver_keyboard: InstrumentCommReceiver,
 ) -> (
@@ -161,7 +158,6 @@ fn create_instrument_threads(
     });*/
 
     // Drummer
-    let clone_song_drummer = song.clone();
     let drummer_thread = thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
@@ -176,19 +172,18 @@ fn create_instrument_threads(
         sound_panel.set_from_patch(patch1);
 
         // Instrument
-        let mut drummer = Drummer::new(clone_song_drummer, volca_drum);
+        let mut drummer = Drummer::new(volca_drum);
         start_listening_to_instrument_comm_commands(instrument_comm_receiver_drummer, &mut drummer);
     });
 
     // Keyboard
-    let clone_song_keyboard = song.clone();
     let keyboard_thread = thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
         // Instrument
-        let mut keyboard = Keyboard::new(clone_song_keyboard, volca_keys);
+        let mut keyboard = Keyboard::new(volca_keys);
         start_listening_to_instrument_comm_commands(
             instrument_comm_receiver_keyboard,
             &mut keyboard,

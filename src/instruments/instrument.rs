@@ -1,8 +1,7 @@
-use crate::players::realtime_player::TempoSnapshot;
+use crate::song::song::Song;
 
 pub trait Instrument {
     fn get_instrument_name_16_chars(&self) -> String;
     fn get_short_info(&self) -> String;
-    fn play_song(&mut self, song_id: String, start_from_millis: u128);
-    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot);
+    fn play_song(&mut self, song: Song, start_from_millis: u128);
 }
