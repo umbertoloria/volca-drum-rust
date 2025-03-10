@@ -1,14 +1,9 @@
 use crate::music_thread::music_thread_comm::{MusicThreadCommReceiver, MusicThreadCommand};
-use crate::music_thread::volca_drum_thread::{
-    create_volca_drum_thread_comm, volca_drum_thread, VolcaDrumCommand,
+use crate::music_thread::play_thread::{
+    create_play_queue_comm, play_queue_thread, PlayQueueCommand,
 };
-use crate::players::play_queue::play_song_example_with_updates;
+use crate::music_thread::volca_drum_thread::{create_volca_drum_thread_comm, VolcaDrumCommand};
 use crate::server::web_thread_comm::WebThreadCommSender;
-use crate::thread_comm::thread_comm::{
-    create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
-};
-use std::sync::atomic::AtomicBool;
-use std::sync::{Arc, Mutex};
 use std::thread;
 use std::thread::JoinHandle;
 
@@ -27,7 +22,8 @@ fn music_thread_logics(
 ) {
     // Volca Drum Thread
     let (volca_drum_command_sender, volca_drum_command_receiver) = create_volca_drum_thread_comm();
-    let volca_drum_thread = volca_drum_thread(volca_drum_command_receiver);
+    // TODO: For now it's disabled
+    // let volca_drum_thread = volca_drum_thread(volca_drum_command_receiver);
 
     // Play Queue Thread
     let (play_queue_comm_sender, play_queue_comm_receiver) = create_play_queue_comm();
@@ -48,52 +44,5 @@ fn music_thread_logics(
     play_queue_thread.join().unwrap();
 
     volca_drum_command_sender.send(VolcaDrumCommand::CloseThread);
-    volca_drum_thread.join().unwrap();
-}
-
-// PLAY QUEUE THREAD
-enum PlayQueueCommand {
-    RequestToPlay,
-    CloseThread,
-}
-type PlayQueueRequestReceiver = ThreadCommReceiver<PlayQueueCommand>;
-fn create_play_queue_comm() -> (
-    ThreadCommSender<PlayQueueCommand>,
-    ThreadCommReceiver<PlayQueueCommand>,
-) {
-    let (play_queue_comm_sender, play_queue_comm_receiver) =
-        create_thread_comm_instances::<PlayQueueCommand>();
-    (play_queue_comm_sender, play_queue_comm_receiver)
-}
-fn play_queue_thread(
-    play_queue_comm_receiver: PlayQueueRequestReceiver,
-    web_thread_comm_sender: WebThreadCommSender,
-) -> JoinHandle<()> {
-    let is_playing = Arc::new(Mutex::new(AtomicBool::new(false)));
-    thread::spawn(move || {
-        for command in play_queue_comm_receiver.get_recv_iter() {
-            match command {
-                PlayQueueCommand::RequestToPlay => {
-                    let web_thread_comm_sender_clone = web_thread_comm_sender.clone();
-
-                    // Atomic Read
-                    let mut atomic_bool = is_playing.lock().unwrap();
-                    let mut value = atomic_bool.get_mut();
-                    if *value {
-                        println!("*** cannot play, occupied");
-                    } else {
-                        *value = true;
-
-                        println!("*** can play, now starts");
-                        play_song_example_with_updates(web_thread_comm_sender_clone);
-
-                        *value = false;
-                    }
-                }
-                PlayQueueCommand::CloseThread => {
-                    break;
-                }
-            }
-        }
-    })
+    // volca_drum_thread.join().unwrap();
 }

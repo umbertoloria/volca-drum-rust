@@ -13,13 +13,16 @@ pub enum VolcaDrumCommand {
     ApplyPatch(YamlPatchFile),
     CloseThread,
 }
-type VolcaDrumCommandSender = ThreadCommSender<VolcaDrumCommand>;
-type VolcaDrumCommandReceiver = ThreadCommReceiver<VolcaDrumCommand>;
-pub fn create_volca_drum_thread_comm() -> (VolcaDrumCommandSender, VolcaDrumCommandReceiver) {
+pub fn create_volca_drum_thread_comm() -> (
+    ThreadCommSender<VolcaDrumCommand>,
+    ThreadCommReceiver<VolcaDrumCommand>,
+) {
     create_thread_comm_instances::<VolcaDrumCommand>()
 }
 
-pub fn volca_drum_thread(volca_drum_command_receiver: VolcaDrumCommandReceiver) -> JoinHandle<()> {
+pub fn volca_drum_thread(
+    volca_drum_command_receiver: ThreadCommReceiver<VolcaDrumCommand>,
+) -> JoinHandle<()> {
     thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
