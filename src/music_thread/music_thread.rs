@@ -3,7 +3,7 @@ use crate::music_thread::volca_drum_thread::{
     create_volca_drum_thread_comm, volca_drum_thread, VolcaDrumCommand,
 };
 use crate::players::play_queue::play_song_example_with_updates;
-use crate::server::main_server_comm::MainThreadCommSender;
+use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -14,16 +14,16 @@ use std::thread::JoinHandle;
 
 pub fn main_music_thread(
     music_thread_comm_receiver: MusicThreadCommReceiver,
-    main_thread_comm_sender: MainThreadCommSender,
+    web_thread_comm_sender: WebThreadCommSender,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
-        music_thread_logics(music_thread_comm_receiver, main_thread_comm_sender);
+        music_thread_logics(music_thread_comm_receiver, web_thread_comm_sender);
     })
 }
 
 fn music_thread_logics(
     music_thread_comm_receiver: MusicThreadCommReceiver,
-    main_thread_comm_sender: MainThreadCommSender,
+    web_thread_comm_sender: WebThreadCommSender,
 ) {
     // Volca Drum Thread
     let (volca_drum_command_sender, volca_drum_command_receiver) = create_volca_drum_thread_comm();
@@ -31,7 +31,7 @@ fn music_thread_logics(
 
     // Play Queue Thread
     let (play_queue_comm_sender, play_queue_comm_receiver) = create_play_queue_comm();
-    let play_queue_thread = play_queue_thread(play_queue_comm_receiver, main_thread_comm_sender);
+    let play_queue_thread = play_queue_thread(play_queue_comm_receiver, web_thread_comm_sender);
 
     for command in music_thread_comm_receiver.get_recv_iter() {
         match command {
@@ -67,14 +67,14 @@ fn create_play_queue_comm() -> (
 }
 fn play_queue_thread(
     play_queue_comm_receiver: PlayQueueRequestReceiver,
-    main_thread_comm_sender: MainThreadCommSender,
+    web_thread_comm_sender: WebThreadCommSender,
 ) -> JoinHandle<()> {
     let is_playing = Arc::new(Mutex::new(AtomicBool::new(false)));
     thread::spawn(move || {
         for command in play_queue_comm_receiver.get_recv_iter() {
             match command {
                 PlayQueueCommand::RequestToPlay => {
-                    let main_thread_comm_sender_clone = main_thread_comm_sender.clone();
+                    let web_thread_comm_sender_clone = web_thread_comm_sender.clone();
 
                     // Atomic Read
                     let mut atomic_bool = is_playing.lock().unwrap();
@@ -85,7 +85,7 @@ fn play_queue_thread(
                         *value = true;
 
                         println!("*** can play, now starts");
-                        play_song_example_with_updates(main_thread_comm_sender_clone);
+                        play_song_example_with_updates(web_thread_comm_sender_clone);
 
                         *value = false;
                     }

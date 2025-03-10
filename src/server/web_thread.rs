@@ -1,9 +1,8 @@
 use crate::music_thread::music_thread_comm::MusicThreadCommSender;
-use crate::server::main_server_comm::{
-    MainThreadCommReceiver, MainThreadCommSender, WSClientResponse, WSMusicThreadResponse,
-    WSResponse,
-};
 use crate::server::server_request_manager::ServerRequestManager;
+use crate::server::web_thread_comm::{
+    WSClientResponse, WSMusicThreadResponse, WSResponse, WebThreadCommReceiver, WebThreadCommSender,
+};
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
 use std::fmt::Debug;
@@ -13,15 +12,15 @@ use std::thread::JoinHandle;
 use tokio::net::{TcpListener, TcpStream};
 use tokio_tungstenite::{accept_async, tungstenite::protocol::Message, WebSocketStream};
 
-pub fn main_server_thread(
-    main_thread_comm_receiver: MainThreadCommReceiver,
-    main_thread_comm_sender: MainThreadCommSender,
+pub fn web_thread(
+    web_thread_comm_receiver: WebThreadCommReceiver,
+    web_thread_comm_sender: WebThreadCommSender,
     music_thread_comm_sender: MusicThreadCommSender,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
         main_server(
-            main_thread_comm_receiver,
-            main_thread_comm_sender,
+            web_thread_comm_receiver,
+            web_thread_comm_sender,
             music_thread_comm_sender,
         );
     })
@@ -29,8 +28,8 @@ pub fn main_server_thread(
 
 #[tokio::main]
 pub async fn main_server(
-    main_thread_comm_receiver: MainThreadCommReceiver,
-    main_thread_comm_sender: MainThreadCommSender,
+    web_thread_comm_receiver: WebThreadCommReceiver,
+    web_thread_comm_sender: WebThreadCommSender,
     music_thread_comm_sender: MusicThreadCommSender,
 ) {
     // Get the address to bind to
@@ -46,8 +45,8 @@ pub async fn main_server(
     while let Ok((stream, socket_addr)) = listener.accept().await {
         println!("Connection with {:?}", socket_addr);
 
-        let main_thread_comm_sender_for_him = main_thread_comm_sender.clone();
-        let mut main_thread_comm_receiver_for_him = main_thread_comm_receiver.resubscribe();
+        let web_thread_comm_sender_for_him = web_thread_comm_sender.clone();
+        let mut web_thread_comm_receiver_for_him = web_thread_comm_receiver.resubscribe();
         let server_request_manager = ServerRequestManager::new(music_thread_comm_sender.clone());
 
         tokio::spawn(async move {
@@ -68,7 +67,7 @@ pub async fn main_server(
             // Update clients
             let thread_connection_recv_from_outside = tokio::spawn(async move {
                 loop {
-                    let message = main_thread_comm_receiver_for_him.async_new_message().await;
+                    let message = web_thread_comm_receiver_for_him.async_new_message().await;
                     match message {
                         Ok(message) => {
                             let payload = match message {
@@ -102,7 +101,7 @@ pub async fn main_server(
                         let message = server_request_manager.manage(request);
 
                         // send_message_to_sender(&mut sender, message).await; // Direct send.
-                        main_thread_comm_sender_for_him
+                        web_thread_comm_sender_for_him
                             .notify_from_client_thread_a_response(message);
                     }
                     Ok(Message::Close(_)) => {

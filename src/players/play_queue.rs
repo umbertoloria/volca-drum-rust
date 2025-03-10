@@ -1,5 +1,5 @@
 use crate::players::player::play_song_example;
-use crate::server::main_server_comm::MainThreadCommSender;
+use crate::server::web_thread_comm::WebThreadCommSender;
 use std::sync::Mutex;
 use std::thread::JoinHandle;
 
@@ -8,40 +8,12 @@ type PlayQueueThread = JoinHandle<()>;
 static PLAY_QUEUE: Mutex<Vec<PlayQueueThread>> = Mutex::new(Vec::new());
 const DEFAULT_SONG_ID: usize = 7;
 
-// EXPOSED
-/*
-// TODO: Remove this function
-pub fn play_song_in_queue(main_thread_comm_sender: MainThreadCommSender) {
-    let mut play_queue = PLAY_QUEUE.lock().unwrap();
-    if play_queue.is_empty() {
-        let play_queue_thread: PlayQueueThread = thread::spawn(move || {
-            play_song_example_with_updates(main_thread_comm_sender);
-        });
-        // Inserting as first element.
-        play_queue.push(play_queue_thread);
-    } else {
-        // Checking the last element.
-        let last_thread = play_queue.last().unwrap();
-        if last_thread.is_finished() {
-            let play_queue_thread: PlayQueueThread = thread::spawn(move || {
-                play_song_example_with_updates(main_thread_comm_sender);
-            });
-            // Inserting as last element.
-            play_queue.push(play_queue_thread);
-        } else {
-            // TODO: Add in queue...
-            println!("Unable to play another song!");
-        }
-    }
-}
-*/
-
-pub fn play_song_example_with_updates(main_thread_comm_sender: MainThreadCommSender) {
-    main_thread_comm_sender.notify_from_music_thread_song_started();
+pub fn play_song_example_with_updates(web_thread_comm_sender: WebThreadCommSender) {
+    web_thread_comm_sender.notify_from_music_thread_song_started();
 
     play_song_example();
 
-    main_thread_comm_sender.notify_from_music_thread_song_ended();
+    web_thread_comm_sender.notify_from_music_thread_song_ended();
 }
 
 pub struct PlayQueueState {

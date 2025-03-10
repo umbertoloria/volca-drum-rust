@@ -18,20 +18,20 @@ pub enum WSClientResponse {
     SimpleResponse(String),
 }
 
-pub fn create_channel_for_server_thread() -> (MainThreadCommSender, MainThreadCommReceiver) {
+pub fn create_channel_for_server_thread() -> (WebThreadCommSender, WebThreadCommReceiver) {
     // TODO: Adjust BUFFER_SIZE
     const BUFFER_SIZE: usize = 32;
     let (tx, rx) = broadcast::channel::<WSResponse>(BUFFER_SIZE);
-    let main_thread_comm_sender = MainThreadCommSender::new(tx);
-    let main_thread_comm_receiver = MainThreadCommReceiver::new(rx);
-    (main_thread_comm_sender, main_thread_comm_receiver)
+    let web_thread_comm_sender = WebThreadCommSender::new(tx);
+    let web_thread_comm_receiver = WebThreadCommReceiver::new(rx);
+    (web_thread_comm_sender, web_thread_comm_receiver)
 }
 
 // SENDER
-pub struct MainThreadCommSender {
+pub struct WebThreadCommSender {
     tx: Sender<WSResponse>,
 }
-impl MainThreadCommSender {
+impl WebThreadCommSender {
     pub fn new(tx: Sender<WSResponse>) -> Self {
         Self { tx }
     }
@@ -55,14 +55,14 @@ impl MainThreadCommSender {
 }
 
 // RECEIVER
-pub struct MainThreadCommReceiver {
+pub struct WebThreadCommReceiver {
     rx: Receiver<WSResponse>,
 }
-impl MainThreadCommReceiver {
+impl WebThreadCommReceiver {
     pub fn new(rx: Receiver<WSResponse>) -> Self {
         Self { rx }
     }
-    pub fn resubscribe(&self) -> MainThreadCommReceiver {
+    pub fn resubscribe(&self) -> WebThreadCommReceiver {
         Self::new(self.rx.resubscribe())
     }
     pub async fn async_new_message(&mut self) -> Result<WSResponse, RecvError> {

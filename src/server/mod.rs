@@ -1,3 +1,3 @@
-pub mod main_server;
 pub mod server_request_manager;
-pub mod main_server_comm;
+pub mod web_thread;
+pub mod web_thread_comm;
