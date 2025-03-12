@@ -232,3 +232,237 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
         .into(),
     }
 }
+pub fn get_song_o1() -> Song {
+    Song {
+        id: "o1".into(),
+        details: SongDetails {
+            author: "O1".into(),
+            title: "O1".into(),
+        },
+        tempo: SongTempo {
+            bpm: 68,
+            time_signature: (4, 4),
+        },
+        drum_patterns: HashMap::from([
+            (
+                "A".into(),
+                DrumPattern {
+                    key: "A".into(),
+                    num_1_4: 4,
+                    hh: "x x x x x x x x ".into(),
+                    sn: "    x       x   ".into(),
+                    kk: "x  x  x  xx   x ".into(),
+                },
+            ),
+            (
+                "B".into(),
+                DrumPattern {
+                    key: "B".into(),
+                    num_1_4: 4,
+                    // Should be on Ride and with Accents on every 1/4ths.
+                    hh: "x x x x x x x x ".into(),
+                    sn: "    x       x   ".into(),
+                    kk: "x  x  x  xx   x ".into(),
+                },
+            ),
+            (
+                // HH on 1/8ths.
+                "C".into(),
+                DrumPattern {
+                    key: "C".into(),
+                    num_1_4: 2,
+                    hh: "x x x x x x x x ".into(),
+                    sn: "                ".into(),
+                    kk: "                ".into(),
+                },
+            ),
+        ]),
+        keyboard_patterns: HashMap::from([
+            (
+                "A".into(),
+                KeyboardPattern {
+                    key: "A".into(),
+                    chords: [
+                        KeyboardPatternChord {
+                            chord_name: "Bm".into(),
+                            notes: vec!["B3".into(), "D4".into(), "F#4".into()],
+                            from_1_16th_incl: 1,
+                            to_1_16th_incl: 6,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "F".into(),
+                            notes: vec!["F3".into(), "A3".into(), "C4".into()],
+                            from_1_16th_incl: 7,
+                            to_1_16th_incl: 16,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Bm".into(),
+                            notes: vec!["B3".into(), "D4".into(), "F#4".into()],
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 6,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "F".into(),
+                            notes: vec!["F3".into(), "A3".into(), "C4".into()],
+                            from_1_16th_incl: 16 + 7,
+                            to_1_16th_incl: 16 + 16,
+                        },
+                    ]
+                    .into(),
+                },
+            ),
+            (
+                "B".into(),
+                KeyboardPattern {
+                    key: "B".into(),
+                    chords: [
+                        KeyboardPatternChord {
+                            chord_name: "Am7".into(),
+                            notes: vec!["A3".into(), "C4".into(), "E4".into(), "G4".into()],
+                            from_1_16th_incl: 1,
+                            to_1_16th_incl: 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Dmaj7".into(),
+                            notes: vec!["D3".into(), "F#3".into(), "A4".into(), "Db5".into()],
+                            from_1_16th_incl: 8 + 1,
+                            to_1_16th_incl: 8 + 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Am7".into(),
+                            notes: vec!["A3".into(), "C4".into(), "E4".into(), "G4".into()],
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Dmaj7".into(),
+                            notes: vec!["D3".into(), "F#3".into(), "A4".into(), "Db5".into()],
+                            from_1_16th_incl: 24 + 1,
+                            to_1_16th_incl: 24 + 8,
+                        },
+                    ]
+                    .into(),
+                },
+            ),
+            (
+                "C".into(),
+                KeyboardPattern {
+                    key: "C".into(),
+                    chords: [
+                        KeyboardPatternChord {
+                            chord_name: "F#".into(),
+                            notes: vec!["F#3".into(), "A#3".into(), "C#4".into()],
+                            from_1_16th_incl: 1,
+                            to_1_16th_incl: 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "A".into(),
+                            notes: vec!["A3".into(), "C4".into(), "E4".into()],
+                            from_1_16th_incl: 8 + 1,
+                            to_1_16th_incl: 8 + 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "F#".into(),
+                            notes: vec!["F#3".into(), "A#3".into(), "C#4".into()],
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "A".into(),
+                            notes: vec!["A3".into(), "C4".into(), "E4".into()],
+                            from_1_16th_incl: 24 + 1,
+                            to_1_16th_incl: 24 + 8,
+                        },
+                    ]
+                    .into(),
+                },
+            ),
+            (
+                "D".into(),
+                KeyboardPattern {
+                    key: "D".into(),
+                    chords: [
+                        KeyboardPatternChord {
+                            chord_name: "C#m".into(),
+                            notes: vec!["C#3".into(), "E3".into(), "G#3".into()],
+                            from_1_16th_incl: 1,
+                            to_1_16th_incl: 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Bb".into(),
+                            notes: vec!["Bb3".into(), "D4".into(), "F4".into()],
+                            from_1_16th_incl: 8 + 1,
+                            to_1_16th_incl: 8 + 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "C#m".into(),
+                            notes: vec!["C#3".into(), "E3".into(), "G#3".into()],
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 8,
+                        },
+                        KeyboardPatternChord {
+                            chord_name: "Bb".into(),
+                            notes: vec!["Bb3".into(), "D4".into(), "F4".into()],
+                            from_1_16th_incl: 24 + 1,
+                            to_1_16th_incl: 24 + 8,
+                        },
+                    ]
+                    .into(),
+                },
+            ),
+        ]),
+        sections: [
+            // Intro 4
+            SongSection {
+                kind: SongSectionKind::Intro,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: Some("A".into()),
+                notes: None,
+            },
+            // Verse 4
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: Some("B".into()),
+                notes: None,
+            },
+            // Verse 8
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: Some("C".into()),
+                notes: None,
+            },
+            // Bridge 4
+            SongSection {
+                kind: SongSectionKind::Bridge,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: Some("D".into()),
+                notes: None,
+            },
+            // Verse 4
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 4,
+                time_signature: (4, 4),
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: Some("C".into()),
+                notes: None,
+            },
+        ]
+        .into(),
+    }
+}

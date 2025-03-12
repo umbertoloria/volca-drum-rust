@@ -111,10 +111,10 @@ impl KeyboardPattern {
 #[derive(Clone)]
 pub struct KeyboardPatternChord {
     pub chord_name: String, // Es. "Fmaj7"
+    pub notes: Vec<String>, // Es. ["F3", "A3", "C4"]
     // Params "from_1_16th_incl" and "to_1_16th_incl" start from 1.
     pub from_1_16th_incl: usize,
     pub to_1_16th_incl: usize,
-    pub notes: Vec<String>, // Es. ["F3", "A3", "C4"]
 }
 
 // Songs
