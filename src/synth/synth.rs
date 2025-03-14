@@ -1,5 +1,6 @@
 use core::time::Duration;
-use rodio::source::Source;
+use rodio::source::{SamplesConverter, Source};
+use rodio::{OutputStream, OutputStreamHandle, Sink};
 
 pub struct WaveTableOscillator {
     sample_rate: u32,
@@ -58,4 +59,37 @@ impl Iterator for WaveTableOscillator {
     fn next(&mut self) -> Option<Self::Item> {
         Some(self.get_sample())
     }
+}
+pub type WaveTableOscillatorSample = SamplesConverter<WaveTableOscillator, f32>;
+
+pub struct DigitalSynth {
+    stream: OutputStream,
+    stream_handle: OutputStreamHandle,
+    sink: Sink,
+}
+impl DigitalSynth {
+    pub fn new() -> Self {
+        let (stream, stream_handle) = OutputStream::try_default().unwrap();
+        let sink = create_empty_sink(&stream_handle);
+        Self {
+            stream,
+            stream_handle,
+            sink,
+        }
+    }
+    pub fn play(&mut self, sample: WaveTableOscillatorSample) {
+        self.sink = create_empty_sink(&self.stream_handle);
+        self.sink.append(sample);
+        // sleep(Duration::from_millis(250));
+        // self.sink.stop();
+    }
+    pub fn pause(&mut self) {
+        self.sink = create_empty_sink(&self.stream_handle);
+    }
+}
+const SYNTH_VOLUME: f32 = 0.4;
+fn create_empty_sink(stream_handle: &OutputStreamHandle) -> Sink {
+    let mut sink = Sink::try_new(&stream_handle).unwrap();
+    sink.set_volume(SYNTH_VOLUME);
+    sink
 }
