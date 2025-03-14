@@ -3,11 +3,10 @@ use crate::synth::synth::WaveTableOscillator;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
-use core::time::Duration;
 use rodio::source::SamplesConverter;
-use rodio::{source::Source, OutputStream};
+use rodio::{source::Source, OutputStream, OutputStreamHandle, Sink};
 use std::thread;
-use std::thread::{sleep, JoinHandle};
+use std::thread::JoinHandle;
 
 // TODO: Monophonic for now :)
 pub enum SynthCommand {
@@ -22,23 +21,40 @@ pub fn create_synth_thread_comm() -> (
     create_thread_comm_instances::<SynthCommand>()
 }
 
+const SYNTH_VOLUME: f32 = 0.4;
+fn create_empty_sink(stream_handle: &OutputStreamHandle) -> Sink {
+    let mut sink = Sink::try_new(&stream_handle).unwrap();
+    sink.set_volume(SYNTH_VOLUME);
+    sink
+}
+
 pub fn synth_thread(synth_command_receiver: ThreadCommReceiver<SynthCommand>) -> JoinHandle<()> {
     thread::spawn(move || {
+        // Audio Sink
+        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+        let mut curr_sink = create_empty_sink(&stream_handle);
+
         for command in synth_command_receiver.get_recv_iter() {
             match command {
                 SynthCommand::StartNote(note) => {
                     // println!("play {:?}", note);
-                    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
 
+                    // Sample
                     let source = create_source_from_note(&note);
-                    let _result = stream_handle.play_raw(source);
-                    sleep(Duration::from_millis(350));
-                    // TODO: Killing "stream_handle" would mean stopping the sound
+
+                    // Audio Play
+                    curr_sink = create_empty_sink(&stream_handle);
+                    curr_sink.append(source);
                 }
                 SynthCommand::StopNote => {
                     // println!("stop playing");
+
+                    // Audio Stop
+                    curr_sink.stop();
                 }
                 SynthCommand::CloseThread => {
+                    // Audio Stop
+                    curr_sink.stop();
                     break;
                 }
             }
