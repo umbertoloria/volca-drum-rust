@@ -81,6 +81,7 @@ fn get_note_offset_from_note(note_bytes: &[u8]) -> u8 {
     // TODO: Log for unknown note letter
 }
 
+#[derive(Clone, Debug)]
 pub struct Note {
     pub octave: u8,
     pub offset: u8, // From 0 to 11 (incl.).
@@ -93,4 +94,71 @@ impl Note {
             offset: get_note_offset_from_note(note_bytes),
         }
     }
+}
+
+// Comparing Notes
+pub enum CompareEnum {
+    Lower,
+    Equal,
+    Higher,
+}
+pub fn compare_notes(a: &Note, b: &Note) -> CompareEnum {
+    if a.octave < b.octave {
+        // Note "a" Octave lower.
+        CompareEnum::Lower
+    } else if a.octave > b.octave {
+        // Note "b" Octave higher.
+        CompareEnum::Higher
+    } else {
+        // Notes "a" and "b" in the same Octave.
+        if a.offset < b.offset {
+            CompareEnum::Lower
+        } else if a.offset == b.offset {
+            // Same note.
+            CompareEnum::Equal
+        } else {
+            CompareEnum::Higher
+        }
+    }
+}
+pub fn get_lowest_note(note_str_list: &Vec<String>) -> Note {
+    let mut result = Note::new(&note_str_list[0]);
+    let mut i = 1;
+    while i < note_str_list.len() {
+        let curr_note_info = Note::new(&note_str_list[i]);
+        match compare_notes(&curr_note_info, &result) {
+            CompareEnum::Lower => {
+                result = curr_note_info;
+            }
+            CompareEnum::Equal => {
+                // Fine.
+            }
+            CompareEnum::Higher => {
+                // Fine.
+            }
+        }
+        i += 1;
+    }
+    result
+}
+
+// Frequencies
+pub fn get_frequency_from_note_info(note: &Note) -> f32 {
+    // TODO: This code must be very numerically precise!
+    (1.0 + note.octave as f32)
+        * match note.offset {
+            0 => 16.35,
+            1 => 17.32,
+            2 => 18.35,
+            3 => 19.45,
+            4 => 20.60,
+            5 => 21.83,
+            6 => 22.16,
+            7 => 24.50,
+            8 => 25.96,
+            9 => 27.50,
+            10 => 29.14,
+            11 => 30.87,
+            _ => 0.0, // TODO: Defaults to what?
+        }
 }

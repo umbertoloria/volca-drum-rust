@@ -11,6 +11,7 @@ mod music_thread;
 mod players;
 mod server;
 mod song;
+mod synth;
 mod thread_comm;
 mod utils;
 

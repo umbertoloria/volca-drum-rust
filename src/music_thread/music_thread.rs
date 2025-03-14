@@ -68,5 +68,6 @@ pub fn get_song_to_play() -> Song {
         tonality_note: TonalityNote::C,
         tonality_mode: TonalityMode::Major,
     };
-    composer.compose_new_song()
+    // let song = composer.compose_new_song();
+    song
 }

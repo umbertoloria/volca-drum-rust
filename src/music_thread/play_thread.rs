@@ -7,6 +7,7 @@ use crate::instruments::instr_comm::{
     InstrumentCommReceiver,
 };
 use crate::instruments::keyboard::Keyboard;
+use crate::instruments::synth::Synth;
 use crate::midi::midi_controller::init_midi_controller;
 use crate::midi::midi_device::MidiDeviceConcrete;
 use crate::players::conductor::Conductor;
@@ -47,15 +48,19 @@ pub fn play_queue_thread(
             create_instrument_comm();
         let (instrument_comm_sender_keyboard, instrument_comm_receiver_keyboard) =
             create_instrument_comm();
+        let (instrument_comm_sender_synth, instrument_comm_receiver_synth) =
+            create_instrument_comm();
         let (drummer_thread, keyboard_thread) = create_instrument_threads(
             instrument_comm_receiver_drummer,
             instrument_comm_receiver_keyboard,
+            instrument_comm_receiver_synth,
         );
         let instrument_broadcast_comm = InstrumentBroadcastComm {
             instrument_comm_senders_list: vec![
                 // List of Instruments Communicators
                 instrument_comm_sender_drummer,
                 instrument_comm_sender_keyboard,
+                instrument_comm_sender_synth,
             ],
         };
         let mut conductor = Conductor::new(instrument_broadcast_comm);
@@ -119,6 +124,7 @@ type InstrumentThreadType = JoinHandle<()>;
 fn create_instrument_threads(
     instrument_comm_receiver_drummer: InstrumentCommReceiver,
     instrument_comm_receiver_keyboard: InstrumentCommReceiver,
+    instrument_comm_receiver_synth: InstrumentCommReceiver,
 ) -> (
     // Instruments Threads
     InstrumentThreadType,
@@ -167,6 +173,13 @@ fn create_instrument_threads(
             instrument_comm_receiver_keyboard,
             &mut keyboard,
         );
+    });
+
+    // Synth
+    let keyboard_thread = thread::spawn(move || {
+        // Instrument
+        let mut synth = Synth::new();
+        start_listening_to_instrument_comm_commands(instrument_comm_receiver_synth, &mut synth);
     });
 
     (
