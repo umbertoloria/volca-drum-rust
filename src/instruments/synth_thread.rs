@@ -4,6 +4,7 @@ use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
 use core::time::Duration;
+use rodio::source::SamplesConverter;
 use rodio::{source::Source, OutputStream};
 use std::thread;
 use std::thread::{sleep, JoinHandle};
@@ -27,7 +28,12 @@ pub fn synth_thread(synth_command_receiver: ThreadCommReceiver<SynthCommand>) ->
             match command {
                 SynthCommand::StartNote(note) => {
                     // println!("play {:?}", note);
-                    play_note_in_synth(note);
+                    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+
+                    let source = create_source_from_note(&note);
+                    let _result = stream_handle.play_raw(source);
+                    sleep(Duration::from_millis(350));
+                    // TODO: Killing "stream_handle" would mean stopping the sound
                 }
                 SynthCommand::StopNote => {
                     // println!("stop playing");
@@ -40,17 +46,22 @@ pub fn synth_thread(synth_command_receiver: ThreadCommReceiver<SynthCommand>) ->
     })
 }
 
-fn play_note_in_synth(note: Note) {
+fn create_sine_wave_table() -> Vec<f32> {
     let wave_table_size = 64;
     let mut wave_table: Vec<f32> = Vec::with_capacity(wave_table_size);
     for n in 0..wave_table_size {
         wave_table.push((2.0 * std::f32::consts::PI * n as f32 / wave_table_size as f32).sin());
     }
+    wave_table
+}
+fn create_source_from_note(note: &Note) -> SamplesConverter<WaveTableOscillator, f32> {
+    // Sine Oscillator
+    let sample_rate = 48000;
+    let wave_table = create_sine_wave_table();
+    let mut oscillator = WaveTableOscillator::new(sample_rate, wave_table);
 
-    let mut oscillator = WaveTableOscillator::new(48000, wave_table);
-    let frequency = get_frequency_from_note_info(&note);
+    // Source
+    let frequency = get_frequency_from_note_info(note);
     oscillator.set_frequency(frequency);
-    let (_stream, stream_handle) = OutputStream::try_default().unwrap();
-    let _result = stream_handle.play_raw(oscillator.convert_samples());
-    sleep(Duration::from_millis(350));
+    oscillator.convert_samples()
 }
