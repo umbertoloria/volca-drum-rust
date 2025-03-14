@@ -6,6 +6,7 @@ use crate::server::web_thread_comm::create_channel_for_server_thread;
 mod devices;
 mod instruments;
 mod midi;
+mod music;
 mod music_thread;
 mod players;
 mod server;
