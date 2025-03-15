@@ -1,6 +1,8 @@
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::instrument::Instrument;
-use crate::instruments::stop_notes_queue::StopNotesQueue;
+use crate::instruments::stop_notes_queue::{
+    AbstractKeysBasedInstrument, KeysWithQueue, StopNotesQueue,
+};
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 
@@ -20,9 +22,8 @@ impl Keyboard {
             pattern: None,
             chord_index: 0,
             keys_with_queue: KeysWithQueue::new(
-                //
                 StopNotesQueue::new(),
-                KeysBasedInstrument::new(volca_keys),
+                Box::new(VolcaKeysBasedInstrument::new(volca_keys)),
             ),
         }
     }
@@ -134,51 +135,16 @@ impl Instrument for Keyboard {
     }
 }
 
-// FIXME: Abstract "KeysBasedInstrument" to extract "KeysWithQueue"
-struct KeysWithQueue {
-    stop_notes_queue: StopNotesQueue,
-    keys_based_instrument: KeysBasedInstrument,
-}
-impl KeysWithQueue {
-    pub fn new(
-        stop_notes_queue: StopNotesQueue,
-        keys_based_instrument: KeysBasedInstrument,
-    ) -> Self {
-        Self {
-            stop_notes_queue,
-            keys_based_instrument,
-        }
-    }
-    pub fn playing_hit_chord_start(&mut self, notes_str_list: &Vec<String>) {
-        self.keys_based_instrument.play_notes_start(notes_str_list);
-    }
-    pub fn playing_hit_last_before_chord_stop(
-        &mut self,
-        notes_str_list: &Vec<String>,
-        index_1_16th: usize,
-    ) {
-        self.stop_notes_queue
-            .add_notes_to_stop_notes_queue(notes_str_list, index_1_16th);
-    }
-    pub fn playing_hit_dequeue_and_stop_notes_at_this_1_16th(&mut self, index_1_16th: usize) {
-        let note_str_list_to_stop = self
-            .stop_notes_queue
-            .dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
-        if let Some(note_str_list_to_stop) = note_str_list_to_stop {
-            self.keys_based_instrument
-                .play_notes_stop(&note_str_list_to_stop);
-        }
-    }
-}
-
-struct KeysBasedInstrument {
+struct VolcaKeysBasedInstrument {
     volca_keys: VolcaKeys,
 }
-impl KeysBasedInstrument {
+impl VolcaKeysBasedInstrument {
     pub fn new(volca_keys: VolcaKeys) -> Self {
         Self { volca_keys }
     }
-    pub fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
+}
+impl AbstractKeysBasedInstrument for VolcaKeysBasedInstrument {
+    fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
         // println!("play_notes_start: {:?}", notes_str_list);
 
         for note_str in notes_str_list {
@@ -188,7 +154,7 @@ impl KeysBasedInstrument {
             self.volca_keys.note_play_start(note_str_clone);
         }
     }
-    pub fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
+    fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
         // println!("play_notes_stop: {:?}", notes_str_list);
 
         for note_str in notes_str_list {

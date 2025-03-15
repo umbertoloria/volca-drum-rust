@@ -1,5 +1,7 @@
 use crate::instruments::instrument::Instrument;
-use crate::instruments::stop_notes_queue::StopNotesQueue;
+use crate::instruments::stop_notes_queue::{
+    AbstractKeysBasedInstrument, KeysWithQueue, StopNotesQueue,
+};
 use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
 use crate::music::note::get_notes_from_note_str_list;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
@@ -24,9 +26,8 @@ impl Synth {
             pattern: None,
             chord_index: 0,
             keys_with_queue: KeysWithQueue::new(
-                //
                 StopNotesQueue::new(),
-                KeysBasedInstrument::new(),
+                Box::new(SynthKeysBasedInstrument::new()),
             ),
         }
     }
@@ -138,48 +139,11 @@ impl Instrument for Synth {
     }
 }
 
-// FIXME: Abstract "KeysBasedInstrument" to extract "KeysWithQueue"
-struct KeysWithQueue {
-    stop_notes_queue: StopNotesQueue,
-    keys_based_instrument: KeysBasedInstrument,
-}
-impl KeysWithQueue {
-    pub fn new(
-        stop_notes_queue: StopNotesQueue,
-        keys_based_instrument: KeysBasedInstrument,
-    ) -> Self {
-        Self {
-            stop_notes_queue,
-            keys_based_instrument,
-        }
-    }
-    pub fn playing_hit_chord_start(&mut self, notes_str_list: &Vec<String>) {
-        self.keys_based_instrument.play_notes_start(notes_str_list);
-    }
-    pub fn playing_hit_last_before_chord_stop(
-        &mut self,
-        notes_str_list: &Vec<String>,
-        index_1_16th: usize,
-    ) {
-        self.stop_notes_queue
-            .add_notes_to_stop_notes_queue(notes_str_list, index_1_16th);
-    }
-    pub fn playing_hit_dequeue_and_stop_notes_at_this_1_16th(&mut self, index_1_16th: usize) {
-        let note_str_list_to_stop = self
-            .stop_notes_queue
-            .dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
-        if let Some(note_str_list_to_stop) = note_str_list_to_stop {
-            self.keys_based_instrument
-                .play_notes_stop(&note_str_list_to_stop);
-        }
-    }
-}
-
-struct KeysBasedInstrument {
+struct SynthKeysBasedInstrument {
     synth_thread_handle: JoinHandle<()>,
     synth_command_sender: ThreadCommSender<SynthCommand>,
 }
-impl KeysBasedInstrument {
+impl SynthKeysBasedInstrument {
     pub fn new() -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
         let synth_thread_handle = synth_thread("Synth".into(), 0.3, synth_command_receiver);
@@ -188,14 +152,16 @@ impl KeysBasedInstrument {
             synth_command_sender,
         }
     }
-    pub fn play_notes_start(&self, notes_str_list: &Vec<String>) {
+}
+impl AbstractKeysBasedInstrument for SynthKeysBasedInstrument {
+    fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
         // println!("play_notes_start: {:?}", notes_str_list);
 
         let notes = get_notes_from_note_str_list(notes_str_list);
         self.synth_command_sender
             .send(SynthCommand::StartNotes(notes));
     }
-    pub fn play_notes_stop(&self, notes_str_list: &Vec<String>) {
+    fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
         // println!("play_notes_stop: {:?}", notes_str_list);
 
         // TODO: Try to use "notes_str_list"
