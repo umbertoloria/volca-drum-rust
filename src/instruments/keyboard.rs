@@ -12,7 +12,7 @@ pub struct Keyboard {
 
     // Outputs
     stop_notes_queue: HashMap<usize, HashSet<String>>,
-    volca_keys: VolcaKeys,
+    keys_based_instrument: KeysBasedInstrument,
 }
 impl Keyboard {
     pub fn new(volca_keys: VolcaKeys) -> Self {
@@ -21,7 +21,7 @@ impl Keyboard {
             pattern: None,
             chord_index: 0,
             stop_notes_queue: HashMap::new(),
-            volca_keys,
+            keys_based_instrument: KeysBasedInstrument::new(volca_keys),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -99,25 +99,11 @@ impl Keyboard {
             self.update_pattern_from_song_section(&song);
         }
     }
-    fn play_notes_start(&mut self, notes: &Vec<String>) {
-        // println!("play_notes_start {:?}", notes);
-
-        for note in notes {
-            // TODO: Avoid cloning note
-            let note_clone = note.clone();
-
-            self.volca_keys.note_play_start(note_clone);
-        }
+    fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
+        self.keys_based_instrument.play_notes_start(notes_str_list);
     }
-    fn play_notes_stop(&mut self, notes: &Vec<String>) {
-        // println!("play_notes_stop {:?}", notes);
-
-        for note in notes {
-            // TODO: Avoid cloning note
-            let note_clone = note.clone();
-
-            self.volca_keys.note_play_stop(note_clone);
-        }
+    fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
+        self.keys_based_instrument.play_notes_stop(notes_str_list);
     }
     fn add_notes_to_stop_notes_queue(&mut self, notes: &Vec<String>, index_1_16th: usize) {
         // Param "index_1_16th" starts from 1.
@@ -175,6 +161,35 @@ impl Instrument for Keyboard {
             self.play_1_16th(&song, tempo_snapshot);
 
             realtime_player.prepare_next_1_16th();
+        }
+    }
+}
+
+struct KeysBasedInstrument {
+    volca_keys: VolcaKeys,
+}
+impl KeysBasedInstrument {
+    pub fn new(volca_keys: VolcaKeys) -> Self {
+        Self { volca_keys }
+    }
+    pub fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
+        // println!("play_notes_start: {:?}", notes_str_list);
+
+        for note_str in notes_str_list {
+            // TODO: Avoid cloning note
+            let note_str_clone = note_str.clone();
+
+            self.volca_keys.note_play_start(note_str_clone);
+        }
+    }
+    pub fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
+        // println!("play_notes_stop: {:?}", notes_str_list);
+
+        for note_str in notes_str_list {
+            // TODO: Avoid cloning note
+            let note_str_clone = note_str.clone();
+
+            self.volca_keys.note_play_stop(note_str_clone);
         }
     }
 }

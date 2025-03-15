@@ -33,7 +33,7 @@ pub fn synth_thread(
         for command in synth_command_receiver.get_recv_iter() {
             match command {
                 SynthCommand::StartNotes(notes) => {
-                    println!("{synth_thread_name} -> play {:?}", notes);
+                    // println!("{synth_thread_name} -> play {:?}", notes);
 
                     for note in notes {
                         let source = create_source_from_note(&note);
@@ -43,7 +43,7 @@ pub fn synth_thread(
                     }
                 }
                 SynthCommand::StopNote => {
-                    println!("{synth_thread_name} -> stop");
+                    // println!("{synth_thread_name} -> stop");
 
                     for synth in &mut synths {
                         synth.pause();
@@ -51,7 +51,7 @@ pub fn synth_thread(
                     synths.clear();
                 }
                 SynthCommand::CloseThread => {
-                    println!("{synth_thread_name} -> close");
+                    // println!("{synth_thread_name} -> close");
 
                     for synth in &mut synths {
                         synth.pause();
