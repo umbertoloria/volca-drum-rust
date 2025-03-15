@@ -4,4 +4,5 @@ pub mod instrument;
 pub mod keyboard;
 pub mod metronome;
 pub mod synth;
+pub mod bass_synth;
 pub mod synth_thread;
