@@ -1,4 +1,4 @@
-use crate::instruments::stop_notes_queue::AbstractKeysBasedInstrument;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
 use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
 use crate::music::note::get_notes_from_note_str_list;
 use crate::thread_comm::thread_comm::ThreadCommSender;
@@ -11,7 +11,7 @@ pub struct KeysBasedInstrumentSynth {
 impl KeysBasedInstrumentSynth {
     pub fn new() -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
-        let synth_thread_handle = synth_thread("Synth".into(), 0.3, synth_command_receiver);
+        let synth_thread_handle = synth_thread("KeysSynth".into(), 0.3, synth_command_receiver);
         Self {
             synth_thread_handle,
             synth_command_sender,

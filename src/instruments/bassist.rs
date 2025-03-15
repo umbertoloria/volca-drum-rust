@@ -1,31 +1,41 @@
 use crate::instruments::instrument::Instrument;
+use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
+use crate::instruments::lib::bass_with_queue::BassWithQueue;
+use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
 use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
 use crate::music::note::Note;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
 use crate::thread_comm::thread_comm::ThreadCommSender;
-use std::collections::{HashMap, HashSet};
 use std::thread::JoinHandle;
 
-// TODO: Avoid duplicate code between this and Synth
-pub struct BassSynth {
+// FIXME: Too much similar to Keyboardist
+pub struct Bassist {
+    inner_instrument_name_16_chars: String,
+
     // Charts
     curr_section_index: usize,
     pattern: Option<BassPattern>,
     chord_index: usize,
 
     // Outputs
-    stop_notes_queue: HashMap<usize, HashSet<String>>,
-    inner_synth: InnerSynth,
+    bass_with_queue: BassWithQueue,
 }
-impl BassSynth {
-    pub fn new() -> Self {
+impl Bassist {
+    pub fn new(
+        inner_instrument_name_16_chars: String,
+        keys_based_instrument: Box<dyn AbstractBassBasedInstrument>,
+    ) -> Self {
         Self {
+            inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            stop_notes_queue: HashMap::new(),
-            inner_synth: InnerSynth::new(),
+            bass_with_queue: BassWithQueue::new(
+                //
+                StopNotesQueue::new(),
+                keys_based_instrument,
+            ),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -48,7 +58,8 @@ impl BassSynth {
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
-        self.dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
+        self.bass_with_queue
+            .playing_hit_dequeue_and_stop_notes_at_this_1_16th(index_1_16th);
 
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
@@ -82,19 +93,15 @@ impl BassSynth {
                 println!(" > chord notes={:?}", chord.note);
                 */
 
-                // FIXME: fai suonare ogni quarto
-                //println!(" *** {}", index_1_16th_for_pattern);
-
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.play_note_start(&chord.note);
+                    self.bass_with_queue.playing_hit_chord_start(&chord.note);
                 } else if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
                     // (so after current 1/16th) using variable "index_1_16th_for_pattern".
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
-                    // FIXME: Avoid cloning Note
-                    let notes = vec![chord.note.clone()]; // FIXME
-                    self.add_notes_to_stop_notes_queue(&notes, index_1_16th + 1);
+                    self.bass_with_queue
+                        .playing_hit_last_before_chord_stop(&chord.note, index_1_16th + 1);
                 } else {
                     // Notes are still playing.
                 }
@@ -108,49 +115,11 @@ impl BassSynth {
             self.update_pattern_from_song_section(&song);
         }
     }
-    fn play_note_start(&mut self, note_str: &String) {
-        // println!("play_notes_start {:?}", notes);
-
-        let note = Note::new(note_str);
-        self.inner_synth.note_play_start(&note);
-    }
-    fn play_note_stop(&mut self, note: &String) {
-        // println!("play_notes_stop {:?}", note);
-
-        // TODO: Try to use "note"
-        self.inner_synth.note_play_stop();
-    }
-    fn add_notes_to_stop_notes_queue(&mut self, notes: &Vec<String>, index_1_16th: usize) {
-        // Param "index_1_16th" starts from 1.
-        if let Some(queued_notes_to_stop) = self.stop_notes_queue.get_mut(&index_1_16th) {
-            for note in notes {
-                // TODO: Avoid cloning note
-                let note_clone = note.clone();
-                queued_notes_to_stop.insert(note_clone);
-            }
-        } else {
-            let mut queued_notes_to_stop = HashSet::new();
-            for note in notes {
-                // TODO: Avoid cloning note
-                let note_clone = note.clone();
-                queued_notes_to_stop.insert(note_clone);
-            }
-            self.stop_notes_queue
-                .insert(index_1_16th, queued_notes_to_stop);
-        }
-    }
-    fn dequeue_notes_at_this_1_16th_from_stop_notes_queue(&mut self, index_1_16th: usize) {
-        // Param "index_1_16th" starts from 1.
-        if let Some(queued_notes_to_stop) = self.stop_notes_queue.remove(&index_1_16th) {
-            for queued_note_to_stop in queued_notes_to_stop {
-                self.play_note_stop(&queued_note_to_stop);
-            }
-        }
-    }
 }
-impl Instrument for BassSynth {
+impl Instrument for Bassist {
     fn get_instrument_name_16_chars(&self) -> String {
-        "Synth           ".into()
+        // TODO: Avoid cloning Instrument Name
+        self.inner_instrument_name_16_chars.clone()
     }
     fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {

@@ -182,7 +182,7 @@ fn create_instrument_threads(
 
         // Instrument
         let mut keyboard = Keyboardist::new(
-            //
+            "Keyboard        ".into(),
             Box::new(VolcaKeysBasedInstrument::new(volca_keys)),
         );
         start_listening_to_instrument_comm_commands(
@@ -195,7 +195,7 @@ fn create_instrument_threads(
     let synth_thread = thread::spawn(move || {
         // Instrument
         let mut synth = Keyboardist::new(
-            //
+            "SynthKeys       ".into(),
             Box::new(KeysBasedInstrumentSynth::new()),
         );
         start_listening_to_instrument_comm_commands(instrument_comm_receiver_synth, &mut synth);
@@ -204,7 +204,10 @@ fn create_instrument_threads(
     // Bass Synth
     let bass_synth_thread = thread::spawn(move || {
         // Instrument
-        let mut bass_synth = BassSynth::new();
+        let mut bass_synth = Bassist::new(
+            "SynthBass       ".into(),
+            Box::new(BassBasedInstrumentSynth::new()),
+        );
         start_listening_to_instrument_comm_commands(
             instrument_comm_receiver_bass_synth,
             &mut bass_synth,

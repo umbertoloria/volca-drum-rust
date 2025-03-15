@@ -1,11 +1,13 @@
 use crate::instruments::instrument::Instrument;
-use crate::instruments::stop_notes_queue::{
-    AbstractKeysBasedInstrument, KeysWithQueue, StopNotesQueue,
-};
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
+use crate::instruments::lib::keys_with_queue::KeysWithQueue;
+use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 
 pub struct Keyboardist {
+    inner_instrument_name_16_chars: String,
+
     // Charts
     curr_section_index: usize,
     pattern: Option<KeyboardPattern>,
@@ -15,8 +17,12 @@ pub struct Keyboardist {
     keys_with_queue: KeysWithQueue,
 }
 impl Keyboardist {
-    pub fn new(keys_based_instrument: Box<dyn AbstractKeysBasedInstrument>) -> Self {
+    pub fn new(
+        inner_instrument_name_16_chars: String,
+        keys_based_instrument: Box<dyn AbstractKeysBasedInstrument>,
+    ) -> Self {
         Self {
+            inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
@@ -107,7 +113,8 @@ impl Keyboardist {
 }
 impl Instrument for Keyboardist {
     fn get_instrument_name_16_chars(&self) -> String {
-        "Keyboardist     ".into()
+        // TODO: Avoid cloning Instrument Name
+        self.inner_instrument_name_16_chars.clone()
     }
     fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {

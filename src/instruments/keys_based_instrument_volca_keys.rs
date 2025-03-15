@@ -1,5 +1,5 @@
 use crate::devices::volca_keys::VolcaKeys;
-use crate::instruments::stop_notes_queue::AbstractKeysBasedInstrument;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
 
 pub struct KeysBasedInstrumentVolcaKeys {
     volca_keys: VolcaKeys,

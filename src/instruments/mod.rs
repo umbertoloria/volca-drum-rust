@@ -1,10 +1,11 @@
-pub mod bass_synth;
+pub mod bass_based_instrument_synth;
+pub mod bassist;
 pub mod drummer;
 pub mod instr_comm;
 pub mod instrument;
 pub mod keyboardist;
 pub mod keys_based_instrument_synth;
 pub mod keys_based_instrument_volca_keys;
+pub mod lib;
 pub mod metronome;
-pub mod stop_notes_queue;
 pub mod synth_thread;
