@@ -70,6 +70,7 @@ impl Composer {
                     .into(),
                 },
             )]),
+            bass_patterns: HashMap::new(),
             sections: [SongSection {
                 kind: SongSectionKind::Verse,
                 bars: self.num_sections,
@@ -78,6 +79,7 @@ impl Composer {
                 // drum_pattern_key: Some("CLICK".into()),
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             }]
             .into(),

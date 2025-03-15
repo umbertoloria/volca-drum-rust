@@ -1,6 +1,6 @@
 use crate::song::song::{
-    DrumPattern, KeyboardPattern, KeyboardPatternChord, Song, SongDetails, SongSection,
-    SongSectionKind, SongTempo,
+    DrumPattern, KeyboardPattern, KeyboardPatternChord, Song,
+    SongDetails, SongSection, SongSectionKind, SongTempo,
 };
 use std::collections::HashMap;
 
@@ -106,6 +106,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 .into(),
             },
         )]),
+        bass_patterns: HashMap::new(),
         sections: [
             // Intro 3+1*, no drums + *fill
             SongSection {
@@ -116,6 +117,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 // drum_pattern_key: None, //Always have HH or some sort of click.
                 drum_pattern_key: Some("C".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4+2
@@ -126,6 +128,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Chorus 4+4*, *strong
@@ -136,6 +139,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("B".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Post-chorus 2
@@ -146,6 +150,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("C".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4+2
@@ -156,6 +161,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Chorus 4+4*, *strong
@@ -166,6 +172,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("B".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4, no drums
@@ -176,6 +183,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Avoid having no drums at all!
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4, "Distant Drums"
@@ -186,6 +194,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Have "Distant Drums"!
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4
@@ -196,6 +205,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("C".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4, no drums
@@ -206,6 +216,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Avoid having no drums at all!
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Chorus 8
@@ -216,6 +227,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("B".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Outro 2, no drums
@@ -226,6 +238,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Avoid having no drums at all!
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
         ]
@@ -411,6 +424,7 @@ pub fn get_song_o1() -> Song {
                 },
             ),
         ]),
+        bass_patterns: HashMap::new(),
         sections: [
             // Intro 4
             SongSection {
@@ -420,6 +434,7 @@ pub fn get_song_o1() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4
@@ -430,6 +445,7 @@ pub fn get_song_o1() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 8
@@ -440,6 +456,7 @@ pub fn get_song_o1() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("C".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Bridge 4
@@ -450,6 +467,7 @@ pub fn get_song_o1() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("D".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             // Verse 4
@@ -460,6 +478,7 @@ pub fn get_song_o1() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("C".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
         ]

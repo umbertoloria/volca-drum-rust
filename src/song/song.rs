@@ -9,6 +9,7 @@ pub struct Song {
     pub tempo: SongTempo,
     pub drum_patterns: HashMap<String, DrumPattern>,
     pub keyboard_patterns: HashMap<String, KeyboardPattern>,
+    pub bass_patterns: HashMap<String, BassPattern>,
     pub sections: Vec<SongSection>,
 }
 impl Song {
@@ -41,6 +42,7 @@ pub struct SongSection {
     pub num_1_16s_in_a_quarter: usize,
     pub drum_pattern_key: Option<String>,
     pub keyboard_pattern_key: Option<String>,
+    pub bass_pattern_key: Option<String>,
     pub notes: Option<String>,
 }
 impl SongSection {
@@ -96,6 +98,7 @@ pub struct KeyboardPattern {
     pub chords: Vec<KeyboardPatternChord>,
 }
 impl KeyboardPattern {
+    // TODO: Duplicated code (*pkf)
     pub fn get_total_to_1_16th_incl(&self) -> usize {
         let last_chord = &self.chords[self.chords.len() - 1];
         last_chord.to_1_16th_incl
@@ -116,6 +119,33 @@ pub struct KeyboardPatternChord {
     pub from_1_16th_incl: usize,
     pub to_1_16th_incl: usize,
 }
+#[derive(Clone)]
+pub struct BassPattern {
+    pub key: String, // Es. "A"
+    pub chords: Vec<BassPatternChord>,
+}
+impl BassPattern {
+    // TODO: Duplicated code (*pkf)
+    pub fn get_total_to_1_16th_incl(&self) -> usize {
+        let last_chord = &self.chords[self.chords.len() - 1];
+        last_chord.to_1_16th_incl
+    }
+    pub fn get_ceil_num_bars_coverage(&self) -> usize {
+        let total_1_16ths_incl = self.get_total_to_1_16th_incl();
+        // Assuming 1/4ths is a group of "4" 1/16ths.
+        let ceil_1_4ths = (total_1_16ths_incl as f64 / 4.0).ceil() as usize;
+        // Assuming 4/4 bars.
+        ceil_1_4ths / 4
+    }
+}
+#[derive(Clone)]
+pub struct BassPatternChord {
+    pub chord_name: String, // Es. "Fmaj7"
+    pub note: String,       // Es. "F3"
+    // Params "from_1_16th_incl" and "to_1_16th_incl" start from 1.
+    pub from_1_16th_incl: usize,
+    pub to_1_16th_incl: usize,
+}
 
 // Songs
 pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
@@ -131,6 +161,7 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
         },
         drum_patterns: HashMap::new(),
         keyboard_patterns: HashMap::new(),
+        bass_patterns: HashMap::new(),
         sections: yaml_song
             .sections
             .iter()
@@ -141,6 +172,7 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: None,
+                bass_pattern_key: None,
                 notes: section.notes.clone(),
             })
             .collect(),
@@ -297,6 +329,7 @@ pub fn get_dummy_song() -> Song {
                 },
             ),
         ]),
+        bass_patterns: HashMap::new(),
         sections: [
             SongSection {
                 kind: SongSectionKind::Intro,
@@ -305,6 +338,7 @@ pub fn get_dummy_song() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             SongSection {
@@ -314,6 +348,7 @@ pub fn get_dummy_song() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             SongSection {
@@ -323,6 +358,7 @@ pub fn get_dummy_song() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("B".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             SongSection {
@@ -332,6 +368,7 @@ pub fn get_dummy_song() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             SongSection {
@@ -341,6 +378,7 @@ pub fn get_dummy_song() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("B".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
             SongSection {
@@ -350,6 +388,7 @@ pub fn get_dummy_song() -> Song {
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
+                bass_pattern_key: None,
                 notes: None,
             },
         ]
