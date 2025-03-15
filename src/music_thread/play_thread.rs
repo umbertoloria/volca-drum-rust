@@ -1,13 +1,15 @@
 use crate::devices::sound_panel::SoundPanel;
 use crate::devices::volca_drum::VolcaDrum;
-use crate::instruments::bass_synth::BassSynth;
+use crate::instruments::bassist::Bassist;
 use crate::instruments::drummer::Drummer;
 use crate::instruments::instr_comm::{
     create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
     InstrumentCommReceiver,
 };
 use crate::instruments::keyboardist::Keyboardist;
-use crate::instruments::keys_based_instrument_synth::KeysBasedInstrumentSynth;
+use crate::instruments::lib::based_instrument_thread_synth::{
+    BassBasedInstrumentThreadSynth, KeysBasedInstrumentThreadSynth,
+};
 use crate::midi::midi_controller::init_midi_controller;
 use crate::midi::midi_device::MidiDeviceConcrete;
 use crate::players::conductor::Conductor;
@@ -196,7 +198,11 @@ fn create_instrument_threads(
         // Instrument
         let mut synth = Keyboardist::new(
             "SynthKeys       ".into(),
-            Box::new(KeysBasedInstrumentSynth::new()),
+            Box::new(KeysBasedInstrumentThreadSynth::new(
+                //
+                "ThreadKeysSynth".into(),
+                0.3,
+            )),
         );
         start_listening_to_instrument_comm_commands(instrument_comm_receiver_synth, &mut synth);
     });
@@ -206,7 +212,11 @@ fn create_instrument_threads(
         // Instrument
         let mut bass_synth = Bassist::new(
             "SynthBass       ".into(),
-            Box::new(BassBasedInstrumentSynth::new()),
+            Box::new(BassBasedInstrumentThreadSynth::new(
+                //
+                "ThreadBassSynth".into(),
+                0.4,
+            )),
         );
         start_listening_to_instrument_comm_commands(
             instrument_comm_receiver_bass_synth,
