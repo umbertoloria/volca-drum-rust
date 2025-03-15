@@ -1,6 +1,6 @@
 use crate::instruments::instrument::Instrument;
 use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
-use crate::music::note::{get_notes_from_note_str_list, Note};
+use crate::music::note::get_notes_from_note_str_list;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 use crate::thread_comm::thread_comm::ThreadCommSender;
@@ -16,7 +16,7 @@ pub struct Synth {
 
     // Outputs
     stop_notes_queue: HashMap<usize, HashSet<String>>,
-    inner_synth: InnerSynth,
+    keys_based_instrument: KeysBasedInstrument,
 }
 impl Synth {
     pub fn new() -> Self {
@@ -25,7 +25,7 @@ impl Synth {
             pattern: None,
             chord_index: 0,
             stop_notes_queue: HashMap::new(),
-            inner_synth: InnerSynth::new(),
+            keys_based_instrument: KeysBasedInstrument::new(),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -104,16 +104,10 @@ impl Synth {
         }
     }
     fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
-        // println!("play_notes_start {:?}", notes);
-
-        let notes = get_notes_from_note_str_list(notes_str_list);
-        self.inner_synth.note_play_start(notes);
+        self.keys_based_instrument.play_notes_start(notes_str_list);
     }
-    fn play_notes_stop(&mut self, notes: &Vec<String>) {
-        // println!("play_notes_stop {:?}", notes);
-
-        // TODO: Try to use "notes"
-        self.inner_synth.note_play_stop();
+    fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
+        self.keys_based_instrument.play_notes_stop(notes_str_list);
     }
     fn add_notes_to_stop_notes_queue(&mut self, notes: &Vec<String>, index_1_16th: usize) {
         // Param "index_1_16th" starts from 1.
@@ -175,11 +169,11 @@ impl Instrument for Synth {
     }
 }
 
-struct InnerSynth {
+struct KeysBasedInstrument {
     synth_thread_handle: JoinHandle<()>,
     synth_command_sender: ThreadCommSender<SynthCommand>,
 }
-impl InnerSynth {
+impl KeysBasedInstrument {
     pub fn new() -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
         let synth_thread_handle = synth_thread("Synth".into(), 0.3, synth_command_receiver);
@@ -188,12 +182,15 @@ impl InnerSynth {
             synth_command_sender,
         }
     }
-    pub fn note_play_start(&self, notes: Vec<Note>) {
-        // println!("NOTES: {:?}", notes);
+    pub fn play_notes_start(&self, notes_str_list: &Vec<String>) {
+        // println!("play_notes_start: {:?}", notes_str_list);
+        let notes = get_notes_from_note_str_list(notes_str_list);
         self.synth_command_sender
             .send(SynthCommand::StartNotes(notes));
     }
-    pub fn note_play_stop(&self) {
+    pub fn play_notes_stop(&self, notes_str_list: &Vec<String>) {
+        // println!("play_notes_stop: {:?}", notes_str_list);
+        // TODO: Try to use "notes_str_list"
         self.synth_command_sender.send(SynthCommand::StopNote);
     }
 }
