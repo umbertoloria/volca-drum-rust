@@ -6,7 +6,8 @@ use crate::instruments::instr_comm::{
     create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
     InstrumentCommReceiver,
 };
-use crate::instruments::synth::Synth;
+use crate::instruments::keyboardist::Keyboardist;
+use crate::instruments::keys_based_instrument_synth::KeysBasedInstrumentSynth;
 use crate::midi::midi_controller::init_midi_controller;
 use crate::midi::midi_device::MidiDeviceConcrete;
 use crate::players::conductor::Conductor;
@@ -180,7 +181,10 @@ fn create_instrument_threads(
         let volca_keys = VolcaKeys::new(midi_device);
 
         // Instrument
-        let mut keyboard = Keyboard::new(volca_keys);
+        let mut keyboard = Keyboardist::new(
+            //
+            Box::new(VolcaKeysBasedInstrument::new(volca_keys)),
+        );
         start_listening_to_instrument_comm_commands(
             instrument_comm_receiver_keyboard,
             &mut keyboard,
@@ -190,7 +194,10 @@ fn create_instrument_threads(
     // Synth
     let synth_thread = thread::spawn(move || {
         // Instrument
-        let mut synth = Synth::new();
+        let mut synth = Keyboardist::new(
+            //
+            Box::new(KeysBasedInstrumentSynth::new()),
+        );
         start_listening_to_instrument_comm_commands(instrument_comm_receiver_synth, &mut synth);
     });
 
