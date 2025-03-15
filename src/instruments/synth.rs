@@ -1,6 +1,6 @@
 use crate::instruments::instrument::Instrument;
 use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
-use crate::music::note::{get_lowest_note, Note};
+use crate::music::note::{get_notes_from_note_str_list, Note};
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 use crate::thread_comm::thread_comm::ThreadCommSender;
@@ -103,11 +103,11 @@ impl Synth {
             self.update_pattern_from_song_section(&song);
         }
     }
-    fn play_notes_start(&mut self, notes: &Vec<String>) {
+    fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
         // println!("play_notes_start {:?}", notes);
 
-        let lowest_note = get_lowest_note(notes);
-        self.inner_synth.note_play_start(lowest_note);
+        let notes = get_notes_from_note_str_list(notes_str_list);
+        self.inner_synth.note_play_start(notes);
     }
     fn play_notes_stop(&mut self, notes: &Vec<String>) {
         // println!("play_notes_stop {:?}", notes);
@@ -188,9 +188,10 @@ impl InnerSynth {
             synth_command_sender,
         }
     }
-    pub fn note_play_start(&self, note: Note) {
+    pub fn note_play_start(&self, notes: Vec<Note>) {
+        // println!("NOTES: {:?}", notes);
         self.synth_command_sender
-            .send(SynthCommand::StartNote(note));
+            .send(SynthCommand::StartNotes(notes));
     }
     pub fn note_play_stop(&self) {
         self.synth_command_sender.send(SynthCommand::StopNote);

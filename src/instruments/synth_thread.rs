@@ -7,9 +7,8 @@ use rodio::source::Source;
 use std::thread;
 use std::thread::JoinHandle;
 
-// TODO: Monophonic for now :)
 pub enum SynthCommand {
-    StartNote(Note),
+    StartNotes(Vec<Note>),
     StopNote,
     CloseThread,
 }
@@ -22,21 +21,32 @@ pub fn create_synth_thread_comm() -> (
 
 pub fn synth_thread(synth_command_receiver: ThreadCommReceiver<SynthCommand>) -> JoinHandle<()> {
     thread::spawn(move || {
-        // Synth
-        let mut digital_synth = DigitalSynth::new();
+        // Synths
+        let mut synths = Vec::new();
 
         for command in synth_command_receiver.get_recv_iter() {
             match command {
-                SynthCommand::StartNote(note) => {
-                    // println!("play {:?}", note);
-                    let source = create_source_from_note(&note);
-                    digital_synth.play(source);
+                SynthCommand::StartNotes(notes) => {
+                    // println!("play {:?}", notes);
+
+                    for note in notes {
+                        let source = create_source_from_note(&note);
+                        let mut mono_synth = DigitalSynth::new();
+                        mono_synth.play(source);
+                        synths.push(mono_synth);
+                    }
                 }
                 SynthCommand::StopNote => {
-                    digital_synth.pause();
+                    for synth in &mut synths {
+                        synth.pause();
+                    }
+                    synths.clear();
                 }
                 SynthCommand::CloseThread => {
-                    digital_synth.pause();
+                    for synth in &mut synths {
+                        synth.pause();
+                    }
+                    synths.clear();
                     break;
                 }
             }

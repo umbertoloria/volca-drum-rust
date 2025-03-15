@@ -94,6 +94,15 @@ impl Note {
             offset: get_note_offset_from_note(note_bytes),
         }
     }
+    pub fn compare_to(&self, b: &Note) -> CompareEnum {
+        compare_notes(self, &b)
+    }
+    pub fn get_octave_higher(&self) -> Self {
+        Self {
+            octave: self.octave + 1,
+            offset: self.offset,
+        }
+    }
 }
 
 // Comparing Notes
@@ -121,12 +130,20 @@ pub fn compare_notes(a: &Note, b: &Note) -> CompareEnum {
         }
     }
 }
-pub fn get_lowest_note(note_str_list: &Vec<String>) -> Note {
-    let mut result = Note::new(&note_str_list[0]);
+pub fn get_notes_from_note_str_list(note_str_list: &Vec<String>) -> Vec<Note> {
+    let mut notes = Vec::new();
+    for note_str in note_str_list {
+        let note = Note::new(note_str);
+        notes.push(note);
+    }
+    notes
+}
+pub fn get_lowest_note(notes: &Vec<Note>) -> &Note {
+    let mut result = &notes[0];
     let mut i = 1;
-    while i < note_str_list.len() {
-        let curr_note_info = Note::new(&note_str_list[i]);
-        match compare_notes(&curr_note_info, &result) {
+    while i < notes.len() {
+        let curr_note_info = &notes[i];
+        match curr_note_info.compare_to(result) {
             CompareEnum::Lower => {
                 result = curr_note_info;
             }
@@ -145,20 +162,24 @@ pub fn get_lowest_note(note_str_list: &Vec<String>) -> Note {
 // Frequencies
 pub fn get_frequency_from_note_info(note: &Note) -> f32 {
     // TODO: This code must be very numerically precise!
-    (1.0 + note.octave as f32)
-        * match note.offset {
-            0 => 16.35,
-            1 => 17.32,
-            2 => 18.35,
-            3 => 19.45,
-            4 => 20.60,
-            5 => 21.83,
-            6 => 22.16,
-            7 => 24.50,
-            8 => 25.96,
-            9 => 27.50,
-            10 => 29.14,
-            11 => 30.87,
-            _ => 0.0, // TODO: Defaults to what?
-        }
+    let base_frequency: f32 = match note.offset {
+        0 => 16.35,
+        1 => 17.32,
+        2 => 18.35,
+        3 => 19.45,
+        4 => 20.60,
+        5 => 21.83,
+        6 => 22.16,
+        7 => 24.50,
+        8 => 25.96,
+        9 => 27.50,
+        10 => 29.14,
+        11 => 30.87,
+        _ => 0.0, // TODO: Defaults to what?
+    };
+    let octave_coefficient = 2.0f32.powf(note.octave as f32);
+    /*let result = base_frequency * octave_coeff;
+    println!(" -> from={:?} result={}", note, result);
+    result*/
+    base_frequency * octave_coefficient
 }
