@@ -1,8 +1,9 @@
+pub mod bass_synth;
 pub mod drummer;
 pub mod instr_comm;
 pub mod instrument;
 pub mod keyboard;
 pub mod metronome;
+pub mod stop_notes_queue;
 pub mod synth;
-pub mod bass_synth;
 pub mod synth_thread;

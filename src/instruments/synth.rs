@@ -1,10 +1,10 @@
 use crate::instruments::instrument::Instrument;
+use crate::instruments::stop_notes_queue::StopNotesQueue;
 use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
 use crate::music::note::get_notes_from_note_str_list;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 use crate::thread_comm::thread_comm::ThreadCommSender;
-use std::collections::{HashMap, HashSet};
 use std::thread::JoinHandle;
 
 // TODO: Avoid duplicate code between this and Keyboard
@@ -138,6 +138,7 @@ impl Instrument for Synth {
     }
 }
 
+// FIXME: Abstract "KeysBasedInstrument" to extract "KeysWithQueue"
 struct KeysWithQueue {
     stop_notes_queue: StopNotesQueue,
     keys_based_instrument: KeysBasedInstrument,
@@ -173,54 +174,6 @@ impl KeysWithQueue {
         }
     }
 }
-struct StopNotesQueue {
-    stop_notes_queue: HashMap<usize, HashSet<String>>,
-}
-impl StopNotesQueue {
-    pub fn new() -> Self {
-        Self {
-            stop_notes_queue: HashMap::new(),
-        }
-    }
-    pub fn add_notes_to_stop_notes_queue(
-        &mut self,
-        notes_str_list: &Vec<String>,
-        index_1_16th: usize,
-    ) {
-        // Param "index_1_16th" starts from 1.
-        if let Some(queued_notes_to_stop) = self.stop_notes_queue.get_mut(&index_1_16th) {
-            for note_str in notes_str_list {
-                // TODO: Avoid cloning note
-                let note_str_clone = note_str.clone();
-                queued_notes_to_stop.insert(note_str_clone);
-            }
-        } else {
-            let mut queued_notes_to_stop = HashSet::new();
-            for note_str in notes_str_list {
-                // TODO: Avoid cloning note
-                let note_str_clone = note_str.clone();
-                queued_notes_to_stop.insert(note_str_clone);
-            }
-            self.stop_notes_queue
-                .insert(index_1_16th, queued_notes_to_stop);
-        }
-    }
-    pub fn dequeue_notes_at_this_1_16th_from_stop_notes_queue(
-        &mut self,
-        index_1_16th: usize,
-    ) -> Option<Vec<String>> {
-        // Param "index_1_16th" starts from 1.
-        if let Some(queued_notes_to_stop) = self.stop_notes_queue.remove(&index_1_16th) {
-            let mut notes_str_list_to_stop = Vec::new();
-            for note_str in queued_notes_to_stop {
-                notes_str_list_to_stop.push(note_str);
-            }
-            Some(notes_str_list_to_stop)
-        } else {
-            None
-        }
-    }
-}
 
 struct KeysBasedInstrument {
     synth_thread_handle: JoinHandle<()>,
@@ -237,12 +190,14 @@ impl KeysBasedInstrument {
     }
     pub fn play_notes_start(&self, notes_str_list: &Vec<String>) {
         // println!("play_notes_start: {:?}", notes_str_list);
+
         let notes = get_notes_from_note_str_list(notes_str_list);
         self.synth_command_sender
             .send(SynthCommand::StartNotes(notes));
     }
     pub fn play_notes_stop(&self, notes_str_list: &Vec<String>) {
         // println!("play_notes_stop: {:?}", notes_str_list);
+
         // TODO: Try to use "notes_str_list"
         self.synth_command_sender.send(SynthCommand::StopNote);
     }
