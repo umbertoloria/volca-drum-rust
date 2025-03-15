@@ -51,7 +51,7 @@ impl Keyboard {
             // Adjusting because we may have 4 bars patter onto 8 bars section.
             let index_1_16th_for_pattern = (index_1_16th - 1) % (bars_covered_by_pattern * 16) + 1;
 
-            // TODO: This is slow
+            // FIXME: This is slow
             let mut i = 0;
             for chord in &pattern.chords {
                 if chord.from_1_16th_incl <= index_1_16th_for_pattern

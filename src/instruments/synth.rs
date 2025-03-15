@@ -55,7 +55,7 @@ impl Synth {
             // Adjusting because we may have 4 bars patter onto 8 bars section.
             let index_1_16th_for_pattern = (index_1_16th - 1) % (bars_covered_by_pattern * 16) + 1;
 
-            // TODO: This is slow
+            // FIXME: This is slow
             let mut i = 0;
             for chord in &pattern.chords {
                 if chord.from_1_16th_incl <= index_1_16th_for_pattern
@@ -182,7 +182,7 @@ struct InnerSynth {
 impl InnerSynth {
     pub fn new() -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
-        let synth_thread_handle = synth_thread(synth_command_receiver);
+        let synth_thread_handle = synth_thread("Synth".into(), 0.3, synth_command_receiver);
         Self {
             synth_thread_handle,
             synth_command_sender,

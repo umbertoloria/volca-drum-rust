@@ -62,34 +62,35 @@ impl Iterator for WaveTableOscillator {
 }
 pub type WaveTableOscillatorSample = SamplesConverter<WaveTableOscillator, f32>;
 
-pub struct DigitalSynth {
+pub struct DigitalMonoSynth {
+    volume: f32,
     stream: OutputStream,
     stream_handle: OutputStreamHandle,
     sink: Sink,
 }
-impl DigitalSynth {
-    pub fn new() -> Self {
+impl DigitalMonoSynth {
+    pub fn new(volume: f32) -> Self {
         let (stream, stream_handle) = OutputStream::try_default().unwrap();
-        let sink = create_empty_sink(&stream_handle);
+        let sink = create_empty_sink(&stream_handle, volume);
         Self {
+            volume,
             stream,
             stream_handle,
             sink,
         }
     }
     pub fn play(&mut self, sample: WaveTableOscillatorSample) {
-        self.sink = create_empty_sink(&self.stream_handle);
+        self.sink = create_empty_sink(&self.stream_handle, self.volume);
         self.sink.append(sample);
         // sleep(Duration::from_millis(250));
         // self.sink.stop();
     }
     pub fn pause(&mut self) {
-        self.sink = create_empty_sink(&self.stream_handle);
+        self.sink = create_empty_sink(&self.stream_handle, self.volume);
     }
 }
-const SYNTH_VOLUME: f32 = 0.4;
-fn create_empty_sink(stream_handle: &OutputStreamHandle) -> Sink {
+fn create_empty_sink(stream_handle: &OutputStreamHandle, volume: f32) -> Sink {
     let mut sink = Sink::try_new(&stream_handle).unwrap();
-    sink.set_volume(SYNTH_VOLUME);
+    sink.set_volume(volume);
     sink
 }

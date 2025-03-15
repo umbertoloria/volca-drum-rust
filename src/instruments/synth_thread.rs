@@ -1,5 +1,7 @@
 use crate::music::note::{get_frequency_from_note_info, Note};
-use crate::synth::synth::{DigitalSynth, WaveTableOscillator, WaveTableOscillatorSample};
+use crate::synth::digital_mono_synth::{
+    DigitalMonoSynth, WaveTableOscillator, WaveTableOscillatorSample,
+};
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -19,7 +21,11 @@ pub fn create_synth_thread_comm() -> (
     create_thread_comm_instances::<SynthCommand>()
 }
 
-pub fn synth_thread(synth_command_receiver: ThreadCommReceiver<SynthCommand>) -> JoinHandle<()> {
+pub fn synth_thread(
+    synth_thread_name: String,
+    volume: f32,
+    synth_command_receiver: ThreadCommReceiver<SynthCommand>,
+) -> JoinHandle<()> {
     thread::spawn(move || {
         // Synths
         let mut synths = Vec::new();
@@ -27,22 +33,26 @@ pub fn synth_thread(synth_command_receiver: ThreadCommReceiver<SynthCommand>) ->
         for command in synth_command_receiver.get_recv_iter() {
             match command {
                 SynthCommand::StartNotes(notes) => {
-                    // println!("play {:?}", notes);
+                    // println!("{synth_thread_name} -> play {:?}", notes);
 
                     for note in notes {
                         let source = create_source_from_note(&note);
-                        let mut mono_synth = DigitalSynth::new();
+                        let mut mono_synth = DigitalMonoSynth::new(volume);
                         mono_synth.play(source);
                         synths.push(mono_synth);
                     }
                 }
                 SynthCommand::StopNote => {
+                    // println!("{synth_thread_name} -> stop");
+
                     for synth in &mut synths {
                         synth.pause();
                     }
                     synths.clear();
                 }
                 SynthCommand::CloseThread => {
+                    // println!("{synth_thread_name} -> close");
+
                     for synth in &mut synths {
                         synth.pause();
                     }

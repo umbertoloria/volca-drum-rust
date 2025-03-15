@@ -1,1 +1,1 @@
-pub mod synth;
+pub mod digital_mono_synth;

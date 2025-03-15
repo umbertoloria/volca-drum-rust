@@ -97,6 +97,12 @@ impl Note {
     pub fn compare_to(&self, b: &Note) -> CompareEnum {
         compare_notes(self, &b)
     }
+    pub fn get_octave_lower(&self) -> Self {
+        Self {
+            octave: self.octave - 1,
+            offset: self.offset,
+        }
+    }
     pub fn get_octave_higher(&self) -> Self {
         Self {
             octave: self.octave + 1,

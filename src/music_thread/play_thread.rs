@@ -1,12 +1,10 @@
 use crate::devices::sound_panel::SoundPanel;
 use crate::devices::volca_drum::VolcaDrum;
-use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::drummer::Drummer;
 use crate::instruments::instr_comm::{
     create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
     InstrumentCommReceiver,
 };
-use crate::instruments::keyboard::Keyboard;
 use crate::instruments::synth::Synth;
 use crate::midi::midi_controller::init_midi_controller;
 use crate::midi::midi_device::MidiDeviceConcrete;
@@ -46,20 +44,24 @@ pub fn play_queue_thread(
         // INSTRUMENTS THREADS
         let (instrument_comm_sender_drummer, instrument_comm_receiver_drummer) =
             create_instrument_comm();
-        let (instrument_comm_sender_keyboard, instrument_comm_receiver_keyboard) =
-            create_instrument_comm();
+        /*let (instrument_comm_sender_keyboard, instrument_comm_receiver_keyboard) =
+        create_instrument_comm();*/
         let (instrument_comm_sender_synth, instrument_comm_receiver_synth) =
             create_instrument_comm();
-        let (drummer_thread, keyboard_thread) = create_instrument_threads(
+        let (
+            drummer_thread,
+            // keyboard_thread,
+            synth_thread,
+        ) = create_instrument_threads(
             instrument_comm_receiver_drummer,
-            instrument_comm_receiver_keyboard,
+            // instrument_comm_receiver_keyboard,
             instrument_comm_receiver_synth,
         );
         let instrument_broadcast_comm = InstrumentBroadcastComm {
             instrument_comm_senders_list: vec![
                 // List of Instruments Communicators
                 instrument_comm_sender_drummer,
-                instrument_comm_sender_keyboard,
+                // instrument_comm_sender_keyboard,
                 instrument_comm_sender_synth,
             ],
         };
@@ -97,7 +99,8 @@ pub fn play_queue_thread(
 
         // CLOSE INSTRUMENTS THREADS
         drummer_thread.join().unwrap();
-        keyboard_thread.join().unwrap();
+        // keyboard_thread.join().unwrap();
+        synth_thread.join().unwrap();
     })
 }
 
@@ -123,12 +126,12 @@ fn play_song_example_with_updates(
 type InstrumentThreadType = JoinHandle<()>;
 fn create_instrument_threads(
     instrument_comm_receiver_drummer: InstrumentCommReceiver,
-    instrument_comm_receiver_keyboard: InstrumentCommReceiver,
+    // instrument_comm_receiver_keyboard: InstrumentCommReceiver,
     instrument_comm_receiver_synth: InstrumentCommReceiver,
 ) -> (
-    // Instruments Threads
-    InstrumentThreadType,
-    InstrumentThreadType,
+    InstrumentThreadType, // Drummer
+    // InstrumentThreadType, // Keyboard
+    InstrumentThreadType, // Synth
 ) {
     // Metronome
     /*let clone_song_metronome = song1.clone();
@@ -162,7 +165,7 @@ fn create_instrument_threads(
     });
 
     // Keyboard
-    let keyboard_thread = thread::spawn(move || {
+    /*let keyboard_thread = thread::spawn(move || {
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
@@ -173,10 +176,10 @@ fn create_instrument_threads(
             instrument_comm_receiver_keyboard,
             &mut keyboard,
         );
-    });
+    });*/
 
     // Synth
-    let keyboard_thread = thread::spawn(move || {
+    let synth_thread = thread::spawn(move || {
         // Instrument
         let mut synth = Synth::new();
         start_listening_to_instrument_comm_commands(instrument_comm_receiver_synth, &mut synth);
@@ -185,6 +188,7 @@ fn create_instrument_threads(
     (
         // Instruments Threads
         drummer_thread,
-        keyboard_thread,
+        // keyboard_thread,
+        synth_thread,
     )
 }
