@@ -11,8 +11,7 @@ pub struct Keyboard {
     chord_index: usize,
 
     // Outputs
-    stop_notes_queue: StopNotesQueue,
-    keys_based_instrument: KeysBasedInstrument,
+    keys_with_queue: KeysWithQueue,
 }
 impl Keyboard {
     pub fn new(volca_keys: VolcaKeys) -> Self {
@@ -20,8 +19,10 @@ impl Keyboard {
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            stop_notes_queue: StopNotesQueue::new(),
-            keys_based_instrument: KeysBasedInstrument::new(volca_keys),
+            keys_with_queue: KeysWithQueue::new(
+                StopNotesQueue::new(),
+                KeysBasedInstrument::new(volca_keys),
+            ),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -44,7 +45,8 @@ impl Keyboard {
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
-        self.playing_hit_dequeue_and_stop_notes_at_this_1_16th(index_1_16th);
+        self.keys_with_queue
+            .playing_hit_dequeue_and_stop_notes_at_this_1_16th(index_1_16th);
 
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
@@ -79,13 +81,14 @@ impl Keyboard {
                 */
 
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.playing_hit_chord_start(&chord.notes);
+                    self.keys_with_queue.playing_hit_chord_start(&chord.notes);
                 } else if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
                     // (so after current 1/16th) using variable "index_1_16th_for_pattern".
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
-                    self.playing_hit_last_before_chord_stop(&chord.notes, index_1_16th + 1);
+                    self.keys_with_queue
+                        .playing_hit_last_before_chord_stop(&chord.notes, index_1_16th + 1);
                 } else {
                     // Notes are still playing.
                 }
@@ -97,26 +100,6 @@ impl Keyboard {
         if tempo_snapshot.is_this_the_last_1_16th_of_this_section(&song) {
             self.curr_section_index += 1;
             self.update_pattern_from_song_section(&song);
-        }
-    }
-    fn playing_hit_chord_start(&mut self, notes_str_list: &Vec<String>) {
-        self.keys_based_instrument.play_notes_start(notes_str_list);
-    }
-    fn playing_hit_last_before_chord_stop(
-        &mut self,
-        notes_str_list: &Vec<String>,
-        index_1_16th: usize,
-    ) {
-        self.stop_notes_queue
-            .add_notes_to_stop_notes_queue(notes_str_list, index_1_16th);
-    }
-    fn playing_hit_dequeue_and_stop_notes_at_this_1_16th(&mut self, index_1_16th: usize) {
-        let note_str_list_to_stop = self
-            .stop_notes_queue
-            .dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
-        if let Some(note_str_list_to_stop) = note_str_list_to_stop {
-            self.keys_based_instrument
-                .play_notes_stop(&note_str_list_to_stop);
         }
     }
 }
@@ -146,6 +129,42 @@ impl Instrument for Keyboard {
             self.play_1_16th(&song, tempo_snapshot);
 
             realtime_player.prepare_next_1_16th();
+        }
+    }
+}
+
+struct KeysWithQueue {
+    stop_notes_queue: StopNotesQueue,
+    keys_based_instrument: KeysBasedInstrument,
+}
+impl KeysWithQueue {
+    pub fn new(
+        stop_notes_queue: StopNotesQueue,
+        keys_based_instrument: KeysBasedInstrument,
+    ) -> Self {
+        Self {
+            stop_notes_queue,
+            keys_based_instrument,
+        }
+    }
+    pub fn playing_hit_chord_start(&mut self, notes_str_list: &Vec<String>) {
+        self.keys_based_instrument.play_notes_start(notes_str_list);
+    }
+    pub fn playing_hit_last_before_chord_stop(
+        &mut self,
+        notes_str_list: &Vec<String>,
+        index_1_16th: usize,
+    ) {
+        self.stop_notes_queue
+            .add_notes_to_stop_notes_queue(notes_str_list, index_1_16th);
+    }
+    pub fn playing_hit_dequeue_and_stop_notes_at_this_1_16th(&mut self, index_1_16th: usize) {
+        let note_str_list_to_stop = self
+            .stop_notes_queue
+            .dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
+        if let Some(note_str_list_to_stop) = note_str_list_to_stop {
+            self.keys_based_instrument
+                .play_notes_stop(&note_str_list_to_stop);
         }
     }
 }
