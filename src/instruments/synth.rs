@@ -15,7 +15,7 @@ pub struct Synth {
     chord_index: usize,
 
     // Outputs
-    stop_notes_queue: HashMap<usize, HashSet<String>>,
+    stop_notes_queue: StopNotesQueue,
     keys_based_instrument: KeysBasedInstrument,
 }
 impl Synth {
@@ -24,7 +24,7 @@ impl Synth {
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            stop_notes_queue: HashMap::new(),
+            stop_notes_queue: StopNotesQueue::new(),
             keys_based_instrument: KeysBasedInstrument::new(),
         }
     }
@@ -48,7 +48,7 @@ impl Synth {
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
-        self.dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
+        self.playing_hit_dequeue_and_stop_notes_at_this_1_16th(index_1_16th);
 
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
@@ -89,7 +89,8 @@ impl Synth {
                     // (so after current 1/16th) using variable "index_1_16th_for_pattern".
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
-                    self.add_notes_to_stop_notes_queue(&chord.notes.clone(), index_1_16th + 1);
+                    self.stop_notes_queue
+                        .add_notes_to_stop_notes_queue(&chord.notes.clone(), index_1_16th + 1);
                 } else {
                     // Notes are still playing.
                 }
@@ -109,33 +110,13 @@ impl Synth {
     fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
         self.keys_based_instrument.play_notes_stop(notes_str_list);
     }
-    fn add_notes_to_stop_notes_queue(&mut self, notes: &Vec<String>, index_1_16th: usize) {
-        // Param "index_1_16th" starts from 1.
-        if let Some(queued_notes_to_stop) = self.stop_notes_queue.get_mut(&index_1_16th) {
-            for note in notes {
-                // TODO: Avoid cloning note
-                let note_clone = note.clone();
-                queued_notes_to_stop.insert(note_clone);
-            }
-        } else {
-            let mut queued_notes_to_stop = HashSet::new();
-            for note in notes {
-                // TODO: Avoid cloning note
-                let note_clone = note.clone();
-                queued_notes_to_stop.insert(note_clone);
-            }
-            self.stop_notes_queue
-                .insert(index_1_16th, queued_notes_to_stop);
-        }
-    }
-    fn dequeue_notes_at_this_1_16th_from_stop_notes_queue(&mut self, index_1_16th: usize) {
-        // Param "index_1_16th" starts from 1.
-        if let Some(queued_notes_to_stop) = self.stop_notes_queue.remove(&index_1_16th) {
-            let mut notes_to_stop = Vec::new();
-            for note in queued_notes_to_stop {
-                notes_to_stop.push(note);
-            }
-            self.play_notes_stop(&notes_to_stop);
+    fn playing_hit_dequeue_and_stop_notes_at_this_1_16th(&mut self, index_1_16th: usize) {
+        let note_str_list_to_stop = self
+            .stop_notes_queue
+            .dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
+        if let Some(note_str_list_to_stop) = note_str_list_to_stop {
+            self.keys_based_instrument
+                .play_notes_stop(&note_str_list_to_stop);
         }
     }
 }
@@ -165,6 +146,55 @@ impl Instrument for Synth {
             self.play_1_16th(&song, tempo_snapshot);
 
             realtime_player.prepare_next_1_16th();
+        }
+    }
+}
+
+struct StopNotesQueue {
+    stop_notes_queue: HashMap<usize, HashSet<String>>,
+}
+impl StopNotesQueue {
+    pub fn new() -> Self {
+        Self {
+            stop_notes_queue: HashMap::new(),
+        }
+    }
+    pub fn add_notes_to_stop_notes_queue(
+        &mut self,
+        notes_str_list: &Vec<String>,
+        index_1_16th: usize,
+    ) {
+        // Param "index_1_16th" starts from 1.
+        if let Some(queued_notes_to_stop) = self.stop_notes_queue.get_mut(&index_1_16th) {
+            for note_str in notes_str_list {
+                // TODO: Avoid cloning note
+                let note_str_clone = note_str.clone();
+                queued_notes_to_stop.insert(note_str_clone);
+            }
+        } else {
+            let mut queued_notes_to_stop = HashSet::new();
+            for note_str in notes_str_list {
+                // TODO: Avoid cloning note
+                let note_str_clone = note_str.clone();
+                queued_notes_to_stop.insert(note_str_clone);
+            }
+            self.stop_notes_queue
+                .insert(index_1_16th, queued_notes_to_stop);
+        }
+    }
+    pub fn dequeue_notes_at_this_1_16th_from_stop_notes_queue(
+        &mut self,
+        index_1_16th: usize,
+    ) -> Option<Vec<String>> {
+        // Param "index_1_16th" starts from 1.
+        if let Some(queued_notes_to_stop) = self.stop_notes_queue.remove(&index_1_16th) {
+            let mut notes_str_list_to_stop = Vec::new();
+            for note_str in queued_notes_to_stop {
+                notes_str_list_to_stop.push(note_str);
+            }
+            Some(notes_str_list_to_stop)
+        } else {
+            None
         }
     }
 }
