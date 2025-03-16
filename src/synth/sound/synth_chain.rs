@@ -2,12 +2,18 @@ use crate::synth::lfo::lfo::LFO;
 use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
 use crate::utils::timing::get_now_millis;
 
-pub struct SynthChain {
+// Abstract Synth Chain
+pub trait AbstractSynthChain {
+    fn get_sample(&self, index: f32) -> f32;
+}
+
+// Basic Synth Chain
+pub struct BasicSynthChain {
     oscillator: WaveTableOscillator,
     lfo: LFO,
     t0_ms: u128,
 }
-impl SynthChain {
+impl BasicSynthChain {
     pub fn new(
         //
         oscillator: WaveTableOscillator,
@@ -21,7 +27,9 @@ impl SynthChain {
             t0_ms,
         }
     }
-    pub fn get_sample(&self, index: f32) -> f32 {
+}
+impl AbstractSynthChain for BasicSynthChain {
+    fn get_sample(&self, index: f32) -> f32 {
         // 1. Oscillator
         let oscillator_value = self.oscillator.lerp(index);
 

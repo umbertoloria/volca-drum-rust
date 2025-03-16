@@ -1,14 +1,14 @@
 use crate::synth::oscillator::wave_tables::WAVE_TABLE_SIZE;
-use crate::synth::sound::synth_chain::SynthChain;
+use crate::synth::sound::synth_chain::{AbstractSynthChain, BasicSynthChain};
 
 const SAMPLE_RATE: u32 = 48000;
 pub struct MonoSynth {
-    synth_chain: SynthChain,
+    synth_chain: BasicSynthChain,
     index: f32,
     index_increment: f32,
 }
 impl MonoSynth {
-    pub fn new(synth_chain: SynthChain) -> Self {
+    pub fn new(synth_chain: BasicSynthChain) -> Self {
         Self {
             synth_chain,
             index: 0.0,

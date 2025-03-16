@@ -1,10 +1,13 @@
 use crate::music::note::Note;
+use crate::synth::digital_mono_synth_sample_source::DigitalMonoSynthSampleSource;
+use crate::synth::mono_synth::MonoSynth;
 use crate::synth::mono_synth_player::MonoSynthPlayer;
 use crate::synth::synth_generator::SynthGenerator;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
 use crate::utils::timing::get_now_millis;
+use rodio::Source;
 use std::thread;
 use std::thread::JoinHandle;
 
@@ -40,11 +43,18 @@ pub fn synth_thread(
                     let now_millis = get_now_millis();
 
                     for note in notes {
-                        let samples_converter = synth_generator.generate(&note, now_millis);
+                        let synth_chain = synth_generator.generate(now_millis);
+
+                        let mut mono_synth = MonoSynth::new(synth_chain);
+                        mono_synth.set_frequency(note.get_frequency());
+
+                        let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
+                        let samples_converter = sample_source.convert_samples();
 
                         let mut mono_synth_player =
                             MonoSynthPlayer::new(synth_generator.get_volume());
                         mono_synth_player.play(samples_converter);
+
                         mono_synth_players.push(mono_synth_player);
                     }
                 }

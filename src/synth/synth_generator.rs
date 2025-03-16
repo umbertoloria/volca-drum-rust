@@ -1,12 +1,6 @@
-use crate::music::note::Note;
-use crate::synth::digital_mono_synth_sample_source::{
-    DigitalMonoSynthSampleSource, DigitalMonoSynthSamplesConverter,
-};
 use crate::synth::lfo::lfo::LFO;
-use crate::synth::mono_synth::MonoSynth;
 use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
-use crate::synth::sound::synth_chain::SynthChain;
-use rodio::Source;
+use crate::synth::sound::synth_chain::BasicSynthChain;
 
 pub struct SynthGenerator {
     wave_table: Vec<f32>,
@@ -24,7 +18,7 @@ impl SynthGenerator {
     pub fn get_volume(&self) -> f32 {
         self.volume
     }
-    pub fn generate(&self, note: &Note, now_millis: u128) -> DigitalMonoSynthSamplesConverter {
+    pub fn generate(&self, now_millis: u128) -> BasicSynthChain {
         // FIXME: Avoid cloning Wave Table
         let wave_table = self.wave_table.clone();
         let sine_wt_oscillator = WaveTableOscillator::new(wave_table);
@@ -32,16 +26,11 @@ impl SynthGenerator {
         // FIXME: Avoid cloning LFO
         let lfo = self.lfo.clone();
 
-        let synth_chain = SynthChain::new(
+        BasicSynthChain::new(
             //
             sine_wt_oscillator,
             lfo,
             now_millis,
-        );
-        let mut mono_synth = MonoSynth::new(synth_chain);
-        mono_synth.set_frequency(note.get_frequency());
-
-        let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
-        sample_source.convert_samples()
+        )
     }
 }
