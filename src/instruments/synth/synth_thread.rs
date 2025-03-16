@@ -1,9 +1,10 @@
-use crate::music::note::{get_frequency_from_note_info, Note};
-use crate::synth::mono_synth_player::MonoSynthPlayer;
+use crate::music::note::Note;
 use crate::synth::digital_mono_synth_sample_source::{
     DigitalMonoSynthSampleSource, DigitalMonoSynthSamplesConverter,
 };
 use crate::synth::lfo::lfo::LFO;
+use crate::synth::mono_synth::MonoSynth;
+use crate::synth::mono_synth_player::MonoSynthPlayer;
 use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
 use crate::synth::oscillator::wave_table_sine::create_sine_wave_table;
 use crate::thread_comm::thread_comm::{
@@ -88,18 +89,18 @@ fn create_source_from_note(
     // Sine Oscillator
     let sine_wt_oscillator = WaveTableOscillator::new(create_sine_wave_table());
 
-    // Sample Source
+    // Mono Synth
     let sample_rate = 48000;
-    let mut sample_source = DigitalMonoSynthSampleSource::new(
-        //
-        sample_rate,
+    let mut mono_synth = MonoSynth::new(
         sine_wt_oscillator,
         lfo.clone(), // FIXME: Avoid cloning LFO
+        sample_rate,
         now_millis,
     );
+    let frequency = note.get_frequency();
+    mono_synth.set_frequency(frequency);
 
-    // Sample & Source
-    let frequency = get_frequency_from_note_info(note);
-    sample_source.set_frequency(frequency);
+    // Sample Source
+    let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
     sample_source.convert_samples()
 }

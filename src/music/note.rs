@@ -109,6 +109,31 @@ impl Note {
             offset: self.offset,
         }
     }
+    pub fn get_frequency(&self) -> f32 {
+        // TODO: This code must be very numerically precise!
+        let base_frequency: f32 = match self.offset {
+            0 => 16.35,
+            1 => 17.32,
+            2 => 18.35,
+            3 => 19.45,
+            4 => 20.60,
+            5 => 21.83,
+            6 => 22.16,
+            7 => 24.50,
+            8 => 25.96,
+            9 => 27.50,
+            10 => 29.14,
+            11 => 30.87,
+            _ => 0.0, // TODO: Defaults to what?
+        };
+        let octave_coefficient = 2.0f32.powf(self.octave as f32);
+        /*
+        let result = base_frequency * octave_coeff;
+        println!(" -> from={:?} result={}", note, result);
+        result
+        */
+        base_frequency * octave_coefficient
+    }
     // Hash
     pub fn from_hash(note_hash: String) -> Self {
         let octave_part = &note_hash[0..note_hash.len() - 2];
@@ -188,29 +213,4 @@ pub fn get_lowest_note(notes: &Vec<Note>) -> &Note {
         i += 1;
     }
     result
-}
-
-// Frequencies
-pub fn get_frequency_from_note_info(note: &Note) -> f32 {
-    // TODO: This code must be very numerically precise!
-    let base_frequency: f32 = match note.offset {
-        0 => 16.35,
-        1 => 17.32,
-        2 => 18.35,
-        3 => 19.45,
-        4 => 20.60,
-        5 => 21.83,
-        6 => 22.16,
-        7 => 24.50,
-        8 => 25.96,
-        9 => 27.50,
-        10 => 29.14,
-        11 => 30.87,
-        _ => 0.0, // TODO: Defaults to what?
-    };
-    let octave_coefficient = 2.0f32.powf(note.octave as f32);
-    /*let result = base_frequency * octave_coeff;
-    println!(" -> from={:?} result={}", note, result);
-    result*/
-    base_frequency * octave_coefficient
 }
