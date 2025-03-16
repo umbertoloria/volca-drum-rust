@@ -46,32 +46,30 @@ pub fn play_queue_thread(
     let is_playing = Arc::new(Mutex::new(AtomicBool::new(false)));
     thread::spawn(move || {
         // INSTRUMENTS THREADS
-        let (instrument_comm_sender_drummer, instrument_comm_receiver_drummer) =
-            create_instrument_comm();
-        /*let (instrument_comm_sender_keyboard, instrument_comm_receiver_keyboard) =
-        create_instrument_comm();*/
-        let (instrument_comm_sender_synth, instrument_comm_receiver_synth) =
-            create_instrument_comm();
-        let (instrument_comm_sender_bass_synth, instrument_comm_receiver_bass_synth) =
+        let (instr_comm_sender_drummer, instr_comm_receiver_drummer) = create_instrument_comm();
+        let (instr_comm_sender_keyboard, instr_comm_receiver_keyboard) = create_instrument_comm();
+        let (instr_comm_sender_synth, instr_comm_receiver_synth) = create_instrument_comm();
+        let (instr_comm_sender_bass_synth, instr_comm_receiver_bass_synth) =
             create_instrument_comm();
         let (
+            //
             drummer_thread,
-            // keyboard_thread,
+            keyboard_thread,
             synth_thread,
             bass_synth_thread,
         ) = create_instrument_threads(
-            instrument_comm_receiver_drummer,
-            // instrument_comm_receiver_keyboard,
-            instrument_comm_receiver_synth,
-            instrument_comm_receiver_bass_synth,
+            instr_comm_receiver_drummer,
+            instr_comm_receiver_keyboard,
+            instr_comm_receiver_synth,
+            instr_comm_receiver_bass_synth,
         );
         let instrument_broadcast_comm = InstrumentBroadcastComm {
             instrument_comm_senders_list: vec![
                 // List of Instruments Communicators
-                instrument_comm_sender_drummer,
-                // instrument_comm_sender_keyboard,
-                instrument_comm_sender_synth,
-                instrument_comm_sender_bass_synth,
+                instr_comm_sender_drummer,
+                instr_comm_sender_keyboard,
+                instr_comm_sender_synth,
+                instr_comm_sender_bass_synth,
             ],
         };
         let mut conductor = Conductor::new(instrument_broadcast_comm);
@@ -108,7 +106,7 @@ pub fn play_queue_thread(
 
         // CLOSE INSTRUMENTS THREADS
         drummer_thread.join().unwrap();
-        // keyboard_thread.join().unwrap();
+        keyboard_thread.join().unwrap();
         synth_thread.join().unwrap();
         bass_synth_thread.join().unwrap();
     })
@@ -135,15 +133,16 @@ fn play_song_example_with_updates(
 // INSTRUMENTS THREADS
 type InstrumentThreadType = JoinHandle<()>;
 fn create_instrument_threads(
-    instrument_comm_receiver_drummer: InstrumentCommReceiver,
-    // instrument_comm_receiver_keyboard: InstrumentCommReceiver,
-    instrument_comm_receiver_synth: InstrumentCommReceiver,
-    instrument_comm_receiver_bass_synth: InstrumentCommReceiver,
+    instr_comm_receiver_drummer: InstrumentCommReceiver,
+    instr_comm_receiver_keyboard: InstrumentCommReceiver,
+    instr_comm_receiver_synth: InstrumentCommReceiver,
+    instr_comm_receiver_bass_synth: InstrumentCommReceiver,
 ) -> (
     // Instruments Threads
-    InstrumentThreadType,
-    InstrumentThreadType,
-    InstrumentThreadType,
+    InstrumentThreadType, // Drummer
+    InstrumentThreadType, // Keyboard
+    InstrumentThreadType, // Synth
+    InstrumentThreadType, // Bass
 ) {
     // Metronome
     /*let clone_song_metronome = song1.clone();
@@ -177,25 +176,24 @@ fn create_instrument_threads(
             "Drummer         ".into(),
             volca_drum,
         );
-        start_listening_to_instrument_comm_commands(instrument_comm_receiver_drummer, &mut drummer);
+        start_listening_to_instrument_comm_commands(instr_comm_receiver_drummer, &mut drummer);
     });
 
     // Keyboard
-    /*let keyboard_thread = thread::spawn(move || {
-        let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
+    let keyboard_thread = thread::spawn(move || {
+        // Keyboard disabled for now.
+
+        /*let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
         // Instrument
         let mut keyboard = Keyboardist::new(
             "Keyboard        ".into(),
-            Box::new(VolcaKeysBasedInstrument::new(volca_keys)),
+            Box::new(KeysBasedInstrumentVolcaKeys::new(volca_keys)),
         );
-        start_listening_to_instrument_comm_commands(
-            instrument_comm_receiver_keyboard,
-            &mut keyboard,
-        );
-    });*/
+        start_listening_to_instrument_comm_commands(instr_comm_receiver_keyboard, &mut keyboard);*/
+    });
 
     // Synth
     let synth_thread = thread::spawn(move || {
@@ -208,7 +206,7 @@ fn create_instrument_threads(
                 0.3,
             )),
         );
-        start_listening_to_instrument_comm_commands(instrument_comm_receiver_synth, &mut synth);
+        start_listening_to_instrument_comm_commands(instr_comm_receiver_synth, &mut synth);
     });
 
     // Bass Synth
@@ -223,7 +221,7 @@ fn create_instrument_threads(
             )),
         );
         start_listening_to_instrument_comm_commands(
-            instrument_comm_receiver_bass_synth,
+            instr_comm_receiver_bass_synth,
             &mut bass_synth,
         );
     });
@@ -231,7 +229,7 @@ fn create_instrument_threads(
     (
         // Instruments Threads
         drummer_thread,
-        // keyboard_thread,
+        keyboard_thread,
         synth_thread,
         bass_synth_thread,
     )
