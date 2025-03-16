@@ -1,4 +1,4 @@
-use crate::utils::timing::get_now_millis_sub_second;
+use crate::utils::timing::get_now_millis;
 use core::time::Duration;
 use rodio::source::{SamplesConverter, Source};
 use rodio::{OutputStream, OutputStreamHandle, Sink};
@@ -7,14 +7,16 @@ use rodio::{OutputStream, OutputStreamHandle, Sink};
 pub struct WaveTableOscillator {
     sample_rate: u32,
     wave_table: Vec<f32>,
+    now_millis: u128,
     index: f32,
     index_increment: f32,
 }
 impl WaveTableOscillator {
-    pub fn new(sample_rate: u32, wave_table: Vec<f32>) -> Self {
+    pub fn new(sample_rate: u32, wave_table: Vec<f32>, now_millis: u128) -> Self {
         Self {
             sample_rate,
             wave_table,
+            now_millis,
             index: 0.0,
             index_increment: 0.0,
         }
@@ -33,16 +35,18 @@ impl WaveTableOscillator {
 
         // LFO
         // FIXME: Sync LFO Timing with "Music" Clock
-        let now_subs_millis = get_now_millis_sub_second();
-        // println!("{}", now_subs_millis);
-        if now_subs_millis <= 100 {
-            lfo = (now_subs_millis as f32) / 100.0;
-        } else if now_subs_millis <= 300 {
+        let millis_passed = get_now_millis() - self.now_millis;
+        if millis_passed <= 100 {
+            lfo = (millis_passed as f32) / 100.0;
+        } else if millis_passed <= 300 {
             lfo = 1.0;
+        } else if millis_passed <= 1000 {
+            let remaining: f32 = 1000.0 - 300.0;
+            lfo = 1.0 - (millis_passed - 300) as f32 / remaining;
         } else {
-            let remaining: f32 = 999.0 - 300.0;
-            lfo = 1.0 - (now_subs_millis - 300) as f32 / remaining;
+            lfo = 0.0;
         }
+        // println!("{:.5}", lfo);
 
         sample * lfo
     }

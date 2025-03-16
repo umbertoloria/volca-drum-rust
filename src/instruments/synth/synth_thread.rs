@@ -6,6 +6,7 @@ use crate::synth::oscillator::wave_table_sine::create_sine_wave_table;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
+use crate::utils::timing::get_now_millis;
 use rodio::source::Source;
 use std::thread;
 use std::thread::JoinHandle;
@@ -36,8 +37,10 @@ pub fn synth_thread(
                 SynthCommand::StartNotes(notes) => {
                     // println!("{synth_thread_name} -> play {:?}", notes);
 
+                    let now_millis = get_now_millis();
+
                     for note in notes {
-                        let source = create_source_from_note(&note);
+                        let source = create_source_from_note(&note, now_millis);
                         let mut mono_synth = DigitalMonoSynth::new(volume);
                         mono_synth.play(source);
                         synths.push(mono_synth);
@@ -66,11 +69,11 @@ pub fn synth_thread(
 }
 
 // Actual Oscillator
-fn create_source_from_note(note: &Note) -> WaveTableOscillatorSample {
+fn create_source_from_note(note: &Note, now_millis: u128) -> WaveTableOscillatorSample {
     // Sine Oscillator
     let sample_rate = 48000;
     let wave_table = create_sine_wave_table();
-    let mut oscillator = WaveTableOscillator::new(sample_rate, wave_table);
+    let mut oscillator = WaveTableOscillator::new(sample_rate, wave_table, now_millis);
 
     // Source
     let frequency = get_frequency_from_note_info(note);
