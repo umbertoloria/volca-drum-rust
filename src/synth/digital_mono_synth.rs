@@ -5,25 +5,57 @@ use rodio::source::{SamplesConverter, Source};
 use rodio::{OutputStream, OutputStreamHandle, Sink};
 
 // Oscillator
-pub struct WaveTableOscillator {
-    sample_rate: u32,
+pub struct WTOscillator {
     wave_table: Vec<f32>,
+}
+impl WTOscillator {
+    pub fn new(
+        //
+        wave_table: Vec<f32>,
+    ) -> Self {
+        Self {
+            //
+            wave_table,
+        }
+    }
+    pub fn get_wave_table_len(&self) -> usize {
+        self.wave_table.len()
+    }
+    pub fn get_from_wave_table(&self, index: usize) -> f32 {
+        self.wave_table[index]
+    }
+    pub fn lerp(&self, index: f32) -> f32 {
+        let truncated_index = index as usize;
+        let next_index = (truncated_index + 1) % self.wave_table.len();
+
+        let next_index_weight = index - truncated_index as f32;
+        let truncated_index_weight = 1.0 - next_index_weight;
+
+        truncated_index_weight * self.wave_table[truncated_index]
+            + next_index_weight * self.wave_table[next_index]
+    }
+}
+
+// Sample & Source
+pub struct DigitalMonoSynthSampleSource {
+    sample_rate: u32,
+    oscillator: WTOscillator,
     now_millis: u128,
     lfo: LFO,
     index: f32,
     index_increment: f32,
 }
-impl WaveTableOscillator {
+impl DigitalMonoSynthSampleSource {
     pub fn new(
         //
         sample_rate: u32,
-        wave_table: Vec<f32>,
+        oscillator: WTOscillator,
         lfo: LFO,
         now_millis: u128,
     ) -> Self {
         Self {
             sample_rate,
-            wave_table,
+            oscillator,
             now_millis,
             lfo,
             index: 0.0,
@@ -32,15 +64,14 @@ impl WaveTableOscillator {
     }
 
     pub fn set_frequency(&mut self, frequency: f32) {
-        self.index_increment = frequency * self.wave_table.len() as f32 / self.sample_rate as f32;
+        self.index_increment =
+            frequency * self.oscillator.get_wave_table_len() as f32 / self.sample_rate as f32;
     }
 
     fn get_sample(&mut self) -> f32 {
         let sample = self.lerp();
         self.index += self.index_increment;
-        self.index %= self.wave_table.len() as f32;
-
-        let mut lfo: f32 = 1.0;
+        self.index %= self.oscillator.get_wave_table_len() as f32;
 
         // LFO
         let ms = get_now_millis() - self.now_millis;
@@ -53,17 +84,10 @@ impl WaveTableOscillator {
     }
 
     fn lerp(&self) -> f32 {
-        let truncated_index = self.index as usize;
-        let next_index = (truncated_index + 1) % self.wave_table.len();
-
-        let next_index_weight = self.index - truncated_index as f32;
-        let truncated_index_weight = 1.0 - next_index_weight;
-
-        truncated_index_weight * self.wave_table[truncated_index]
-            + next_index_weight * self.wave_table[next_index]
+        self.oscillator.lerp(self.index)
     }
 }
-impl Source for WaveTableOscillator {
+impl Source for DigitalMonoSynthSampleSource {
     fn current_frame_len(&self) -> Option<usize> {
         None
     }
@@ -77,13 +101,13 @@ impl Source for WaveTableOscillator {
         None
     }
 }
-impl Iterator for WaveTableOscillator {
+impl Iterator for DigitalMonoSynthSampleSource {
     type Item = f32;
     fn next(&mut self) -> Option<Self::Item> {
         Some(self.get_sample())
     }
 }
-pub type WaveTableOscillatorSample = SamplesConverter<WaveTableOscillator, f32>;
+pub type DigitalMonoSynthSamplesConverter = SamplesConverter<DigitalMonoSynthSampleSource, f32>;
 
 // Mono Synth
 pub struct DigitalMonoSynth {
@@ -103,11 +127,9 @@ impl DigitalMonoSynth {
             sink,
         }
     }
-    pub fn play(&mut self, sample: WaveTableOscillatorSample) {
+    pub fn play(&mut self, sample: DigitalMonoSynthSamplesConverter) {
         self.sink = create_empty_sink(&self.stream_handle, self.volume);
         self.sink.append(sample);
-        // sleep(Duration::from_millis(250));
-        // self.sink.stop();
     }
     pub fn pause(&mut self) {
         self.sink = create_empty_sink(&self.stream_handle, self.volume);
