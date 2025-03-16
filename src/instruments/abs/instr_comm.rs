@@ -1,4 +1,4 @@
-use crate::instruments::instrument::Instrument;
+use crate::instruments::abs::instrument::Instrument;
 use crate::song::song::Song;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,

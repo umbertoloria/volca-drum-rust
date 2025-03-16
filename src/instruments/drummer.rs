@@ -1,9 +1,11 @@
 use crate::devices::volca_drum::VolcaDrum;
-use crate::instruments::instrument::Instrument;
+use crate::instruments::abs::instrument::Instrument;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{DrumPattern, Song};
 
 pub struct Drummer {
+    inner_instrument_name_16_chars: String,
+
     // Charts
     curr_section_index: usize,
     pattern: Option<DrumPattern>,
@@ -12,11 +14,12 @@ pub struct Drummer {
     volca_drum: VolcaDrum,
 }
 impl Drummer {
-    pub fn new(volca_drum: VolcaDrum) -> Self {
+    pub fn new(inner_instrument_name_16_chars: String, volca_drum: VolcaDrum) -> Self {
         Self {
+            inner_instrument_name_16_chars,
             pattern: None,
-            volca_drum,
             curr_section_index: 0,
+            volca_drum,
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -65,7 +68,8 @@ impl Drummer {
 }
 impl Instrument for Drummer {
     fn get_instrument_name_16_chars(&self) -> String {
-        "Drummer         ".into()
+        // TODO: Avoid cloning Instrument Name
+        self.inner_instrument_name_16_chars.clone()
     }
     fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {

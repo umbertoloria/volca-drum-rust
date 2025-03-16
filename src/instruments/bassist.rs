@@ -1,15 +1,12 @@
-use crate::instruments::instrument::Instrument;
+use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::bass_with_queue::BassWithQueue;
 use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
-use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
-use crate::music::note::Note;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
-use crate::thread_comm::thread_comm::ThreadCommSender;
-use std::thread::JoinHandle;
 
 // FIXME: Too much similar to Keyboardist
+// FIXME: Too few similar to Drummer
 pub struct Bassist {
     inner_instrument_name_16_chars: String,
 
@@ -109,7 +106,6 @@ impl Bassist {
         }
 
         // Preparing the next hit!
-        // TODO: Avoid cloning Song
         if tempo_snapshot.is_this_the_last_1_16th_of_this_section(&song) {
             self.curr_section_index += 1;
             self.update_pattern_from_song_section(&song);
@@ -144,30 +140,5 @@ impl Instrument for Bassist {
 
             realtime_player.prepare_next_1_16th();
         }
-    }
-}
-
-struct InnerSynth {
-    synth_thread_handle: JoinHandle<()>,
-    synth_command_sender: ThreadCommSender<SynthCommand>,
-}
-impl InnerSynth {
-    pub fn new() -> Self {
-        let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
-        let synth_thread_handle = synth_thread("Bass Synth".into(), 0.5, synth_command_receiver);
-        Self {
-            synth_thread_handle,
-            synth_command_sender,
-        }
-    }
-    pub fn note_play_start(&self, note: &Note) {
-        // println!("NOTES: {:?}", note);
-        // FIXME: Avoid cloning Note
-        let notes = vec![note.clone()];
-        self.synth_command_sender
-            .send(SynthCommand::StartNotes(notes));
-    }
-    pub fn note_play_stop(&self) {
-        self.synth_command_sender.send(SynthCommand::StopNote);
     }
 }

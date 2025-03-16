@@ -1,13 +1,13 @@
 use crate::devices::sound_panel::SoundPanel;
 use crate::devices::volca_drum::VolcaDrum;
-use crate::instruments::bassist::Bassist;
-use crate::instruments::drummer::Drummer;
-use crate::instruments::instr_comm::{
+use crate::instruments::abs::instr_comm::{
     create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
     InstrumentCommReceiver,
 };
+use crate::instruments::bassist::Bassist;
+use crate::instruments::drummer::Drummer;
 use crate::instruments::keyboardist::Keyboardist;
-use crate::instruments::lib::based_instrument_thread_synth::{
+use crate::instruments::synth::based_instrument_thread_synth::{
     BassBasedInstrumentThreadSynth, KeysBasedInstrumentThreadSynth,
 };
 use crate::midi::midi_controller::init_midi_controller;
@@ -172,7 +172,11 @@ fn create_instrument_threads(
         sound_panel.set_from_patch(patch1);
 
         // Instrument
-        let mut drummer = Drummer::new(volca_drum);
+        let mut drummer = Drummer::new(
+            //
+            "Drummer         ".into(),
+            volca_drum,
+        );
         start_listening_to_instrument_comm_commands(instrument_comm_receiver_drummer, &mut drummer);
     });
 

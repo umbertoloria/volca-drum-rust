@@ -1,4 +1,4 @@
-use crate::instruments::instr_comm::InstrumentBroadcastComm;
+use crate::instruments::abs::instr_comm::InstrumentBroadcastComm;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::Song;
 use crate::utils::timing::get_now_millis;

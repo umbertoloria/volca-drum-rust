@@ -1,6 +1,8 @@
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
-use crate::instruments::synth_thread::{create_synth_thread_comm, synth_thread, SynthCommand};
+use crate::instruments::synth::synth_thread::{
+    create_synth_thread_comm, synth_thread, SynthCommand,
+};
 use crate::music::note::{get_notes_from_note_str_list, Note};
 use crate::thread_comm::thread_comm::ThreadCommSender;
 use std::thread::JoinHandle;
