@@ -1,5 +1,6 @@
+use crate::music::note::Note;
+
 pub trait AbstractBassBasedInstrument {
-    // TODO: Use Notes not Note Strings
-    fn play_notes_start(&mut self, note_str: &String);
-    fn play_notes_stop(&mut self, note_str: &String);
+    fn play_notes_start(&mut self, note: &Note);
+    fn play_notes_stop(&mut self, note: &Note);
 }

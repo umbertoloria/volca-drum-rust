@@ -19,37 +19,37 @@ impl VolcaKeys {
     }
 
     // HIGH LEVEL
-    fn get_note_from_str(note_str: String) -> u8 {
-        let note = Note::new(&note_str);
-        ONE_OCTAVE_OFFSET + ONE_OCTAVE_OFFSET * note.octave + note.offset
-    }
-    pub fn note_play_start(&mut self, note_str: String) {
+    pub fn note_play_start(&mut self, note: &Note) {
         // println!("VolcaKeys: note_play_start {}", note_str);
 
         // TODO: Set sounds
         let instr = 1;
         self.send_plain_message(PROGRAM_CHANGE, instr, 0);
 
-        let note = Self::get_note_from_str(note_str);
-        self.send_plain_message(NOTE_ON_MSG, note, VELOCITY);
+        let midi_note = get_midi_note_from_note_str(note);
+        self.send_plain_message(NOTE_ON_MSG, midi_note, VELOCITY);
 
         // sleep(duration.mul_f64(BPM_DEFAULT).div_f64(self.bpm));
         // self.note_play_stop(note_str);
     }
 
-    pub fn note_play_stop(&mut self, note_str: String) {
+    pub fn note_play_stop(&mut self, note: &Note) {
         // println!("VolcaKeys: note_play_stop {}", note_str);
 
         // TODO: Set sounds
         let instr = 1;
         self.send_plain_message(PROGRAM_CHANGE, instr, 0);
 
-        let note = Self::get_note_from_str(note_str);
-        self.send_plain_message(NOTE_OFF_MSG, note, VELOCITY);
+        let midi_note = get_midi_note_from_note_str(note);
+        self.send_plain_message(NOTE_OFF_MSG, midi_note, VELOCITY);
     }
 
     // LOW LEVEL
     pub fn send_plain_message(&mut self, a: u8, b: u8, c: u8) {
         let _ = self.device.send(a, b, c);
     }
+}
+
+fn get_midi_note_from_note_str(note: &Note) -> u8 {
+    ONE_OCTAVE_OFFSET + ONE_OCTAVE_OFFSET * note.octave + note.offset
 }

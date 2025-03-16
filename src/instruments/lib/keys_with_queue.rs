@@ -1,5 +1,6 @@
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
 use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
+use crate::music::note::get_notes_from_note_str_list;
 
 pub struct KeysWithQueue {
     stop_notes_queue: StopNotesQueue,
@@ -16,7 +17,8 @@ impl KeysWithQueue {
         }
     }
     pub fn playing_hit_chord_start(&mut self, notes_str_list: &Vec<String>) {
-        self.keys_based_instrument.play_notes_start(notes_str_list);
+        let notes = get_notes_from_note_str_list(&notes_str_list);
+        self.keys_based_instrument.play_notes_start(&notes);
     }
     pub fn playing_hit_last_before_chord_stop(
         &mut self,
@@ -31,8 +33,8 @@ impl KeysWithQueue {
             .stop_notes_queue
             .dequeue_notes_at_this_1_16th(index_1_16th);
         if let Some(note_str_list_to_stop) = note_str_list_to_stop {
-            self.keys_based_instrument
-                .play_notes_stop(&note_str_list_to_stop);
+            let notes = get_notes_from_note_str_list(&note_str_list_to_stop);
+            self.keys_based_instrument.play_notes_stop(&notes);
         }
     }
 }

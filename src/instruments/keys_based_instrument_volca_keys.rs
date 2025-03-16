@@ -1,5 +1,6 @@
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
+use crate::music::note::Note;
 
 pub struct KeysBasedInstrumentVolcaKeys {
     volca_keys: VolcaKeys,
@@ -10,24 +11,18 @@ impl KeysBasedInstrumentVolcaKeys {
     }
 }
 impl AbstractKeysBasedInstrument for KeysBasedInstrumentVolcaKeys {
-    fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
-        // println!("play_notes_start: {:?}", notes_str_list);
+    fn play_notes_start(&mut self, notes: &Vec<Note>) {
+        // println!("play_notes_start: {:?}", notes);
 
-        for note_str in notes_str_list {
-            // TODO: Avoid cloning note
-            let note_str_clone = note_str.clone();
-
-            self.volca_keys.note_play_start(note_str_clone);
+        for note in notes {
+            self.volca_keys.note_play_start(note);
         }
     }
-    fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
-        // println!("play_notes_stop: {:?}", notes_str_list);
+    fn play_notes_stop(&mut self, notes: &Vec<Note>) {
+        // println!("play_notes_stop: {:?}", notes);
 
-        for note_str in notes_str_list {
-            // TODO: Avoid cloning note
-            let note_str_clone = note_str.clone();
-
-            self.volca_keys.note_play_stop(note_str_clone);
+        for note in notes {
+            self.volca_keys.note_play_stop(note);
         }
     }
 }

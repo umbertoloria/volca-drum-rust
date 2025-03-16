@@ -1,5 +1,6 @@
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::stop_notes_queue::StopNoteQueueForBass;
+use crate::music::note::Note;
 
 pub struct BassWithQueue {
     stop_note_queue: StopNoteQueueForBass,
@@ -16,7 +17,8 @@ impl BassWithQueue {
         }
     }
     pub fn playing_hit_chord_start(&mut self, note_str: &String) {
-        self.bass_based_instrument.play_notes_start(note_str);
+        let note = Note::new(note_str);
+        self.bass_based_instrument.play_notes_start(&note);
     }
     pub fn playing_hit_last_before_chord_stop(&mut self, note_str: &String, index_1_16th: usize) {
         self.stop_note_queue
@@ -29,8 +31,8 @@ impl BassWithQueue {
         if let Some(note_str_list_to_stop) = note_str_list_to_stop {
             // A list since you can never know...
             for note_str_to_stop in note_str_list_to_stop {
-                self.bass_based_instrument
-                    .play_notes_stop(&note_str_to_stop);
+                let note_to_stop = Note::new(&note_str_to_stop);
+                self.bass_based_instrument.play_notes_stop(&note_to_stop);
             }
         }
     }

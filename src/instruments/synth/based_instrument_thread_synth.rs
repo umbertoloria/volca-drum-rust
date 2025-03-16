@@ -3,7 +3,7 @@ use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedIn
 use crate::instruments::synth::synth_thread::{
     create_synth_thread_comm, synth_thread, SynthCommand,
 };
-use crate::music::note::{get_notes_from_note_str_list, Note};
+use crate::music::note::Note;
 use crate::thread_comm::thread_comm::ThreadCommSender;
 use std::thread::JoinHandle;
 
@@ -23,17 +23,17 @@ impl KeysBasedInstrumentThreadSynth {
     }
 }
 impl AbstractKeysBasedInstrument for KeysBasedInstrumentThreadSynth {
-    fn play_notes_start(&mut self, notes_str_list: &Vec<String>) {
-        // println!("play_notes_start: {:?}", notes_str_list);
+    fn play_notes_start(&mut self, notes: &Vec<Note>) {
+        // println!("play_notes_start: {:?}", notes);
 
-        let notes = get_notes_from_note_str_list(notes_str_list);
+        // TODO: Avoid cloning Notes
         self.synth_command_sender
-            .send(SynthCommand::StartNotes(notes));
+            .send(SynthCommand::StartNotes(notes.clone()));
     }
-    fn play_notes_stop(&mut self, notes_str_list: &Vec<String>) {
+    fn play_notes_stop(&mut self, notes: &Vec<Note>) {
         // println!("play_notes_stop: {:?}", notes_str_list);
 
-        // TODO: Try to use "notes_str_list"
+        // TODO: Try to use "notes"
         self.synth_command_sender.send(SynthCommand::StopNote);
     }
 }
@@ -54,20 +54,18 @@ impl BassBasedInstrumentThreadSynth {
     }
 }
 impl AbstractBassBasedInstrument for BassBasedInstrumentThreadSynth {
-    fn play_notes_start(&mut self, note_str: &String) {
-        // println!("play_notes_start: {:?}", note_str);
+    fn play_notes_start(&mut self, note: &Note) {
+        // println!("play_notes_start: {:?}", note);
 
-        let notes = vec![
-            //
-            Note::new(note_str),
-        ];
+        // TODO: Avoid cloning Note
+        let notes = vec![note.clone()];
         self.synth_command_sender
             .send(SynthCommand::StartNotes(notes));
     }
-    fn play_notes_stop(&mut self, note_str: &String) {
-        // println!("play_notes_stop: {:?}", note_str);
+    fn play_notes_stop(&mut self, note: &Note) {
+        // println!("play_notes_stop: {:?}", note);
 
-        // TODO: Try to use "note_str"
+        // TODO: Try to use "note"
         self.synth_command_sender.send(SynthCommand::StopNote);
     }
 }
