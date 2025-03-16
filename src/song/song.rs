@@ -125,12 +125,56 @@ pub struct KeyboardPatternChord {
 #[derive(Clone)]
 pub struct BassPattern {
     pub key: String, // Es. "A"
-    pub chords: Vec<BassPatternChord>,
+    pub bass_line: BassLine,
 }
 impl BassPattern {
+    pub fn get_chords(&self) -> Vec<BassPatternChord> {
+        let mut chords = Vec::new();
+        let mut next_1_16th = 1;
+        for bass_line_part in &self.bass_line.parts {
+            let line = &bass_line_part.line;
+            let mut i = 0;
+            while i < line.len() {
+                let char = line.get(i..=i).unwrap();
+                if char == "1" {
+                    chords.push(
+                        //
+                        BassPatternChord {
+                            chord_name: format!("Root of {}", bass_line_part.tonic),
+                            // TODO: Avoid cloning Note string
+                            note: bass_line_part.tonic.clone(),
+                            from_1_16th_incl: next_1_16th,
+                            to_1_16th_incl: next_1_16th, // Temporary
+                        },
+                    );
+                } else if char == "_" {
+                    chords.last_mut().unwrap().to_1_16th_incl = next_1_16th;
+                } else if char == " " {
+                    // Nothing.
+                }
+                i += 1;
+                next_1_16th += 1;
+            }
+        }
+        /*
+        // + Debug
+        println!(" -> original chords");
+        for chord in &self.chords {
+            println!(" -> {:?}", chord);
+        }
+        println!(" -> result");
+        for chord in &chords {
+            println!(" -> {:?}", chord);
+        }
+        println!();
+        // - Debug
+        */
+        chords
+    }
     // TODO: Duplicated code (*pkf)
     pub fn get_total_to_1_16th_incl(&self) -> usize {
-        let last_chord = &self.chords[self.chords.len() - 1];
+        let bass_chords = self.get_chords();
+        let last_chord = &bass_chords[bass_chords.len() - 1];
         last_chord.to_1_16th_incl
     }
     pub fn get_ceil_num_bars_coverage(&self) -> usize {
@@ -141,13 +185,23 @@ impl BassPattern {
         ceil_1_4ths / 4
     }
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BassPatternChord {
     pub chord_name: String, // Es. "Fmaj7"
     pub note: String,       // Es. "F3"
     // Params "from_1_16th_incl" and "to_1_16th_incl" start from 1.
     pub from_1_16th_incl: usize,
     pub to_1_16th_incl: usize,
+}
+#[derive(Clone)]
+pub struct BassLine {
+    pub parts: Vec<BassLinePart>,
+}
+#[derive(Clone)]
+pub struct BassLinePart {
+    // pub num_1_4: usize, // Es. 2
+    pub tonic: String, // Es. "F2"
+    pub line: String,  // Es. "1_1_1___"
 }
 
 // Songs

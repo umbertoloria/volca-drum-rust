@@ -1,5 +1,5 @@
 use crate::song::song::{
-    BassPattern, BassPatternChord, DrumPattern, KeyboardPattern, KeyboardPatternChord, Song,
+    BassLine, BassLinePart, BassPattern, DrumPattern, KeyboardPattern, KeyboardPatternChord, Song,
     SongDetails, SongSection, SongSectionKind, SongTempo,
 };
 use std::collections::HashMap;
@@ -559,168 +559,50 @@ pub fn get_song_o2() -> Song {
                 "A".into(),
                 BassPattern {
                     key: "A".into(),
-                    chords: [
-                        // Am
-                        BassPatternChord {
-                            chord_name: "Am".into(),
-                            note: "A2".into(),
-                            from_1_16th_incl: 1,
-                            to_1_16th_incl: 2,
-                        },
-                        BassPatternChord {
-                            chord_name: "Am".into(),
-                            note: "A2".into(),
-                            from_1_16th_incl: 3,
-                            to_1_16th_incl: 4,
-                        },
-                        BassPatternChord {
-                            chord_name: "Am".into(),
-                            note: "A2".into(),
-                            from_1_16th_incl: 5,
-                            to_1_16th_incl: 6,
-                        },
-                        BassPatternChord {
-                            chord_name: "Am".into(),
-                            note: "A2".into(),
-                            from_1_16th_incl: 7,
-                            to_1_16th_incl: 8,
-                        },
-                        // Em
-                        BassPatternChord {
-                            chord_name: "Em".into(),
-                            note: "E2".into(),
-                            from_1_16th_incl: 8 + 1,
-                            to_1_16th_incl: 8 + 2,
-                        },
-                        BassPatternChord {
-                            chord_name: "Em".into(),
-                            note: "E2".into(),
-                            from_1_16th_incl: 8 + 3,
-                            to_1_16th_incl: 8 + 4,
-                        },
-                        BassPatternChord {
-                            chord_name: "Em".into(),
-                            note: "E2".into(),
-                            from_1_16th_incl: 8 + 5,
-                            to_1_16th_incl: 8 + 6,
-                        },
-                        BassPatternChord {
-                            chord_name: "Em".into(),
-                            note: "E2".into(),
-                            from_1_16th_incl: 8 + 7,
-                            to_1_16th_incl: 8 + 8,
-                        },
-                        // Dm
-                        BassPatternChord {
-                            chord_name: "Dm".into(),
-                            note: "D2".into(),
-                            from_1_16th_incl: 8 + 8 + 1,
-                            to_1_16th_incl: 8 + 8 + 2,
-                        },
-                        BassPatternChord {
-                            chord_name: "Dm".into(),
-                            note: "D2".into(),
-                            from_1_16th_incl: 8 + 8 + 3,
-                            to_1_16th_incl: 8 + 8 + 4,
-                        },
-                        BassPatternChord {
-                            chord_name: "Dm".into(),
-                            note: "D2".into(),
-                            from_1_16th_incl: 8 + 8 + 5,
-                            to_1_16th_incl: 8 + 8 + 6,
-                        },
-                        BassPatternChord {
-                            chord_name: "Dm".into(),
-                            note: "D2".into(),
-                            from_1_16th_incl: 8 + 8 + 7,
-                            to_1_16th_incl: 8 + 8 + 8,
-                        },
-                        // F
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 8 + 8 + 1,
-                            to_1_16th_incl: 8 + 8 + 8 + 2,
-                        },
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 8 + 8 + 3,
-                            to_1_16th_incl: 8 + 8 + 8 + 4,
-                        },
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 8 + 8 + 5,
-                            to_1_16th_incl: 8 + 8 + 8 + 6,
-                        },
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 8 + 8 + 7,
-                            to_1_16th_incl: 8 + 8 + 8 + 8,
-                        },
-                    ]
-                    .into(),
+                    bass_line: BassLine {
+                        parts: vec![
+                            BassLinePart {
+                                // num_1_4: 2,
+                                tonic: "A3".into(),
+                                line: "1_1_1___".into(),
+                            },
+                            BassLinePart {
+                                // num_1_4: 2,
+                                tonic: "E3".into(),
+                                line: "1_1_1___".into(),
+                            },
+                            BassLinePart {
+                                // num_1_4: 2,
+                                tonic: "D3".into(),
+                                line: "1_1_1___".into(),
+                            },
+                            BassLinePart {
+                                // num_1_4: 2,
+                                tonic: "F3".into(),
+                                line: "1_1_1___".into(),
+                            },
+                        ],
+                    },
                 },
             ),
             (
                 "B".into(),
                 BassPattern {
                     key: "B".into(),
-                    chords: [
-                        // C
-                        BassPatternChord {
-                            chord_name: "C".into(),
-                            note: "C2".into(),
-                            from_1_16th_incl: 1,
-                            to_1_16th_incl: 2,
-                        },
-                        BassPatternChord {
-                            chord_name: "C".into(),
-                            note: "C2".into(),
-                            from_1_16th_incl: 3,
-                            to_1_16th_incl: 4,
-                        },
-                        BassPatternChord {
-                            chord_name: "C".into(),
-                            note: "C2".into(),
-                            from_1_16th_incl: 5,
-                            to_1_16th_incl: 6,
-                        },
-                        BassPatternChord {
-                            chord_name: "C".into(),
-                            note: "C2".into(),
-                            from_1_16th_incl: 7,
-                            to_1_16th_incl: 8,
-                        },
-                        // F
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 1,
-                            to_1_16th_incl: 8 + 2,
-                        },
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 3,
-                            to_1_16th_incl: 8 + 4,
-                        },
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 5,
-                            to_1_16th_incl: 8 + 6,
-                        },
-                        BassPatternChord {
-                            chord_name: "F".into(),
-                            note: "F2".into(),
-                            from_1_16th_incl: 8 + 7,
-                            to_1_16th_incl: 8 + 8,
-                        },
-                    ]
-                    .into(),
+                    bass_line: BassLine {
+                        parts: vec![
+                            BassLinePart {
+                                // num_1_4: 2,
+                                tonic: "C3".into(),
+                                line: "1_1_1___".into(),
+                            },
+                            BassLinePart {
+                                // num_1_4: 2,
+                                tonic: "F3".into(),
+                                line: "1_1_1___".into(),
+                            },
+                        ],
+                    },
                 },
             ),
         ]),

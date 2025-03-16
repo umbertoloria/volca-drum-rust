@@ -58,9 +58,11 @@ impl Bassist {
             // Adjusting because we may have 4 bars patter onto 8 bars section.
             let index_1_16th_for_pattern = (index_1_16th - 1) % (bars_covered_by_pattern * 16) + 1;
 
+            let bass_chords = pattern.get_chords();
+
             // FIXME: This is slow
             let mut i = 0;
-            for chord in &pattern.chords {
+            for chord in &bass_chords {
                 if chord.from_1_16th_incl <= index_1_16th_for_pattern
                     && index_1_16th_for_pattern <= chord.to_1_16th_incl
                 {
@@ -70,10 +72,8 @@ impl Bassist {
                 i += 1;
             }
 
-            if 0 <= self.chord_index && self.chord_index < pattern.chords.len() {
-                // TODO: Avoid cloning pattern
-                let pattern = self.pattern.clone().unwrap();
-                let chord = &pattern.chords[self.chord_index];
+            if 0 <= self.chord_index && self.chord_index < bass_chords.len() {
+                let chord = &bass_chords[self.chord_index];
 
                 /*
                 println!("play_1_16th:");
@@ -114,8 +114,9 @@ impl Instrument for Bassist {
     }
     fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
-            if self.chord_index < pattern.chords.len() {
-                let chord = &pattern.chords[self.chord_index];
+            let bass_chords = pattern.get_chords();
+            if self.chord_index < bass_chords.len() {
+                let chord = &bass_chords[self.chord_index];
                 return format!("part \"{}\" / {} chord", pattern.key, chord.chord_name);
             }
         }
