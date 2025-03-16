@@ -205,11 +205,13 @@ fn create_instrument_threads(
         let mut synth = Keyboardist::new(
             "SynthKeys       ".into(),
             Box::new(ThreadForSynthInstrument::new(
-                //
                 "ThreadKeysSynth".into(),
-                create_sine_wave_table(),
-                LFO::new(30, 800, 0.7),
-                KEYS_SYNTH_VOLUME,
+                SynthGenerator::new(
+                    //
+                    create_sine_wave_table(),
+                    LFO::new(30, 800, 0.7),
+                    KEYS_SYNTH_VOLUME,
+                ),
                 KEYS_SYNTH_ENABLE_LOGGING,
             )),
         );
@@ -222,11 +224,13 @@ fn create_instrument_threads(
         let mut bass_synth = Bassist::new(
             "SynthBass       ".into(),
             Box::new(ThreadForSynthInstrument::new(
-                //
                 "ThreadBassSynth".into(),
-                create_sine_wave_table(),
-                LFO::new(17, 300, 0.3),
-                BASS_SYNTH_VOLUME,
+                SynthGenerator::new(
+                    //
+                    create_sine_wave_table(),
+                    LFO::new(17, 300, 0.3),
+                    BASS_SYNTH_VOLUME,
+                ),
                 BASS_SYNTH_ENABLE_LOGGING,
             )),
         );

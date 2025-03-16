@@ -4,7 +4,7 @@ use crate::instruments::synth::synth_thread::{
     create_synth_thread_comm, synth_thread, SynthCommand,
 };
 use crate::music::note::Note;
-use crate::synth::lfo::lfo::LFO;
+use crate::synth::synth_generator::SynthGenerator;
 use crate::thread_comm::thread_comm::ThreadCommSender;
 use std::thread::JoinHandle;
 
@@ -16,17 +16,13 @@ impl ThreadForSynthInstrument {
     pub fn new(
         //
         thread_name: String,
-        wave_table: Vec<f32>,
-        lfo: LFO,
-        synth_volume: f32,
+        synth_generator: SynthGenerator,
         enable_logging: bool,
     ) -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
         let synth_thread_handle = synth_thread(
             thread_name,
-            wave_table,
-            lfo,
-            synth_volume,
+            synth_generator,
             synth_command_receiver,
             enable_logging,
         );
