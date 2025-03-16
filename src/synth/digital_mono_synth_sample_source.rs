@@ -29,7 +29,8 @@ impl Iterator for DigitalMonoSynthSampleSource {
     type Item = f32;
     fn next(&mut self) -> Option<Self::Item> {
         // TODO: Gently raise Oscillator Phase to avoid Audio Monitors Issues
-        Some(self.mono_synth.get_sample_and_prepare_next())
+        let sample = self.mono_synth.get_sample_and_prepare_next();
+        Some(sample)
     }
 }
 pub type DigitalMonoSynthSamplesConverter = SamplesConverter<DigitalMonoSynthSampleSource, f32>;

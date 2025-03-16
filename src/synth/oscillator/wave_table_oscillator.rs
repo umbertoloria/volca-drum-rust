@@ -5,9 +5,6 @@ impl WaveTableOscillator {
     pub fn new(wave_table: Vec<f32>) -> Self {
         Self { wave_table }
     }
-    pub fn get_wave_table_len(&self) -> usize {
-        self.wave_table.len()
-    }
     pub fn lerp(&self, index: f32) -> f32 {
         let truncated_index = index as usize;
         let next_index = (truncated_index + 1) % self.wave_table.len();

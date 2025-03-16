@@ -1,27 +1,16 @@
-use crate::synth::lfo::lfo::LFO;
-use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
-use crate::utils::timing::get_now_millis;
+use crate::synth::oscillator::wave_table_sine::WAVE_TABLE_SIZE;
+use crate::synth::sound::synth_chain::SynthChain;
 
 const SAMPLE_RATE: u32 = 48000;
 pub struct MonoSynth {
-    oscillator: WaveTableOscillator,
-    lfo: LFO,
-    t0_ms: u128,
+    synth_chain: SynthChain,
     index: f32,
     index_increment: f32,
 }
 impl MonoSynth {
-    pub fn new(
-        //
-        oscillator: WaveTableOscillator,
-        lfo: LFO,
-        t0_ms: u128,
-    ) -> Self {
+    pub fn new(synth_chain: SynthChain) -> Self {
         Self {
-            //
-            oscillator,
-            lfo,
-            t0_ms,
+            synth_chain,
             index: 0.0,
             index_increment: 0.0,
         }
@@ -31,24 +20,15 @@ impl MonoSynth {
     }
     pub fn get_sample_and_prepare_next(&mut self) -> f32 {
         let index = self.get_index_and_prepare_next();
-
-        // Synth Chain:
-        // 1. Oscillator
-        let oscillator_value = self.oscillator.lerp(index);
-        // 2. LFO
-        let ms = get_now_millis() - self.t0_ms;
-        let lfo_value = self.lfo.get_value(ms);
-
-        oscillator_value * lfo_value
+        self.synth_chain.get_sample(index)
     }
     pub fn set_frequency(&mut self, frequency: f32) {
-        self.index_increment =
-            frequency * self.oscillator.get_wave_table_len() as f32 / self.get_sample_rate() as f32;
+        self.index_increment = frequency * WAVE_TABLE_SIZE as f32 / self.get_sample_rate() as f32;
     }
     pub fn get_index_and_prepare_next(&mut self) -> f32 {
         let result = self.index;
         self.index += self.index_increment;
-        self.index %= self.oscillator.get_wave_table_len() as f32;
+        self.index %= WAVE_TABLE_SIZE as f32;
         result
     }
 }

@@ -16,6 +16,7 @@ use crate::song::song::Song;
 use crate::song::yaml_patch_reader::read_patch_from_yaml;
 use crate::synth::lfo::lfo::LFO;
 use crate::synth::oscillator::wave_table_sine::create_sine_wave_table;
+use crate::synth::synth_generator::SynthGenerator;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };

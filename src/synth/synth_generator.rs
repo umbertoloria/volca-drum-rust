@@ -5,6 +5,7 @@ use crate::synth::digital_mono_synth_sample_source::{
 use crate::synth::lfo::lfo::LFO;
 use crate::synth::mono_synth::MonoSynth;
 use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
+use crate::synth::sound::synth_chain::SynthChain;
 use rodio::Source;
 
 pub struct SynthGenerator {
@@ -31,7 +32,13 @@ impl SynthGenerator {
         // FIXME: Avoid cloning LFO
         let lfo = self.lfo.clone();
 
-        let mut mono_synth = MonoSynth::new(sine_wt_oscillator, lfo, now_millis);
+        let synth_chain = SynthChain::new(
+            //
+            sine_wt_oscillator,
+            lfo,
+            now_millis,
+        );
+        let mut mono_synth = MonoSynth::new(synth_chain);
         mono_synth.set_frequency(note.get_frequency());
 
         let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
