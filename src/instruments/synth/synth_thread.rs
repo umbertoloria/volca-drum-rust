@@ -2,6 +2,7 @@ use crate::music::note::{get_frequency_from_note_info, Note};
 use crate::synth::digital_mono_synth::{
     DigitalMonoSynth, WaveTableOscillator, WaveTableOscillatorSample,
 };
+use crate::synth::oscillator::wave_table_sine::create_sine_wave_table;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -65,14 +66,6 @@ pub fn synth_thread(
 }
 
 // Actual Oscillator
-fn create_sine_wave_table() -> Vec<f32> {
-    let wave_table_size = 64;
-    let mut wave_table: Vec<f32> = Vec::with_capacity(wave_table_size);
-    for n in 0..wave_table_size {
-        wave_table.push((2.0 * std::f32::consts::PI * n as f32 / wave_table_size as f32).sin());
-    }
-    wave_table
-}
 fn create_source_from_note(note: &Note) -> WaveTableOscillatorSample {
     // Sine Oscillator
     let sample_rate = 48000;

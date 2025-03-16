@@ -1,7 +1,9 @@
+use crate::utils::timing::get_now_millis_sub_second;
 use core::time::Duration;
 use rodio::source::{SamplesConverter, Source};
 use rodio::{OutputStream, OutputStreamHandle, Sink};
 
+// Oscillator
 pub struct WaveTableOscillator {
     sample_rate: u32,
     wave_table: Vec<f32>,
@@ -26,7 +28,23 @@ impl WaveTableOscillator {
         let sample = self.lerp();
         self.index += self.index_increment;
         self.index %= self.wave_table.len() as f32;
-        sample
+
+        let mut lfo: f32 = 1.0;
+
+        // LFO
+        // FIXME: Sync LFO Timing with "Music" Clock
+        let now_subs_millis = get_now_millis_sub_second();
+        // println!("{}", now_subs_millis);
+        if now_subs_millis <= 100 {
+            lfo = (now_subs_millis as f32) / 100.0;
+        } else if now_subs_millis <= 300 {
+            lfo = 1.0;
+        } else {
+            let remaining: f32 = 999.0 - 300.0;
+            lfo = 1.0 - (now_subs_millis - 300) as f32 / remaining;
+        }
+
+        sample * lfo
     }
 
     fn lerp(&self) -> f32 {
@@ -41,14 +59,14 @@ impl WaveTableOscillator {
     }
 }
 impl Source for WaveTableOscillator {
+    fn current_frame_len(&self) -> Option<usize> {
+        None
+    }
     fn channels(&self) -> u16 {
         1
     }
     fn sample_rate(&self) -> u32 {
         self.sample_rate
-    }
-    fn current_frame_len(&self) -> Option<usize> {
-        None
     }
     fn total_duration(&self) -> Option<Duration> {
         None
@@ -62,6 +80,7 @@ impl Iterator for WaveTableOscillator {
 }
 pub type WaveTableOscillatorSample = SamplesConverter<WaveTableOscillator, f32>;
 
+// Mono Synth
 pub struct DigitalMonoSynth {
     volume: f32,
     stream: OutputStream,
