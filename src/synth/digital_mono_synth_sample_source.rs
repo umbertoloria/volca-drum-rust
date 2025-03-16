@@ -8,22 +8,23 @@ use std::time::Duration;
 pub struct DigitalMonoSynthSampleSource {
     sample_rate: u32,
     oscillator: WaveTableOscillator,
-    now_millis: u128,
+    t0_ms: u128,
     lfo: LFO,
     index: f32,
     index_increment: f32,
 }
 impl DigitalMonoSynthSampleSource {
     pub fn new(
+        //
         sample_rate: u32,
         oscillator: WaveTableOscillator,
         lfo: LFO,
-        now_millis: u128,
+        t0_ms: u128,
     ) -> Self {
         Self {
             sample_rate,
             oscillator,
-            now_millis,
+            t0_ms,
             lfo,
             index: 0.0,
             index_increment: 0.0,
@@ -35,23 +36,24 @@ impl DigitalMonoSynthSampleSource {
             frequency * self.oscillator.get_wave_table_len() as f32 / self.sample_rate as f32;
     }
 
-    fn get_sample(&mut self) -> f32 {
-        let sample = self.lerp();
-        self.index += self.index_increment;
-        self.index %= self.oscillator.get_wave_table_len() as f32;
+    fn get_sample_and_prepare_next(&mut self) -> f32 {
+        let index = self.get_index_and_prepare_next();
 
-        // LFO
-        let ms = get_now_millis() - self.now_millis;
-
+        // Synth Chain:
+        // 1. Oscillator
+        let oscillator_value = self.oscillator.lerp(index);
+        // 2. LFO
+        let ms = get_now_millis() - self.t0_ms;
         let lfo_value = self.lfo.get_value(ms);
-        // println!("{:.5}", lfo);
 
-        // TODO: Gently raise Oscillator Phase to avoid Audio Monitors Issues
-        sample * lfo_value
+        oscillator_value * lfo_value
     }
 
-    fn lerp(&self) -> f32 {
-        self.oscillator.lerp(self.index)
+    fn get_index_and_prepare_next(&mut self) -> f32 {
+        let result = self.index;
+        self.index += self.index_increment;
+        self.index %= self.oscillator.get_wave_table_len() as f32;
+        result
     }
 }
 impl Source for DigitalMonoSynthSampleSource {
@@ -71,7 +73,8 @@ impl Source for DigitalMonoSynthSampleSource {
 impl Iterator for DigitalMonoSynthSampleSource {
     type Item = f32;
     fn next(&mut self) -> Option<Self::Item> {
-        Some(self.get_sample())
+        // TODO: Gently raise Oscillator Phase to avoid Audio Monitors Issues
+        Some(self.get_sample_and_prepare_next())
     }
 }
 pub type DigitalMonoSynthSamplesConverter = SamplesConverter<DigitalMonoSynthSampleSource, f32>;

@@ -1,5 +1,5 @@
 use crate::music::note::{get_frequency_from_note_info, Note};
-use crate::synth::digital_mono_synth::DigitalMonoSynth;
+use crate::synth::mono_synth_player::MonoSynthPlayer;
 use crate::synth::digital_mono_synth_sample_source::{
     DigitalMonoSynthSampleSource, DigitalMonoSynthSamplesConverter,
 };
@@ -48,7 +48,7 @@ pub fn synth_thread(
 
                     for note in notes {
                         let samples_converter = create_source_from_note(&note, &lfo, now_millis);
-                        let mut mono_synth = DigitalMonoSynth::new(volume);
+                        let mut mono_synth = MonoSynthPlayer::new(volume);
                         mono_synth.play(samples_converter);
                         synths.push(mono_synth);
                     }
