@@ -1,8 +1,10 @@
 use crate::music::note::{get_frequency_from_note_info, Note};
-use crate::synth::digital_mono_synth::{
-    DigitalMonoSynth, DigitalMonoSynthSampleSource, DigitalMonoSynthSamplesConverter, WTOscillator,
+use crate::synth::digital_mono_synth::DigitalMonoSynth;
+use crate::synth::digital_mono_synth_sample_source::{
+    DigitalMonoSynthSampleSource, DigitalMonoSynthSamplesConverter,
 };
 use crate::synth::lfo::lfo::LFO;
+use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
 use crate::synth::oscillator::wave_table_sine::create_sine_wave_table;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
@@ -84,7 +86,7 @@ fn create_source_from_note(
     now_millis: u128,
 ) -> DigitalMonoSynthSamplesConverter {
     // Sine Oscillator
-    let sine_wt_oscillator = WTOscillator::new(create_sine_wave_table());
+    let sine_wt_oscillator = WaveTableOscillator::new(create_sine_wave_table());
 
     // Sample Source
     let sample_rate = 48000;
