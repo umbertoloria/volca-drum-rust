@@ -1,3 +1,4 @@
+use crate::music::note::Note;
 use std::collections::{HashMap, HashSet};
 
 pub struct StopNotesQueue {
@@ -9,37 +10,30 @@ impl StopNotesQueue {
             stop_notes_queue: HashMap::new(),
         }
     }
-    pub fn add_notes_to_stop_notes_queue(
-        &mut self,
-        notes_str_list: &Vec<String>,
-        index_1_16th: usize,
-    ) {
+    pub fn add_notes_to_stop_notes_queue(&mut self, notes: &Vec<Note>, index_1_16th: usize) {
         // Param "index_1_16th" starts from 1.
         if let Some(queued_notes_to_stop) = self.stop_notes_queue.get_mut(&index_1_16th) {
-            for note_str in notes_str_list {
-                // TODO: Avoid cloning note
-                let note_str_clone = note_str.clone();
-                queued_notes_to_stop.insert(note_str_clone);
+            for note in notes {
+                queued_notes_to_stop.insert(note.to_hash());
             }
         } else {
             let mut queued_notes_to_stop = HashSet::new();
-            for note_str in notes_str_list {
-                // TODO: Avoid cloning note
-                let note_str_clone = note_str.clone();
-                queued_notes_to_stop.insert(note_str_clone);
+            for note in notes {
+                queued_notes_to_stop.insert(note.to_hash());
             }
             self.stop_notes_queue
                 .insert(index_1_16th, queued_notes_to_stop);
         }
     }
-    pub fn dequeue_notes_at_this_1_16th(&mut self, index_1_16th: usize) -> Option<Vec<String>> {
+    pub fn dequeue_notes_at_this_1_16th(&mut self, index_1_16th: usize) -> Option<Vec<Note>> {
         // Param "index_1_16th" starts from 1.
         if let Some(queued_notes_to_stop) = self.stop_notes_queue.remove(&index_1_16th) {
-            let mut notes_str_list_to_stop = Vec::new();
-            for note_str in queued_notes_to_stop {
-                notes_str_list_to_stop.push(note_str);
+            let mut notes_to_stop = Vec::new();
+            for note_hash in queued_notes_to_stop {
+                let note = Note::from_hash(note_hash);
+                notes_to_stop.push(note);
             }
-            Some(notes_str_list_to_stop)
+            Some(notes_to_stop)
         } else {
             None
         }
@@ -56,13 +50,13 @@ impl StopNoteQueueForBass {
             inner: StopNotesQueue::new(),
         }
     }
-    pub fn add_notes_to_stop_notes_queue(&mut self, note_str: &String, index_1_16th: usize) {
+    pub fn add_notes_to_stop_notes_queue(&mut self, note: &Note, index_1_16th: usize) {
         // TODO: Avoid cloning Note string
-        let notes_str_list = vec![note_str.clone()];
+        let notes = vec![note.clone()];
         self.inner
-            .add_notes_to_stop_notes_queue(&notes_str_list, index_1_16th);
+            .add_notes_to_stop_notes_queue(&notes, index_1_16th);
     }
-    pub fn dequeue_notes_at_this_1_16th(&mut self, index_1_16th: usize) -> Option<Vec<String>> {
+    pub fn dequeue_notes_at_this_1_16th(&mut self, index_1_16th: usize) -> Option<Vec<Note>> {
         self.inner.dequeue_notes_at_this_1_16th(index_1_16th)
     }
 }

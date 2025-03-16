@@ -35,7 +35,9 @@ pub fn synth_thread(
         for command in synth_command_receiver.get_recv_iter() {
             match command {
                 SynthCommand::StartNotes(notes) => {
-                    // println!("{synth_thread_name} -> play {:?}", notes);
+                    if synth_thread_name == "ThreadBassSynth" {
+                        println!("{synth_thread_name} -> play {:?}", notes);
+                    }
 
                     let now_millis = get_now_millis();
 
@@ -47,7 +49,9 @@ pub fn synth_thread(
                     }
                 }
                 SynthCommand::StopNote => {
-                    // println!("{synth_thread_name} -> stop");
+                    if synth_thread_name == "ThreadBassSynth" {
+                        println!("{synth_thread_name} -> stop");
+                    }
 
                     for synth in &mut synths {
                         synth.pause();
@@ -55,7 +59,9 @@ pub fn synth_thread(
                     synths.clear();
                 }
                 SynthCommand::CloseThread => {
-                    // println!("{synth_thread_name} -> close");
+                    if synth_thread_name == "ThreadBassSynth" {
+                        println!("{synth_thread_name} -> close");
+                    }
 
                     for synth in &mut synths {
                         synth.pause();

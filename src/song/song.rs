@@ -156,12 +156,9 @@ impl BassPattern {
                 next_1_16th += 1;
             }
         }
+
         /*
         // + Debug
-        println!(" -> original chords");
-        for chord in &self.chords {
-            println!(" -> {:?}", chord);
-        }
         println!(" -> result");
         for chord in &chords {
             println!(" -> {:?}", chord);
@@ -169,6 +166,7 @@ impl BassPattern {
         println!();
         // - Debug
         */
+
         chords
     }
     // TODO: Duplicated code (*pkf)
@@ -199,7 +197,6 @@ pub struct BassLine {
 }
 #[derive(Clone)]
 pub struct BassLinePart {
-    // pub num_1_4: usize, // Es. 2
     pub tonic: String, // Es. "F2"
     pub line: String,  // Es. "1_1_1___"
 }

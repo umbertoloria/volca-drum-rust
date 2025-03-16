@@ -109,6 +109,31 @@ impl Note {
             offset: self.offset,
         }
     }
+    // Hash
+    pub fn from_hash(note_hash: String) -> Self {
+        let octave_part = &note_hash[0..note_hash.len() - 2];
+        let note_part = &note_hash[note_hash.len() - 2..];
+        let octave = octave_part.parse::<u8>().unwrap();
+        let offset = note_part.parse::<u8>().unwrap();
+        /*
+        // + Debug
+        println!(" -> octave_part={octave_part}");
+        println!(" -> note_part={note_part}");
+        println!(" -> octave={octave}");
+        println!(" -> offset={offset}");
+        println!();
+        // - Debug
+        */
+        Self {
+            //
+            octave,
+            offset,
+        }
+    }
+    pub fn to_hash(&self) -> String {
+        let numeric_hash = (self.octave as usize) * 100 + (self.offset as usize);
+        format!("{}", numeric_hash)
+    }
 }
 
 // Comparing Notes

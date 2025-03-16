@@ -132,6 +132,8 @@ fn play_song_example_with_updates(
 
 // INSTRUMENTS THREADS
 type InstrumentThreadType = JoinHandle<()>;
+const KEYS_SYNTH_VOLUME: f32 = 0.3;
+const BASS_SYNTH_VOLUME: f32 = 0.4;
 fn create_instrument_threads(
     instr_comm_receiver_drummer: InstrumentCommReceiver,
     instr_comm_receiver_keyboard: InstrumentCommReceiver,
@@ -203,7 +205,7 @@ fn create_instrument_threads(
             Box::new(KeysBasedInstrumentThreadSynth::new(
                 //
                 "ThreadKeysSynth".into(),
-                0.3,
+                KEYS_SYNTH_VOLUME,
             )),
         );
         start_listening_to_instrument_comm_commands(instr_comm_receiver_synth, &mut synth);
@@ -217,7 +219,7 @@ fn create_instrument_threads(
             Box::new(BassBasedInstrumentThreadSynth::new(
                 //
                 "ThreadBassSynth".into(),
-                0.4,
+                BASS_SYNTH_VOLUME,
             )),
         );
         start_listening_to_instrument_comm_commands(

@@ -1,6 +1,7 @@
 use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::bass_with_queue::BassWithQueue;
+use crate::music::note::Note;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
 
@@ -51,7 +52,7 @@ impl Bassist {
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.bass_with_queue
-            .playing_hit_dequeue_and_stop_notes_at_this_1_16th(index_1_16th);
+            .stop_notes_queued_on_this_1_16th(index_1_16th);
 
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
@@ -74,6 +75,7 @@ impl Bassist {
 
             if 0 <= self.chord_index && self.chord_index < bass_chords.len() {
                 let chord = &bass_chords[self.chord_index];
+                let bass_note = Note::new(&chord.note);
 
                 /*
                 println!("play_1_16th:");
@@ -86,16 +88,15 @@ impl Bassist {
                 */
 
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.bass_with_queue.playing_hit_chord_start(&chord.note);
-                } else if index_1_16th_for_pattern == chord.to_1_16th_incl {
+                    self.bass_with_queue.attack_note(&bass_note);
+                }
+                if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
                     // (so after current 1/16th) using variable "index_1_16th_for_pattern".
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
                     self.bass_with_queue
-                        .playing_hit_last_before_chord_stop(&chord.note, index_1_16th + 1);
-                } else {
-                    // Notes are still playing.
+                        .notify_release_note_at(&bass_note, index_1_16th + 1);
                 }
             }
         }

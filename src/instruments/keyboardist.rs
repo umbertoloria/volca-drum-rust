@@ -2,6 +2,7 @@ use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
 use crate::instruments::lib::keys_with_queue::KeysWithQueue;
 use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
+use crate::music::note::get_notes_from_note_str_list;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 
@@ -54,16 +55,18 @@ impl Keyboardist {
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.keys_with_queue
-            .playing_hit_dequeue_and_stop_notes_at_this_1_16th(index_1_16th);
+            .stop_notes_queued_on_this_1_16th(index_1_16th);
 
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
             // Adjusting because we may have 4 bars patter onto 8 bars section.
             let index_1_16th_for_pattern = (index_1_16th - 1) % (bars_covered_by_pattern * 16) + 1;
 
+            let keys_chords = &pattern.chords;
+
             // FIXME: This is slow
             let mut i = 0;
-            for chord in &pattern.chords {
+            for chord in keys_chords {
                 if chord.from_1_16th_incl <= index_1_16th_for_pattern
                     && index_1_16th_for_pattern <= chord.to_1_16th_incl
                 {
@@ -73,10 +76,9 @@ impl Keyboardist {
                 i += 1;
             }
 
-            if 0 <= self.chord_index && self.chord_index < pattern.chords.len() {
-                // TODO: Avoid cloning pattern
-                let pattern = self.pattern.clone().unwrap();
-                let chord = &pattern.chords[self.chord_index];
+            if 0 <= self.chord_index && self.chord_index < keys_chords.len() {
+                let chord = &keys_chords[self.chord_index];
+                let chord_notes = get_notes_from_note_str_list(&chord.notes);
 
                 /*
                 println!("play_1_16th:");
@@ -89,16 +91,15 @@ impl Keyboardist {
                 */
 
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.keys_with_queue.playing_hit_chord_start(&chord.notes);
-                } else if index_1_16th_for_pattern == chord.to_1_16th_incl {
+                    self.keys_with_queue.attack_notes(&chord_notes);
+                }
+                if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
                     // (so after current 1/16th) using variable "index_1_16th_for_pattern".
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
                     self.keys_with_queue
-                        .playing_hit_last_before_chord_stop(&chord.notes, index_1_16th + 1);
-                } else {
-                    // Notes are still playing.
+                        .notify_release_notes_at(&chord_notes, index_1_16th + 1);
                 }
             }
         }
@@ -117,8 +118,9 @@ impl Instrument for Keyboardist {
     }
     fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
-            if self.chord_index < pattern.chords.len() {
-                let chord = &pattern.chords[self.chord_index];
+            let keys_chords = &pattern.chords;
+            if self.chord_index < keys_chords.len() {
+                let chord = &keys_chords[self.chord_index];
                 return format!("part \"{}\" / {} chord", pattern.key, chord.chord_name);
             }
         }
