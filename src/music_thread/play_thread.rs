@@ -7,15 +7,14 @@ use crate::instruments::abs::instr_comm::{
 use crate::instruments::bassist::Bassist;
 use crate::instruments::drummer::Drummer;
 use crate::instruments::keyboardist::Keyboardist;
-use crate::instruments::synth::based_instrument_thread_synth::{
-    BassBasedInstrumentThreadSynth, KeysBasedInstrumentThreadSynth,
-};
+use crate::instruments::synth::thread_for_synth_instrument::ThreadForSynthInstrument;
 use crate::midi::midi_controller::init_midi_controller;
 use crate::midi::midi_device::MidiDeviceConcrete;
 use crate::players::conductor::Conductor;
 use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::song::Song;
 use crate::song::yaml_patch_reader::read_patch_from_yaml;
+use crate::synth::lfo::lfo::LFO;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -204,9 +203,10 @@ fn create_instrument_threads(
         // Instrument
         let mut synth = Keyboardist::new(
             "SynthKeys       ".into(),
-            Box::new(KeysBasedInstrumentThreadSynth::new(
+            Box::new(ThreadForSynthInstrument::new(
                 //
                 "ThreadKeysSynth".into(),
+                LFO::new(30, 800, 0.7),
                 KEYS_SYNTH_VOLUME,
                 KEYS_SYNTH_ENABLE_LOGGING,
             )),
@@ -219,9 +219,10 @@ fn create_instrument_threads(
         // Instrument
         let mut bass_synth = Bassist::new(
             "SynthBass       ".into(),
-            Box::new(BassBasedInstrumentThreadSynth::new(
+            Box::new(ThreadForSynthInstrument::new(
                 //
                 "ThreadBassSynth".into(),
+                LFO::new(17, 300, 0.3),
                 BASS_SYNTH_VOLUME,
                 BASS_SYNTH_ENABLE_LOGGING,
             )),

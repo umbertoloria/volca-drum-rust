@@ -1,3 +1,4 @@
+use crate::synth::lfo::lfo::LFO;
 use crate::utils::timing::get_now_millis;
 use core::time::Duration;
 use rodio::source::{SamplesConverter, Source};
@@ -8,15 +9,23 @@ pub struct WaveTableOscillator {
     sample_rate: u32,
     wave_table: Vec<f32>,
     now_millis: u128,
+    lfo: LFO,
     index: f32,
     index_increment: f32,
 }
 impl WaveTableOscillator {
-    pub fn new(sample_rate: u32, wave_table: Vec<f32>, now_millis: u128) -> Self {
+    pub fn new(
+        //
+        sample_rate: u32,
+        wave_table: Vec<f32>,
+        lfo: LFO,
+        now_millis: u128,
+    ) -> Self {
         Self {
             sample_rate,
             wave_table,
             now_millis,
+            lfo,
             index: 0.0,
             index_increment: 0.0,
         }
@@ -36,25 +45,11 @@ impl WaveTableOscillator {
         // LFO
         let ms = get_now_millis() - self.now_millis;
 
-        let lfo_attack__ms = 17;
-        let lfo_decay___ms = 200;
-        let lfo_sustain_vl = 0.3f32;
-
-        if ms <= lfo_attack__ms {
-            // From 0.0 to 1.0.
-            lfo = (ms as f32) / lfo_attack__ms as f32;
-        } else if ms <= lfo_decay___ms {
-            // From 1.0 to "lfo_sustain_vl".
-            let delta = (ms - lfo_attack__ms) as f32 / (lfo_decay___ms - lfo_attack__ms) as f32;
-            let diff_attach_and_sustain = 1.0 - lfo_sustain_vl;
-            lfo = 1.0 - delta * diff_attach_and_sustain;
-        } else {
-            lfo = lfo_sustain_vl;
-        }
+        let lfo_value = self.lfo.get_value(ms);
         // println!("{:.5}", lfo);
 
         // TODO: Gently raise Oscillator Phase to avoid Audio Monitors Issues
-        sample * lfo
+        sample * lfo_value
     }
 
     fn lerp(&self) -> f32 {

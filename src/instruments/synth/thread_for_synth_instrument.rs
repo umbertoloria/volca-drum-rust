@@ -4,19 +4,20 @@ use crate::instruments::synth::synth_thread::{
     create_synth_thread_comm, synth_thread, SynthCommand,
 };
 use crate::music::note::Note;
+use crate::synth::lfo::lfo::LFO;
 use crate::thread_comm::thread_comm::ThreadCommSender;
 use std::thread::JoinHandle;
 
-// KEYS-BASED INSTRUMENT: SYNTH
-pub struct KeysBasedInstrumentThreadSynth {
+pub struct ThreadForSynthInstrument {
     synth_thread_handle: JoinHandle<()>,
     synth_command_sender: ThreadCommSender<SynthCommand>,
 }
-impl KeysBasedInstrumentThreadSynth {
-    pub fn new(thread_name: String, synth_volume: f32, enable_logging: bool) -> Self {
+impl ThreadForSynthInstrument {
+    pub fn new(thread_name: String, lfo: LFO, synth_volume: f32, enable_logging: bool) -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
         let synth_thread_handle = synth_thread(
             thread_name,
+            lfo,
             synth_volume,
             synth_command_receiver,
             enable_logging,
@@ -27,7 +28,7 @@ impl KeysBasedInstrumentThreadSynth {
         }
     }
 }
-impl AbstractKeysBasedInstrument for KeysBasedInstrumentThreadSynth {
+impl AbstractKeysBasedInstrument for ThreadForSynthInstrument {
     fn play_notes_start(&mut self, notes: &Vec<Note>) {
         // println!("play_notes_start: {:?}", notes);
 
@@ -42,28 +43,7 @@ impl AbstractKeysBasedInstrument for KeysBasedInstrumentThreadSynth {
         self.synth_command_sender.send(SynthCommand::StopNote);
     }
 }
-
-// BASS-BASED INSTRUMENT: SYNTH
-pub struct BassBasedInstrumentThreadSynth {
-    synth_thread_handle: JoinHandle<()>,
-    synth_command_sender: ThreadCommSender<SynthCommand>,
-}
-impl BassBasedInstrumentThreadSynth {
-    pub fn new(thread_name: String, synth_volume: f32, enable_logging: bool) -> Self {
-        let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
-        let synth_thread_handle = synth_thread(
-            thread_name,
-            synth_volume,
-            synth_command_receiver,
-            enable_logging,
-        );
-        Self {
-            synth_thread_handle,
-            synth_command_sender,
-        }
-    }
-}
-impl AbstractBassBasedInstrument for BassBasedInstrumentThreadSynth {
+impl AbstractBassBasedInstrument for ThreadForSynthInstrument {
     fn play_notes_start(&mut self, note: &Note) {
         // println!("play_notes_start: {:?}", note);
 
