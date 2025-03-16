@@ -27,6 +27,7 @@ pub fn synth_thread(
     synth_thread_name: String,
     volume: f32,
     synth_command_receiver: ThreadCommReceiver<SynthCommand>,
+    enable_logging: bool,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
         // Synths
@@ -35,7 +36,7 @@ pub fn synth_thread(
         for command in synth_command_receiver.get_recv_iter() {
             match command {
                 SynthCommand::StartNotes(notes) => {
-                    if synth_thread_name == "ThreadBassSynth" {
+                    if enable_logging {
                         println!("{synth_thread_name} -> play {:?}", notes);
                     }
 
@@ -49,7 +50,7 @@ pub fn synth_thread(
                     }
                 }
                 SynthCommand::StopNote => {
-                    if synth_thread_name == "ThreadBassSynth" {
+                    if enable_logging {
                         println!("{synth_thread_name} -> stop");
                     }
 
@@ -59,7 +60,7 @@ pub fn synth_thread(
                     synths.clear();
                 }
                 SynthCommand::CloseThread => {
-                    if synth_thread_name == "ThreadBassSynth" {
+                    if enable_logging {
                         println!("{synth_thread_name} -> close");
                     }
 

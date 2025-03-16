@@ -34,20 +34,26 @@ impl WaveTableOscillator {
         let mut lfo: f32 = 1.0;
 
         // LFO
-        // FIXME: Sync LFO Timing with "Music" Clock
-        let millis_passed = get_now_millis() - self.now_millis;
-        if millis_passed <= 100 {
-            lfo = (millis_passed as f32) / 100.0;
-        } else if millis_passed <= 300 {
-            lfo = 1.0;
-        } else if millis_passed <= 1000 {
-            let remaining: f32 = 1000.0 - 300.0;
-            lfo = 1.0 - (millis_passed - 300) as f32 / remaining;
+        let ms = get_now_millis() - self.now_millis;
+
+        let lfo_attack__ms = 17;
+        let lfo_decay___ms = 200;
+        let lfo_sustain_vl = 0.3f32;
+
+        if ms <= lfo_attack__ms {
+            // From 0.0 to 1.0.
+            lfo = (ms as f32) / lfo_attack__ms as f32;
+        } else if ms <= lfo_decay___ms {
+            // From 1.0 to "lfo_sustain_vl".
+            let delta = (ms - lfo_attack__ms) as f32 / (lfo_decay___ms - lfo_attack__ms) as f32;
+            let diff_attach_and_sustain = 1.0 - lfo_sustain_vl;
+            lfo = 1.0 - delta * diff_attach_and_sustain;
         } else {
-            lfo = 0.0;
+            lfo = lfo_sustain_vl;
         }
         // println!("{:.5}", lfo);
 
+        // TODO: Gently raise Oscillator Phase to avoid Audio Monitors Issues
         sample * lfo
     }
 

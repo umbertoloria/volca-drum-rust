@@ -133,7 +133,9 @@ fn play_song_example_with_updates(
 // INSTRUMENTS THREADS
 type InstrumentThreadType = JoinHandle<()>;
 const KEYS_SYNTH_VOLUME: f32 = 0.3;
+const KEYS_SYNTH_ENABLE_LOGGING: bool = false;
 const BASS_SYNTH_VOLUME: f32 = 0.4;
+const BASS_SYNTH_ENABLE_LOGGING: bool = false;
 fn create_instrument_threads(
     instr_comm_receiver_drummer: InstrumentCommReceiver,
     instr_comm_receiver_keyboard: InstrumentCommReceiver,
@@ -206,6 +208,7 @@ fn create_instrument_threads(
                 //
                 "ThreadKeysSynth".into(),
                 KEYS_SYNTH_VOLUME,
+                KEYS_SYNTH_ENABLE_LOGGING,
             )),
         );
         start_listening_to_instrument_comm_commands(instr_comm_receiver_synth, &mut synth);
@@ -220,6 +223,7 @@ fn create_instrument_threads(
                 //
                 "ThreadBassSynth".into(),
                 BASS_SYNTH_VOLUME,
+                BASS_SYNTH_ENABLE_LOGGING,
             )),
         );
         start_listening_to_instrument_comm_commands(
