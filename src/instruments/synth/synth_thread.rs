@@ -29,14 +29,17 @@ pub fn create_synth_thread_comm() -> (
 
 pub fn synth_thread(
     synth_thread_name: String,
+    wave_table: Vec<f32>,
     lfo: LFO,
     volume: f32,
     synth_command_receiver: ThreadCommReceiver<SynthCommand>,
     enable_logging: bool,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
+        // TODO: Take SynthGenerator from parameters
+        let synth_generator = SynthGenerator::new(wave_table, lfo);
         // Synths
-        let mut synths = Vec::new();
+        let mut mono_synth_players = Vec::new();
 
         for command in synth_command_receiver.get_recv_iter() {
             match command {
@@ -48,10 +51,11 @@ pub fn synth_thread(
                     let now_millis = get_now_millis();
 
                     for note in notes {
-                        let samples_converter = create_source_from_note(&note, &lfo, now_millis);
-                        let mut mono_synth = MonoSynthPlayer::new(volume);
-                        mono_synth.play(samples_converter);
-                        synths.push(mono_synth);
+                        let samples_converter = synth_generator.generate(&note, now_millis);
+
+                        let mut mono_synth_player = MonoSynthPlayer::new(volume);
+                        mono_synth_player.play(samples_converter);
+                        mono_synth_players.push(mono_synth_player);
                     }
                 }
                 SynthCommand::StopNote => {
@@ -59,20 +63,20 @@ pub fn synth_thread(
                         println!("{synth_thread_name} -> stop");
                     }
 
-                    for synth in &mut synths {
+                    for synth in &mut mono_synth_players {
                         synth.pause();
                     }
-                    synths.clear();
+                    mono_synth_players.clear();
                 }
                 SynthCommand::CloseThread => {
                     if enable_logging {
                         println!("{synth_thread_name} -> close");
                     }
 
-                    for synth in &mut synths {
+                    for synth in &mut mono_synth_players {
                         synth.pause();
                     }
-                    synths.clear();
+                    mono_synth_players.clear();
                     break;
                 }
             }
@@ -80,27 +84,24 @@ pub fn synth_thread(
     })
 }
 
-// Actual Oscillator
-fn create_source_from_note(
-    note: &Note,
-    lfo: &LFO,
-    now_millis: u128,
-) -> DigitalMonoSynthSamplesConverter {
-    // Sine Oscillator
-    let sine_wt_oscillator = WaveTableOscillator::new(create_sine_wave_table());
+struct SynthGenerator {
+    wave_table: Vec<f32>,
+    lfo: LFO,
+}
+impl SynthGenerator {
+    pub fn new(wave_table: Vec<f32>, lfo: LFO) -> Self {
+        Self { wave_table, lfo }
+    }
+    pub fn generate(&self, note: &Note, now_millis: u128) -> DigitalMonoSynthSamplesConverter {
+        let sine_wt_oscillator = WaveTableOscillator::new(create_sine_wave_table());
 
-    // Mono Synth
-    let sample_rate = 48000;
-    let mut mono_synth = MonoSynth::new(
-        sine_wt_oscillator,
-        lfo.clone(), // FIXME: Avoid cloning LFO
-        sample_rate,
-        now_millis,
-    );
-    let frequency = note.get_frequency();
-    mono_synth.set_frequency(frequency);
+        // FIXME: Avoid cloning LFO
+        let lfo = self.lfo.clone();
 
-    // Sample Source
-    let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
-    sample_source.convert_samples()
+        let mut mono_synth = MonoSynth::new(sine_wt_oscillator, lfo, now_millis);
+        mono_synth.set_frequency(note.get_frequency());
+
+        let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
+        sample_source.convert_samples()
+    }
 }

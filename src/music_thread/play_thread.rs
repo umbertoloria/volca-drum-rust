@@ -15,6 +15,7 @@ use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::song::Song;
 use crate::song::yaml_patch_reader::read_patch_from_yaml;
 use crate::synth::lfo::lfo::LFO;
+use crate::synth::oscillator::wave_table_sine::create_sine_wave_table;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -206,6 +207,7 @@ fn create_instrument_threads(
             Box::new(ThreadForSynthInstrument::new(
                 //
                 "ThreadKeysSynth".into(),
+                create_sine_wave_table(),
                 LFO::new(30, 800, 0.7),
                 KEYS_SYNTH_VOLUME,
                 KEYS_SYNTH_ENABLE_LOGGING,
@@ -222,6 +224,7 @@ fn create_instrument_threads(
             Box::new(ThreadForSynthInstrument::new(
                 //
                 "ThreadBassSynth".into(),
+                create_sine_wave_table(),
                 LFO::new(17, 300, 0.3),
                 BASS_SYNTH_VOLUME,
                 BASS_SYNTH_ENABLE_LOGGING,
