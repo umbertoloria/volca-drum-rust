@@ -562,19 +562,19 @@ pub fn get_song_o2() -> Song {
                     bass_line: BassLine {
                         parts: vec![
                             BassLinePart {
-                                tonic: "A3".into(),
+                                tonic: "A2".into(),
                                 line: "1_1_1_ 1".into(),
                             },
                             BassLinePart {
-                                tonic: "E3".into(),
+                                tonic: "E2".into(),
                                 line: "1_1_1_ 1".into(),
                             },
                             BassLinePart {
-                                tonic: "D3".into(),
+                                tonic: "D2".into(),
                                 line: "1_1_1_ 1".into(),
                             },
                             BassLinePart {
-                                tonic: "F3".into(),
+                                tonic: "F2".into(),
                                 line: "1_1_1_ 1".into(),
                             },
                         ],
@@ -588,11 +588,11 @@ pub fn get_song_o2() -> Song {
                     bass_line: BassLine {
                         parts: vec![
                             BassLinePart {
-                                tonic: "C3".into(),
+                                tonic: "C2".into(),
                                 line: "1_1_1___".into(),
                             },
                             BassLinePart {
-                                tonic: "F3".into(),
+                                tonic: "F2".into(),
                                 line: "1_1_1___".into(),
                             },
                         ],

@@ -1,4 +1,4 @@
-use crate::synth::oscillator::wave_table_sine::WAVE_TABLE_SIZE;
+use crate::synth::oscillator::wave_tables::WAVE_TABLE_SIZE;
 use crate::synth::sound::synth_chain::SynthChain;
 
 const SAMPLE_RATE: u32 = 48000;
