@@ -29,7 +29,7 @@ impl KeysWithQueue {
     pub fn playing_hit_dequeue_and_stop_notes_at_this_1_16th(&mut self, index_1_16th: usize) {
         let note_str_list_to_stop = self
             .stop_notes_queue
-            .dequeue_notes_at_this_1_16th_from_stop_notes_queue(index_1_16th);
+            .dequeue_notes_at_this_1_16th(index_1_16th);
         if let Some(note_str_list_to_stop) = note_str_list_to_stop {
             self.keys_based_instrument
                 .play_notes_stop(&note_str_list_to_stop);

@@ -1,7 +1,6 @@
 use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::bass_with_queue::BassWithQueue;
-use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
 
@@ -21,18 +20,14 @@ pub struct Bassist {
 impl Bassist {
     pub fn new(
         inner_instrument_name_16_chars: String,
-        keys_based_instrument: Box<dyn AbstractBassBasedInstrument>,
+        bass_based_instrument: Box<dyn AbstractBassBasedInstrument>,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            bass_with_queue: BassWithQueue::new(
-                //
-                StopNotesQueue::new(),
-                keys_based_instrument,
-            ),
+            bass_with_queue: BassWithQueue::new(bass_based_instrument),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
