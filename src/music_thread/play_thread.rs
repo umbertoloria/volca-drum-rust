@@ -14,9 +14,7 @@ use crate::players::conductor::Conductor;
 use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::song::Song;
 use crate::song::yaml_patch_reader::read_patch_from_yaml;
-use crate::synth::lfo::lfo::LFO;
-use crate::synth::oscillator::wave_tables::{create_wt_saw, create_wt_square};
-use crate::synth::synth_generator::SynthGenerator;
+use crate::synth::sound::patches::{make_patch_1_for_bass, make_patch_1_for_keys};
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -133,9 +131,7 @@ fn play_song_example_with_updates(
 
 // INSTRUMENTS THREADS
 type InstrumentThreadType = JoinHandle<()>;
-const KEYS_SYNTH_VOLUME: f32 = 0.3;
 const KEYS_SYNTH_ENABLE_LOGGING: bool = false;
-const BASS_SYNTH_VOLUME: f32 = 0.4;
 const BASS_SYNTH_ENABLE_LOGGING: bool = false;
 fn create_instrument_threads(
     instr_comm_receiver_drummer: InstrumentCommReceiver,
@@ -207,13 +203,7 @@ fn create_instrument_threads(
             "SynthKeys       ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadKeysSynth".into(),
-                SynthGenerator::new(
-                    //
-                    // create_wt_sine(),
-                    create_wt_saw(),
-                    LFO::new(30, 800, 0.7),
-                    KEYS_SYNTH_VOLUME,
-                ),
+                make_patch_1_for_keys(),
                 KEYS_SYNTH_ENABLE_LOGGING,
             )),
         );
@@ -227,12 +217,7 @@ fn create_instrument_threads(
             "SynthBass       ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadBassSynth".into(),
-                SynthGenerator::new(
-                    //
-                    create_wt_square(),
-                    LFO::new(17, 300, 0.3),
-                    BASS_SYNTH_VOLUME,
-                ),
+                make_patch_1_for_bass(),
                 BASS_SYNTH_ENABLE_LOGGING,
             )),
         );
