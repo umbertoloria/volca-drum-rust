@@ -43,9 +43,10 @@ pub fn synth_thread(
                     let now_millis = get_now_millis();
 
                     for note in notes {
-                        let synth_chain = synth_generator.generate(now_millis);
+                        let synth_patch_wrapper =
+                            synth_generator.generate_synth_patch_wrapper(now_millis);
 
-                        let mut mono_synth = MonoSynth::new(synth_chain);
+                        let mut mono_synth = MonoSynth::new(synth_patch_wrapper);
                         mono_synth.set_frequency(note.get_frequency());
 
                         let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);

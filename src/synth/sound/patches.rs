@@ -1,10 +1,10 @@
-use crate::synth::sound::synth_chain_injector::{GenericSynthChainInjector, SoundSynthPatch};
+use crate::synth::sound::synth_patch::{SynthPatch, SynthPatchInjector};
 use crate::synth::synth_generator::SynthGenerator;
 
 pub fn make_patch_1_for_keys() -> SynthGenerator {
     SynthGenerator::new(
         //
-        GenericSynthChainInjector::new_box(SoundSynthPatch::SAW),
+        SynthPatchInjector::new(SynthPatch::SAW),
         0.3,
     )
 }
@@ -12,7 +12,7 @@ pub fn make_patch_1_for_keys() -> SynthGenerator {
 pub fn make_patch_1_for_bass() -> SynthGenerator {
     SynthGenerator::new(
         //
-        GenericSynthChainInjector::new_box(SoundSynthPatch::SQUARE),
+        SynthPatchInjector::new(SynthPatch::SQUARE),
         0.4,
     )
 }

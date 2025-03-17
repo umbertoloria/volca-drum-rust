@@ -1,2 +1,2 @@
 pub mod patches;
-pub mod synth_chain_injector;
+pub mod synth_patch;
