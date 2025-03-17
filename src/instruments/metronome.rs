@@ -1,7 +1,6 @@
 use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::bass_with_queue::BassWithQueue;
-use crate::music::note::Note;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{Song, SongMetronomeDataClickOn};
 
@@ -35,11 +34,10 @@ impl Metronome {
         let offset_1_16th = (index_1_16th - 1) % one_click_every_n_1_16ths;
         if offset_1_16th == 0 {
             // Hit the metronome!
-            // let metronome_note = "A4".to_string(); // Maybe as default.
-            let note = Note::new(&song.metronome_data.note);
-            self.bass_with_queue.attack_note(&note);
+            let note = &song.metronome_data.note;
+            self.bass_with_queue.attack_note(note);
             self.bass_with_queue
-                .notify_release_note_at(&note, index_1_16th + one_click_every_n_1_16ths);
+                .notify_release_note_at(note, index_1_16th + one_click_every_n_1_16ths);
         }
     }
 }

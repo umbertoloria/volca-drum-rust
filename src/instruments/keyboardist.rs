@@ -2,7 +2,6 @@ use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
 use crate::instruments::lib::keys_with_queue::KeysWithQueue;
 use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
-use crate::music::note::get_notes_from_note_str_list;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 
@@ -78,7 +77,7 @@ impl Keyboardist {
 
             if 0 <= self.chord_index && self.chord_index < keys_chords.len() {
                 let chord = &keys_chords[self.chord_index];
-                let chord_notes = get_notes_from_note_str_list(&chord.notes);
+                let chord_notes = &chord.notes;
 
                 /*
                 println!("play_1_16th:");
@@ -91,7 +90,7 @@ impl Keyboardist {
                 */
 
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.keys_with_queue.attack_notes(&chord_notes);
+                    self.keys_with_queue.attack_notes(chord_notes);
                 }
                 if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
@@ -99,7 +98,7 @@ impl Keyboardist {
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
                     self.keys_with_queue
-                        .notify_release_notes_at(&chord_notes, index_1_16th + 1);
+                        .notify_release_notes_at(chord_notes, index_1_16th + 1);
                 }
             }
         }

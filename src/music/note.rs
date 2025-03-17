@@ -1,3 +1,5 @@
+use std::fmt::{Display, Formatter};
+
 fn get_octave_offset_from_letter(note_bytes: &[u8]) -> u8 {
     let number_byte = note_bytes[note_bytes.len() - 1];
     match number_byte {
@@ -87,7 +89,7 @@ pub struct Note {
     pub offset: u8, // From 0 to 11 (incl.).
 }
 impl Note {
-    pub fn new(note_str: &String) -> Self {
+    pub fn new(note_str: &str) -> Self {
         let note_bytes = note_str.as_bytes();
         Self {
             octave: get_octave_offset_from_letter(note_bytes),
@@ -158,6 +160,16 @@ impl Note {
     pub fn to_hash(&self) -> String {
         let numeric_hash = (self.octave as usize) * 100 + (self.offset as usize);
         format!("{}", numeric_hash)
+    }
+}
+impl From<&str> for Note {
+    fn from(value: &str) -> Self {
+        Note::new(value)
+    }
+}
+impl Display for Note {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "OCT={}, OFF={}", self.octave, self.offset)
     }
 }
 

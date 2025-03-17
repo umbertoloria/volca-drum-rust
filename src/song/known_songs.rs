@@ -1,6 +1,7 @@
 use crate::song::song::{
     BassLine, BassLinePart, BassPattern, DrumPattern, KeyboardPattern, KeyboardPatternChord, Song,
-    SongDetails, SongMetronomeDataClickOn, SongMetronomeData, SongSection, SongSectionKind, SongTempo,
+    SongDetails, SongMetronomeData, SongMetronomeDataClickOn, SongSection, SongSectionKind,
+    SongTempo,
 };
 use std::collections::HashMap;
 
@@ -17,7 +18,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
         },
         metronome_data: SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
-            note: "C4".to_string(),
+            note: "C4".into(),
         },
         drum_patterns: HashMap::from([
             (
@@ -262,7 +263,7 @@ pub fn get_song_o1() -> Song {
         },
         metronome_data: SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
-            note: "B4".to_string(),
+            note: "B4".into(),
         },
         drum_patterns: HashMap::from([
             (
@@ -507,7 +508,7 @@ pub fn get_song_o2() -> Song {
         },
         metronome_data: SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
-            note: "A4".to_string(),
+            note: "A4".into(),
         },
         drum_patterns: HashMap::from([]),
         keyboard_patterns: HashMap::from([

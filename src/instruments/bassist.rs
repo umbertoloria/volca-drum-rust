@@ -1,7 +1,6 @@
 use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::bass_with_queue::BassWithQueue;
-use crate::music::note::Note;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
 
@@ -75,7 +74,7 @@ impl Bassist {
 
             if 0 <= self.chord_index && self.chord_index < bass_chords.len() {
                 let chord = &bass_chords[self.chord_index];
-                let bass_note = Note::new(&chord.note);
+                let bass_note = &chord.note;
 
                 /*
                 println!("play_1_16th:");
@@ -88,7 +87,7 @@ impl Bassist {
                 */
 
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.bass_with_queue.attack_note(&bass_note);
+                    self.bass_with_queue.attack_note(bass_note);
                 }
                 if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
@@ -96,7 +95,7 @@ impl Bassist {
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
                     self.bass_with_queue
-                        .notify_release_note_at(&bass_note, index_1_16th + 1);
+                        .notify_release_note_at(bass_note, index_1_16th + 1);
                 }
             }
         }

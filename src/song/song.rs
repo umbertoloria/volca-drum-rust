@@ -1,9 +1,10 @@
+use crate::music::note::Note;
 use crate::song::yaml_song_reader::{YamlSong, YamlSongSection};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
-pub fn get_standard_click_note() -> String {
-    "A4".to_string()
+pub fn get_standard_click_note() -> Note {
+    "A4".into()
 }
 
 #[derive(Clone)]
@@ -43,7 +44,7 @@ pub struct SongTempo {
 #[derive(Clone)]
 pub struct SongMetronomeData {
     pub click_on: SongMetronomeDataClickOn,
-    pub note: String,
+    pub note: Note,
 }
 #[derive(Clone)]
 pub enum SongMetronomeDataClickOn {
@@ -131,8 +132,8 @@ impl KeyboardPattern {
 }
 #[derive(Clone)]
 pub struct KeyboardPatternChord {
-    pub chord_name: String, // Es. "Fmaj7"
-    pub notes: Vec<String>, // Es. ["F3", "A3", "C4"]
+    pub chord_name: &'static str, // Es. "Fmaj7"
+    pub notes: Vec<Note>,         // Es. ["F3", "A3", "C4"]
     // Params "from_1_16th_incl" and "to_1_16th_incl" start from 1.
     pub from_1_16th_incl: usize,
     pub to_1_16th_incl: usize,
@@ -200,8 +201,9 @@ impl BassPattern {
 }
 #[derive(Clone, Debug)]
 pub struct BassPatternChord {
+    // TODO: Try to remove this struct and use BassLine directly
     pub chord_name: String, // Es. "Fmaj7"
-    pub note: String,       // Es. "F3"
+    pub note: Note,         // Es. "F3"
     // Params "from_1_16th_incl" and "to_1_16th_incl" start from 1.
     pub from_1_16th_incl: usize,
     pub to_1_16th_incl: usize,
@@ -212,8 +214,8 @@ pub struct BassLine {
 }
 #[derive(Clone)]
 pub struct BassLinePart {
-    pub tonic: String, // Es. "F2"
-    pub line: String,  // Es. "1_1_1___"
+    pub tonic: Note,        // Es. "F2"
+    pub line: &'static str, // Es. "1_1_1___"
 }
 
 // Songs
