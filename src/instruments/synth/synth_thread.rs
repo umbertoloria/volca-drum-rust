@@ -51,11 +51,11 @@ pub fn synth_thread(
                     let t0_ms = get_now_millis();
 
                     for note in notes {
-                        let synth_patch_wrapper =
-                            synth_patch_injector.get_synth_patch_wrapper(t0_ms);
+                        let synth_patch = synth_patch_injector.get_synth_patch().clone();
 
-                        let mut mono_synth = MonoSynth::new(synth_patch_wrapper);
-                        mono_synth.set_frequency(note.get_frequency());
+                        let frequency = note.get_frequency();
+                        let mut mono_synth = MonoSynth::new(synth_patch, t0_ms);
+                        mono_synth.set_frequency(frequency);
 
                         let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
                         let samples_converter = sample_source.convert_samples();

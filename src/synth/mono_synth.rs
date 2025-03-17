@@ -1,16 +1,18 @@
 use crate::synth::oscillator::wave_tables::WAVE_TABLE_SIZE;
-use crate::synth::sound::synth_patch_injector::SynthPatchWrapper;
+use crate::synth::sound::patches::SynthPatch;
 
 const SAMPLE_RATE: u32 = 48000;
 pub struct MonoSynth {
-    synth_patch_wrapper: SynthPatchWrapper,
+    synth_patch: SynthPatch,
+    t0_ms: u128,
     index: f32,
     index_increment: f32,
 }
 impl MonoSynth {
-    pub fn new(synth_patch_wrapper: SynthPatchWrapper) -> Self {
+    pub fn new(synth_patch: SynthPatch, t0_ms: u128) -> Self {
         Self {
-            synth_patch_wrapper,
+            synth_patch,
+            t0_ms,
             index: 0.0,
             index_increment: 0.0,
         }
@@ -19,8 +21,9 @@ impl MonoSynth {
         SAMPLE_RATE
     }
     pub fn get_sample_and_prepare_next(&mut self) -> f32 {
+        // Don't change method signature.
         let index = self.get_index_and_prepare_next();
-        self.synth_patch_wrapper.get_sample(index)
+        self.synth_patch.get_sample(self.t0_ms, index)
     }
     pub fn set_frequency(&mut self, frequency: f32) {
         self.index_increment = frequency * WAVE_TABLE_SIZE as f32 / self.get_sample_rate() as f32;

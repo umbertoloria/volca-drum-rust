@@ -97,7 +97,23 @@ impl Note {
         }
     }
     pub fn compare_to(&self, b: &Note) -> CompareEnum {
-        compare_notes(self, &b)
+        if self.octave < b.octave {
+            // Note "a" Octave lower.
+            CompareEnum::Lower
+        } else if self.octave > b.octave {
+            // Note "b" Octave higher.
+            CompareEnum::Higher
+        } else {
+            // Notes "a" and "b" in the same Octave.
+            if self.offset < b.offset {
+                CompareEnum::Lower
+            } else if self.offset == b.offset {
+                // Same note.
+                CompareEnum::Equal
+            } else {
+                CompareEnum::Higher
+            }
+        }
     }
     pub fn get_octave_lower(&self) -> Self {
         Self {
@@ -178,25 +194,6 @@ pub enum CompareEnum {
     Lower,
     Equal,
     Higher,
-}
-pub fn compare_notes(a: &Note, b: &Note) -> CompareEnum {
-    if a.octave < b.octave {
-        // Note "a" Octave lower.
-        CompareEnum::Lower
-    } else if a.octave > b.octave {
-        // Note "b" Octave higher.
-        CompareEnum::Higher
-    } else {
-        // Notes "a" and "b" in the same Octave.
-        if a.offset < b.offset {
-            CompareEnum::Lower
-        } else if a.offset == b.offset {
-            // Same note.
-            CompareEnum::Equal
-        } else {
-            CompareEnum::Higher
-        }
-    }
 }
 pub fn get_notes_from_note_str_list(note_str_list: &Vec<String>) -> Vec<Note> {
     let mut notes = Vec::new();

@@ -1,3 +1,6 @@
+use rand::prelude::*;
+use std::sync::LazyLock;
+
 pub const WAVE_TABLE_SIZE: usize = 64;
 
 pub fn create_wt_sine() -> Vec<f32> {
@@ -49,4 +52,20 @@ pub fn create_wt_saw() -> Vec<f32> {
         i += 1;
     }
     wave_table
+}
+
+pub fn create_wt_noise() -> Vec<f32> {
+    // TODO: Noise WaveTable should be known at compile-time
+    static NOISE_WT: LazyLock<Vec<f32>> = LazyLock::new(|| {
+        // Note: It's heavy processing here!
+        let mut rng = rand::rng();
+        let mut wave_table: Vec<f32> = Vec::with_capacity(WAVE_TABLE_SIZE);
+        for _ in 0..WAVE_TABLE_SIZE {
+            let value = rng.random::<f32>();
+            // println!("{value}");
+            wave_table.push(value);
+        }
+        wave_table
+    });
+    NOISE_WT.clone()
 }

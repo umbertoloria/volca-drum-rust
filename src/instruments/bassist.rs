@@ -1,5 +1,5 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::bass_with_queue::BassWithQueue;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
@@ -37,7 +37,7 @@ impl Bassist {
                 Some(bass_pattern_key) => {
                     let keyboard_pattern = song
                         .get_bass_pattern_from_key(bass_pattern_key.into())
-                        .expect("Unable to find right Synth Pattern")
+                        .expect("Unable to find right Bass Pattern")
                         // TODO: Avoid cloning pattern
                         .clone();
                     Some(keyboard_pattern)
@@ -49,14 +49,15 @@ impl Bassist {
         }
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
-        let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
+        let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.bass_with_queue
-            .stop_notes_queued_on_this_1_16th(index_1_16th);
+            .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
         if let Some(pattern) = &self.pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
             // Adjusting because we may have 4 bars patter onto 8 bars section.
-            let index_1_16th_for_pattern = (index_1_16th - 1) % (bars_covered_by_pattern * 16) + 1;
+            let index_1_16th_for_pattern =
+                (index_1_16th_sec - 1) % (bars_covered_by_pattern * 16) + 1;
 
             let bass_chords = pattern.get_chords();
 
@@ -95,7 +96,7 @@ impl Bassist {
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
                     self.bass_with_queue
-                        .notify_release_note_at(bass_note, index_1_16th + 1);
+                        .notify_release_note_at(bass_note, index_1_16th_sec + 1);
                 }
             }
         }

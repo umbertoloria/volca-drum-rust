@@ -21,8 +21,9 @@ impl KeysWithQueue {
         self.instrument.play_notes_start(&notes);
     }
     pub fn notify_release_notes_at(&mut self, notes: &Vec<Note>, index_1_16th: usize) {
+        // FIXME: Use MOD with "index_1_16th" otherwise you never stop after number 16 or similar
         self.stop_notes_queue
-            .add_notes_to_stop_notes_queue(&notes, index_1_16th);
+            .add_notes_to_stop(&notes, index_1_16th);
     }
     pub fn stop_notes_queued_on_this_1_16th(&mut self, index_1_16th: usize) {
         let notes_to_stop = self

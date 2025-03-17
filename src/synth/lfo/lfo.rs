@@ -28,3 +28,5 @@ impl LFO {
         }
     }
 }
+
+// TODO: Create another LFO that holds the attack for some time

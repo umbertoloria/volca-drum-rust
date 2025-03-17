@@ -17,8 +17,8 @@ impl Drummer {
     pub fn new(inner_instrument_name_16_chars: String, volca_drum: VolcaDrum) -> Self {
         Self {
             inner_instrument_name_16_chars,
-            pattern: None,
             curr_section_index: 0,
+            pattern: None,
             volca_drum,
         }
     }
@@ -48,6 +48,7 @@ impl Drummer {
             let sn_symbol = pattern.sn.get(index_1_16th..=index_1_16th).unwrap();
             let kk_symbol = pattern.kk.get(index_1_16th..=index_1_16th).unwrap();
 
+            // TODO: Let Volca Drum commands happen via something abstract
             if hh_symbol != " " {
                 self.volca_drum.hit_hh();
             }

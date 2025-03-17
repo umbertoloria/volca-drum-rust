@@ -1434,6 +1434,7 @@ version = "0.1.0"
 dependencies = [
  "futures",
  "midir",
+ "rand",
  "rodio",
  "serde",
  "serde_yaml",

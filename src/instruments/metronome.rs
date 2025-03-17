@@ -1,5 +1,5 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::bass_with_queue::BassWithQueue;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{Song, SongMetronomeDataClickOn};
@@ -21,9 +21,9 @@ impl Metronome {
         }
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
-        let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
+        let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.bass_with_queue
-            .stop_notes_queued_on_this_1_16th(index_1_16th);
+            .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
         // Assuming every 1/4th has 4 1/16ths.
 
@@ -31,13 +31,13 @@ impl Metronome {
             SongMetronomeDataClickOn::OnEvery1_4ths => 4,
             SongMetronomeDataClickOn::OnEvery1_8ths => 2,
         };
-        let offset_1_16th = (index_1_16th - 1) % one_click_every_n_1_16ths;
+        let offset_1_16th = (index_1_16th_sec - 1) % one_click_every_n_1_16ths;
         if offset_1_16th == 0 {
             // Hit the metronome!
             let note = &song.metronome_data.note;
             self.bass_with_queue.attack_note(note);
             self.bass_with_queue
-                .notify_release_note_at(note, index_1_16th + one_click_every_n_1_16ths);
+                .notify_release_note_at(note, index_1_16th_sec + one_click_every_n_1_16ths);
         }
     }
 }
