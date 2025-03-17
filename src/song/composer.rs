@@ -1,6 +1,6 @@
 use crate::song::song::{
-    KeyboardPattern, KeyboardPatternChord, Song, SongDetails, SongSection, SongSectionKind,
-    SongTempo,
+    get_standard_click_note, KeyboardPattern, KeyboardPatternChord, Song, SongDetails,
+    SongMetronomeData, SongMetronomeDataClickOn, SongSection, SongSectionKind, SongTempo,
 };
 use std::collections::HashMap;
 
@@ -40,6 +40,10 @@ impl Composer {
             tempo: SongTempo {
                 bpm: self.bpm,
                 time_signature: (4, 4),
+            },
+            metronome_data: SongMetronomeData {
+                click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
+                note: get_standard_click_note(),
             },
             drum_patterns: HashMap::from([
                 //

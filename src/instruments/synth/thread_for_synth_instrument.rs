@@ -1,7 +1,7 @@
 use crate::instruments::lib::abstract_bass_based_instrument::AbstractBassBasedInstrument;
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
 use crate::instruments::synth::synth_thread::{
-    create_synth_thread_comm, synth_thread, SynthCommand,
+    create_synth_thread_comm, synth_thread, SynthCommand, SynthThreadAudioChannel,
 };
 use crate::music::note::Note;
 use crate::synth::sound::synth_patch_injector::SynthPatchInjector;
@@ -14,14 +14,15 @@ pub struct ThreadForSynthInstrument {
 }
 impl ThreadForSynthInstrument {
     pub fn new(
-        //
         thread_name: String,
+        synth_thread_audio_channel: SynthThreadAudioChannel,
         synth_patch_injector: SynthPatchInjector,
         enable_logging: bool,
     ) -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
         let synth_thread_handle = synth_thread(
             thread_name,
+            synth_thread_audio_channel,
             synth_patch_injector,
             synth_command_receiver,
             enable_logging,

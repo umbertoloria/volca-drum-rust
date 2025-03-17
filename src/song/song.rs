@@ -2,11 +2,16 @@ use crate::song::yaml_song_reader::{YamlSong, YamlSongSection};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
+pub fn get_standard_click_note() -> String {
+    "A4".to_string()
+}
+
 #[derive(Clone)]
 pub struct Song {
     pub id: String,
     pub details: SongDetails,
     pub tempo: SongTempo,
+    pub metronome_data: SongMetronomeData,
     pub drum_patterns: HashMap<String, DrumPattern>,
     pub keyboard_patterns: HashMap<String, KeyboardPattern>,
     pub bass_patterns: HashMap<String, BassPattern>,
@@ -34,6 +39,16 @@ pub struct SongTempo {
     pub bpm: usize,
     // Assuming bpm ticks to 1/4.
     pub time_signature: (usize, usize), // Es. (4, 4) for 4/4 bars.
+}
+#[derive(Clone)]
+pub struct SongMetronomeData {
+    pub click_on: SongMetronomeDataClickOn,
+    pub note: String,
+}
+#[derive(Clone)]
+pub enum SongMetronomeDataClickOn {
+    OnEvery1_4ths,
+    OnEvery1_8ths,
 }
 
 // Song Section
@@ -213,6 +228,10 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
             bpm: yaml_song.tempo_1_4,
             time_signature: (4, 4),
         },
+        metronome_data: SongMetronomeData {
+            click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
+            note: get_standard_click_note(),
+        },
         drum_patterns: HashMap::new(),
         keyboard_patterns: HashMap::new(),
         bass_patterns: HashMap::new(),
@@ -242,6 +261,10 @@ pub fn get_dummy_song() -> Song {
         tempo: SongTempo {
             bpm: 85,
             time_signature: (4, 4),
+        },
+        metronome_data: SongMetronomeData {
+            click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
+            note: get_standard_click_note(),
         },
         drum_patterns: HashMap::from([
             (

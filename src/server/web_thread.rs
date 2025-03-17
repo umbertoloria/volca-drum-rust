@@ -5,7 +5,6 @@ use crate::server::web_thread_comm::{
 };
 use futures::stream::SplitSink;
 use futures::{SinkExt, StreamExt};
-use std::fmt::Debug;
 use std::net::SocketAddr;
 use std::thread;
 use std::thread::JoinHandle;

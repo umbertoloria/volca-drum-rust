@@ -7,6 +7,7 @@ use crate::utils::timing::get_now_millis;
 pub enum SynthPatch {
     SQUARE,
     SAW,
+    MetronomeClick,
 }
 impl SynthPatch {
     pub fn get_sample(&self, t0_ms: u128, index: f32) -> f32 {
@@ -32,6 +33,18 @@ impl SynthPatch {
                 // 2. LFO
                 let ms = get_now_millis() - t0_ms;
                 let lfo = LFO::new(30, 800, 0.7);
+                let lfo_value = lfo.get_value(ms);
+
+                oscillator_value * lfo_value
+            }
+            SynthPatch::MetronomeClick => {
+                // 1. Oscillator
+                let oscillator = WaveTableOscillator::new(create_wt_square());
+                let oscillator_value = oscillator.lerp(index);
+
+                // 2. LFO
+                let ms = get_now_millis() - t0_ms;
+                let lfo = LFO::new(10, 300, 0.0);
                 let lfo_value = lfo.get_value(ms);
 
                 oscillator_value * lfo_value

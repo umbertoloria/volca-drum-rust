@@ -26,12 +26,17 @@ pub fn create_synth_thread_comm() -> (
 
 pub fn synth_thread(
     synth_thread_name: String,
+    synth_thread_audio_channel: SynthThreadAudioChannel,
     synth_patch_injector: SynthPatchInjector,
     synth_command_receiver: ThreadCommReceiver<SynthCommand>,
     enable_logging: bool,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
-        let audio_channel = AudioChannel::new();
+        let audio_channel = match synth_thread_audio_channel {
+            SynthThreadAudioChannel::Main => AudioChannel::new_from_main(),
+            // TODO: Use a secondary Audio Channel for Metronome
+            SynthThreadAudioChannel::MetronomeClick => AudioChannel::new_from_main(),
+        };
 
         // Synths
         let mut mono_synth_players = Vec::new();
@@ -86,4 +91,9 @@ pub fn synth_thread(
             }
         }
     })
+}
+
+pub enum SynthThreadAudioChannel {
+    Main,
+    MetronomeClick,
 }

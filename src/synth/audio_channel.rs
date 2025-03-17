@@ -5,7 +5,7 @@ pub struct AudioChannel {
     stream_handle: OutputStreamHandle,
 }
 impl AudioChannel {
-    pub fn new() -> Self {
+    pub fn new_from_main() -> Self {
         let (stream, stream_handle) = get_default_output_stream();
         Self {
             stream,
