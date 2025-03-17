@@ -17,7 +17,7 @@ use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::song::Song;
 use crate::song::yaml_patch_reader::read_patch_from_yaml;
 use crate::synth::sound::patches::{
-    make_patch_1_for_bass, make_patch_1_for_keys, make_patch_1_for_metronome,
+    make_patch_bass_1, make_patch_keys_1, make_patch_metronome_click,
 };
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
@@ -165,7 +165,7 @@ fn create_instrument_threads(
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadMetronomeSynth".into(),
                 SynthThreadAudioChannel::MetronomeClick,
-                make_patch_1_for_metronome(),
+                make_patch_metronome_click(),
                 METRONOME_SYNTH_ENABLE_LOGGING,
             )),
         );
@@ -221,7 +221,7 @@ fn create_instrument_threads(
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadKeysSynth".into(),
                 SynthThreadAudioChannel::Main,
-                make_patch_1_for_keys(),
+                make_patch_keys_1(),
                 KEYS_SYNTH_ENABLE_LOGGING,
             )),
         );
@@ -236,7 +236,7 @@ fn create_instrument_threads(
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadBassSynth".into(),
                 SynthThreadAudioChannel::Main,
-                make_patch_1_for_bass(),
+                make_patch_bass_1(),
                 BASS_SYNTH_ENABLE_LOGGING,
             )),
         );

@@ -507,7 +507,7 @@ pub fn get_song_o2() -> Song {
             time_signature: (4, 4),
         },
         metronome_data: SongMetronomeData {
-            click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
+            click_on: SongMetronomeDataClickOn::OnEvery1_8ths,
             note: "A4".into(),
         },
         drum_patterns: HashMap::from([]),

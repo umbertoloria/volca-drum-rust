@@ -1,4 +1,4 @@
-use crate::synth::sound::synth_patch::SynthPatch;
+use crate::synth::sound::patches::SynthPatch;
 
 pub struct SynthPatchInjector {
     synth_patch: SynthPatch,
