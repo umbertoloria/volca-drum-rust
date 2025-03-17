@@ -2,7 +2,7 @@ use crate::music::note::Note;
 use crate::synth::digital_mono_synth_sample_source::DigitalMonoSynthSampleSource;
 use crate::synth::mono_synth::MonoSynth;
 use crate::synth::mono_synth_player::MonoSynthPlayer;
-use crate::synth::synth_generator::SynthGenerator;
+use crate::synth::sound::synth_patch_injector::SynthPatchInjector;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -25,7 +25,7 @@ pub fn create_synth_thread_comm() -> (
 
 pub fn synth_thread(
     synth_thread_name: String,
-    synth_generator: SynthGenerator,
+    synth_patch_injector: SynthPatchInjector,
     synth_command_receiver: ThreadCommReceiver<SynthCommand>,
     enable_logging: bool,
 ) -> JoinHandle<()> {
@@ -40,11 +40,11 @@ pub fn synth_thread(
                         println!("{synth_thread_name} -> play {:?}", notes);
                     }
 
-                    let now_millis = get_now_millis();
+                    let t0_ms = get_now_millis();
 
                     for note in notes {
                         let synth_patch_wrapper =
-                            synth_generator.generate_synth_patch_wrapper(now_millis);
+                            synth_patch_injector.get_synth_patch_wrapper(t0_ms);
 
                         let mut mono_synth = MonoSynth::new(synth_patch_wrapper);
                         mono_synth.set_frequency(note.get_frequency());
@@ -53,7 +53,7 @@ pub fn synth_thread(
                         let samples_converter = sample_source.convert_samples();
 
                         let mut mono_synth_player =
-                            MonoSynthPlayer::new(synth_generator.get_volume());
+                            MonoSynthPlayer::new(synth_patch_injector.get_volume());
                         mono_synth_player.play(samples_converter);
 
                         mono_synth_players.push(mono_synth_player);

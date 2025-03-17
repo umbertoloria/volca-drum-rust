@@ -1,5 +1,5 @@
 use crate::synth::oscillator::wave_tables::WAVE_TABLE_SIZE;
-use crate::synth::sound::synth_patch::SynthPatchWrapper;
+use crate::synth::sound::synth_patch_injector::SynthPatchWrapper;
 
 const SAMPLE_RATE: u32 = 48000;
 pub struct MonoSynth {

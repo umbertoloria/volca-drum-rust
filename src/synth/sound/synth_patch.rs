@@ -3,38 +3,13 @@ use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
 use crate::synth::oscillator::wave_tables::{create_wt_saw, create_wt_square};
 use crate::utils::timing::get_now_millis;
 
-pub struct SynthPatchInjector {
-    synth_patch: SynthPatch,
-}
-impl SynthPatchInjector {
-    pub fn new(synth_patch: SynthPatch) -> SynthPatchInjector {
-        Self { synth_patch }
-    }
-    pub fn get_synth_patch_wrapper(&self, t0_ms: u128) -> SynthPatchWrapper {
-        // FIXME: Avoid cloning Synth Patch
-        SynthPatchWrapper::new(t0_ms, self.synth_patch.clone())
-    }
-}
-pub struct SynthPatchWrapper {
-    t0_ms: u128,
-    synth_patch: SynthPatch,
-}
-impl SynthPatchWrapper {
-    pub fn new(t0_ms: u128, synth_patch: SynthPatch) -> Self {
-        Self { t0_ms, synth_patch }
-    }
-    pub fn get_sample(&self, index: f32) -> f32 {
-        self.synth_patch.get_sample(self.t0_ms, index)
-    }
-}
-
 #[derive(Clone)]
 pub enum SynthPatch {
     SQUARE,
     SAW,
 }
 impl SynthPatch {
-    fn get_sample(&self, t0_ms: u128, index: f32) -> f32 {
+    pub fn get_sample(&self, t0_ms: u128, index: f32) -> f32 {
         match self {
             SynthPatch::SQUARE => {
                 // 1. Oscillator

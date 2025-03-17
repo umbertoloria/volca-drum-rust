@@ -4,7 +4,7 @@ use crate::instruments::synth::synth_thread::{
     create_synth_thread_comm, synth_thread, SynthCommand,
 };
 use crate::music::note::Note;
-use crate::synth::synth_generator::SynthGenerator;
+use crate::synth::sound::synth_patch_injector::SynthPatchInjector;
 use crate::thread_comm::thread_comm::ThreadCommSender;
 use std::thread::JoinHandle;
 
@@ -16,13 +16,13 @@ impl ThreadForSynthInstrument {
     pub fn new(
         //
         thread_name: String,
-        synth_generator: SynthGenerator,
+        synth_patch_injector: SynthPatchInjector,
         enable_logging: bool,
     ) -> Self {
         let (synth_command_sender, synth_command_receiver) = create_synth_thread_comm();
         let synth_thread_handle = synth_thread(
             thread_name,
-            synth_generator,
+            synth_patch_injector,
             synth_command_receiver,
             enable_logging,
         );
