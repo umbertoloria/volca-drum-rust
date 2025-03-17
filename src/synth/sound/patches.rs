@@ -1,13 +1,10 @@
-use crate::synth::sound::synth_chain_injector::SquareSynthChainInjector;
+use crate::synth::sound::synth_chain_injector::{SawSynthChainInjector, SquareSynthChainInjector};
 use crate::synth::synth_generator::SynthGenerator;
 
 pub fn make_patch_1_for_keys() -> SynthGenerator {
     SynthGenerator::new(
         //
-        // create_wt_sine(),
-        // create_wt_saw(),
-        // LFO::new(30, 800, 0.7),
-        SquareSynthChainInjector::new_box(),
+        SawSynthChainInjector::new_box(),
         0.3,
     )
 }

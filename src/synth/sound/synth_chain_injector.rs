@@ -55,3 +55,47 @@ impl AbstractSynthChain for SquareSynthChain {
         oscillator_value * lfo_value
     }
 }
+
+// Saw Synth
+pub struct SawSynthChainInjector {
+    //
+}
+impl SawSynthChainInjector {
+    pub fn new_box() -> DynSynthChainInjector {
+        Box::new(
+            //
+            Self {},
+        )
+    }
+}
+impl AbstractSynthChainInjector for SawSynthChainInjector {
+    fn get_synth_chain(&self, t0_ms: u128) -> DynAbstractSynthChain {
+        Box::new(
+            //
+            SawSynthChain::new(t0_ms),
+        )
+    }
+}
+pub struct SawSynthChain {
+    t0_ms: u128,
+}
+impl SawSynthChain {
+    pub fn new(t0_ms: u128) -> Self {
+        Self { t0_ms }
+    }
+}
+impl AbstractSynthChain for SawSynthChain {
+    fn get_sample(&self, index: f32) -> f32 {
+        // 1. Oscillator
+        // let oscillator = WaveTableOscillator::new(create_wt_sine());
+        let oscillator = WaveTableOscillator::new(create_wt_saw());
+        let oscillator_value = oscillator.lerp(index);
+
+        // 2. LFO
+        let ms = get_now_millis() - self.t0_ms;
+        let lfo = LFO::new(30, 800, 0.7);
+        let lfo_value = lfo.get_value(ms);
+
+        oscillator_value * lfo_value
+    }
+}
