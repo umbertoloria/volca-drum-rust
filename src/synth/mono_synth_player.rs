@@ -1,34 +1,28 @@
+use crate::synth::audio_channel::AudioChannel;
 use crate::synth::digital_mono_synth_sample_source::DigitalMonoSynthSamplesConverter;
-use rodio::{OutputStream, OutputStreamHandle, Sink};
+use rodio::Sink;
 
 pub struct MonoSynthPlayer {
     volume: f32,
-    stream: OutputStream,
-    stream_handle: OutputStreamHandle,
+    audio_channel: AudioChannel,
     sink: Sink,
 }
 impl MonoSynthPlayer {
     pub fn new(volume: f32) -> Self {
-        let (stream, stream_handle) = OutputStream::try_default().unwrap();
-        let sink = create_empty_sink(&stream_handle, volume);
+        // TODO: Avoid creating OutputStream channel every time!
+        let audio_channel = AudioChannel::new();
+        let sink = audio_channel.create_sink(volume); // Empty Sink.
         Self {
             volume,
-            stream,
-            stream_handle,
+            audio_channel,
             sink,
         }
     }
     pub fn play(&mut self, sample: DigitalMonoSynthSamplesConverter) {
-        self.sink = create_empty_sink(&self.stream_handle, self.volume);
+        self.sink = self.audio_channel.create_sink(self.volume);
         self.sink.append(sample);
     }
     pub fn pause(&mut self) {
-        self.sink = create_empty_sink(&self.stream_handle, self.volume);
+        self.sink = self.audio_channel.create_sink(self.volume);
     }
-}
-
-fn create_empty_sink(stream_handle: &OutputStreamHandle, volume: f32) -> Sink {
-    let mut sink = Sink::try_new(&stream_handle).unwrap();
-    sink.set_volume(volume);
-    sink
 }
