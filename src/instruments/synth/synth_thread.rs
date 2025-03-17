@@ -1,4 +1,5 @@
 use crate::music::note::Note;
+use crate::synth::audio_channel::AudioChannel;
 use crate::synth::digital_mono_synth_sample_source::DigitalMonoSynthSampleSource;
 use crate::synth::mono_synth::MonoSynth;
 use crate::synth::mono_synth_player::MonoSynthPlayer;
@@ -30,6 +31,8 @@ pub fn synth_thread(
     enable_logging: bool,
 ) -> JoinHandle<()> {
     thread::spawn(move || {
+        let audio_channel = AudioChannel::new();
+
         // Synths
         let mut mono_synth_players = Vec::new();
 
@@ -53,7 +56,7 @@ pub fn synth_thread(
                         let samples_converter = sample_source.convert_samples();
 
                         let mut mono_synth_player =
-                            MonoSynthPlayer::new(synth_patch_injector.get_volume());
+                            MonoSynthPlayer::new(&audio_channel, synth_patch_injector.get_volume());
                         mono_synth_player.play(samples_converter);
 
                         mono_synth_players.push(mono_synth_player);
