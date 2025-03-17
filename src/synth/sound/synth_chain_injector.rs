@@ -13,89 +13,87 @@ pub trait AbstractSynthChainInjector {
 }
 pub type DynSynthChainInjector = Box<dyn AbstractSynthChainInjector + Send>;
 
-// Square Synth
-pub struct SquareSynthChainInjector {
+// Generic Synth Chain Injector
+pub struct GenericSynthChainInjector {
     //
+    sound_synth_patch: SoundSynthPatch,
 }
-impl SquareSynthChainInjector {
-    pub fn new_box() -> DynSynthChainInjector {
+impl GenericSynthChainInjector {
+    pub fn new_box(sound_synth_patch: SoundSynthPatch) -> DynSynthChainInjector {
         Box::new(
             //
-            Self {},
+            Self {
+                //
+                sound_synth_patch,
+            },
         )
     }
 }
-impl AbstractSynthChainInjector for SquareSynthChainInjector {
+impl AbstractSynthChainInjector for GenericSynthChainInjector {
     fn get_synth_chain(&self, t0_ms: u128) -> DynAbstractSynthChain {
         Box::new(
             //
-            SquareSynthChain::new(t0_ms),
+            GenericSynthChain::new(t0_ms, self.sound_synth_patch.clone()),
         )
     }
 }
-pub struct SquareSynthChain {
+pub struct GenericSynthChain {
     t0_ms: u128,
+    sound_synth_patch: SoundSynthPatch,
 }
-impl SquareSynthChain {
-    pub fn new(t0_ms: u128) -> Self {
-        Self { t0_ms }
-    }
-}
-impl AbstractSynthChain for SquareSynthChain {
-    fn get_sample(&self, index: f32) -> f32 {
-        // 1. Oscillator
-        let oscillator = WaveTableOscillator::new(create_wt_square());
-        let oscillator_value = oscillator.lerp(index);
-
-        // 2. LFO
-        let ms = get_now_millis() - self.t0_ms;
-        let lfo = LFO::new(17, 300, 0.3);
-        let lfo_value = lfo.get_value(ms);
-
-        oscillator_value * lfo_value
-    }
-}
-
-// Saw Synth
-pub struct SawSynthChainInjector {
-    //
-}
-impl SawSynthChainInjector {
-    pub fn new_box() -> DynSynthChainInjector {
-        Box::new(
+impl GenericSynthChain {
+    pub fn new(
+        //
+        t0_ms: u128,
+        sound_synth_patch: SoundSynthPatch,
+    ) -> Self {
+        Self {
             //
-            Self {},
-        )
+            t0_ms,
+            sound_synth_patch,
+        }
     }
 }
-impl AbstractSynthChainInjector for SawSynthChainInjector {
-    fn get_synth_chain(&self, t0_ms: u128) -> DynAbstractSynthChain {
-        Box::new(
-            //
-            SawSynthChain::new(t0_ms),
-        )
-    }
-}
-pub struct SawSynthChain {
-    t0_ms: u128,
-}
-impl SawSynthChain {
-    pub fn new(t0_ms: u128) -> Self {
-        Self { t0_ms }
-    }
-}
-impl AbstractSynthChain for SawSynthChain {
+impl AbstractSynthChain for GenericSynthChain {
     fn get_sample(&self, index: f32) -> f32 {
-        // 1. Oscillator
-        // let oscillator = WaveTableOscillator::new(create_wt_sine());
-        let oscillator = WaveTableOscillator::new(create_wt_saw());
-        let oscillator_value = oscillator.lerp(index);
+        self.sound_synth_patch.get_sample(self.t0_ms, index)
+    }
+}
 
-        // 2. LFO
-        let ms = get_now_millis() - self.t0_ms;
-        let lfo = LFO::new(30, 800, 0.7);
-        let lfo_value = lfo.get_value(ms);
+// Sound Synth Patch
+#[derive(Clone)]
+pub enum SoundSynthPatch {
+    SQUARE,
+    SAW,
+}
+impl SoundSynthPatch {
+    fn get_sample(&self, t0_ms: u128, index: f32) -> f32 {
+        match self {
+            SoundSynthPatch::SQUARE => {
+                // 1. Oscillator
+                let oscillator = WaveTableOscillator::new(create_wt_square());
+                let oscillator_value = oscillator.lerp(index);
 
-        oscillator_value * lfo_value
+                // 2. LFO
+                let ms = get_now_millis() - t0_ms;
+                let lfo = LFO::new(17, 300, 0.3);
+                let lfo_value = lfo.get_value(ms);
+
+                oscillator_value * lfo_value
+            }
+            SoundSynthPatch::SAW => {
+                // 1. Oscillator
+                // let oscillator = WaveTableOscillator::new(create_wt_sine());
+                let oscillator = WaveTableOscillator::new(create_wt_saw());
+                let oscillator_value = oscillator.lerp(index);
+
+                // 2. LFO
+                let ms = get_now_millis() - t0_ms;
+                let lfo = LFO::new(30, 800, 0.7);
+                let lfo_value = lfo.get_value(ms);
+
+                oscillator_value * lfo_value
+            }
+        }
     }
 }
