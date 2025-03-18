@@ -1,7 +1,6 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
-use crate::instruments::lib::keys_with_queue::KeysWithQueue;
-use crate::instruments::lib::stop_notes_queue::StopQueueNotes;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentPoly;
+use crate::instruments::lib::instrument_with_queued_notes::InstrumentWithQueuedNotes;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 
@@ -14,23 +13,19 @@ pub struct Keyboardist {
     chord_index: usize,
 
     // Outputs
-    keys_with_queue: KeysWithQueue,
+    queued_instrument: InstrumentWithQueuedNotes,
 }
 impl Keyboardist {
     pub fn new(
         inner_instrument_name_16_chars: String,
-        keys_based_instrument: Box<dyn AbstractKeysBasedInstrument>,
+        keys_based_instrument: Box<dyn AbstractInstrumentPoly>,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            keys_with_queue: KeysWithQueue::new(
-                //
-                StopQueueNotes::new(),
-                keys_based_instrument,
-            ),
+            queued_instrument: InstrumentWithQueuedNotes::new(keys_based_instrument),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -53,7 +48,7 @@ impl Keyboardist {
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
-        self.keys_with_queue
+        self.queued_instrument
             .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
         if let Some(pattern) = &self.pattern {
@@ -91,14 +86,14 @@ impl Keyboardist {
                 */
 
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.keys_with_queue.attack_notes(chord_notes);
+                    self.queued_instrument.attack_notes(chord_notes);
                 }
                 if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
                     // (so after current 1/16th) using variable "index_1_16th_for_pattern".
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
-                    self.keys_with_queue
+                    self.queued_instrument
                         .notify_release_notes_at(chord_notes, index_1_16th_sec + 1);
                 }
             }

@@ -1,6 +1,6 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractBassBasedInstrument;
-use crate::instruments::lib::bass_with_queue::BassWithQueue;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentMono;
+use crate::instruments::lib::instrument_with_queued_note::InstrumentWithQueuedNote;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{Song, SongMetronomeDataClickOn};
 
@@ -8,21 +8,21 @@ pub struct Metronome {
     inner_instrument_name_16_chars: String,
 
     // Outputs
-    bass_with_queue: BassWithQueue,
+    queued_instrument: InstrumentWithQueuedNote,
 }
 impl Metronome {
     pub fn new(
         inner_instrument_name_16_chars: String,
-        bass_based_instrument: Box<dyn AbstractBassBasedInstrument>,
+        instrument_mono: Box<dyn AbstractInstrumentMono>,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
-            bass_with_queue: BassWithQueue::new(bass_based_instrument),
+            queued_instrument: InstrumentWithQueuedNote::new(instrument_mono),
         }
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
-        self.bass_with_queue
+        self.queued_instrument
             .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
         // Assuming every 1/4th has 4 1/16ths.
@@ -35,8 +35,8 @@ impl Metronome {
         if offset_1_16th == 0 {
             // Hit the metronome!
             let note = &song.metronome_data.note;
-            self.bass_with_queue.attack_note(note);
-            self.bass_with_queue
+            self.queued_instrument.attack_note(note);
+            self.queued_instrument
                 .notify_release_note_at(note, index_1_16th_sec + one_click_every_n_1_16ths);
         }
     }

@@ -1,5 +1,5 @@
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractBassBasedInstrument;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentMono;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentPoly;
 use crate::instruments::synth::synth_thread::{
     create_synth_thread_comm, synth_thread, SynthCommand, SynthThreadAudioChannel,
 };
@@ -33,7 +33,7 @@ impl ThreadForSynthInstrument {
         }
     }
 }
-impl AbstractKeysBasedInstrument for ThreadForSynthInstrument {
+impl AbstractInstrumentPoly for ThreadForSynthInstrument {
     fn play_notes_start(&mut self, notes: &Vec<Note>) {
         // println!("play_notes_start: {:?}", notes);
 
@@ -48,7 +48,7 @@ impl AbstractKeysBasedInstrument for ThreadForSynthInstrument {
         self.synth_command_sender.send(SynthCommand::StopNote);
     }
 }
-impl AbstractBassBasedInstrument for ThreadForSynthInstrument {
+impl AbstractInstrumentMono for ThreadForSynthInstrument {
     fn play_notes_start(&mut self, note: &Note) {
         // println!("play_notes_start: {:?}", note);
 

@@ -1,5 +1,5 @@
 use crate::devices::volca_keys::VolcaKeys;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentPoly;
 use crate::music::note::Note;
 
 pub struct KeysBasedInstrumentVolcaKeys {
@@ -10,7 +10,7 @@ impl KeysBasedInstrumentVolcaKeys {
         Self { volca_keys }
     }
 }
-impl AbstractKeysBasedInstrument for KeysBasedInstrumentVolcaKeys {
+impl AbstractInstrumentPoly for KeysBasedInstrumentVolcaKeys {
     fn play_notes_start(&mut self, notes: &Vec<Note>) {
         // println!("play_notes_start: {:?}", notes);
 

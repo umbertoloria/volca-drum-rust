@@ -1,11 +1,11 @@
 use crate::music::note::Note;
 
-pub trait AbstractKeysBasedInstrument {
+pub trait AbstractInstrumentPoly {
     fn play_notes_start(&mut self, notes: &Vec<Note>);
     fn play_notes_stop(&mut self, notes: &Vec<Note>);
 }
 
-pub trait AbstractBassBasedInstrument {
+pub trait AbstractInstrumentMono {
     fn play_notes_start(&mut self, note: &Note);
     fn play_notes_stop(&mut self, note: &Note);
 }

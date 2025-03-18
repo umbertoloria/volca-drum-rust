@@ -1,6 +1,6 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractBassBasedInstrument;
-use crate::instruments::lib::bass_with_queue::BassWithQueue;
+use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentMono;
+use crate::instruments::lib::instrument_with_queued_note::InstrumentWithQueuedNote;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
 
@@ -15,19 +15,19 @@ pub struct Bassist {
     chord_index: usize,
 
     // Outputs
-    bass_with_queue: BassWithQueue,
+    queued_instrument: InstrumentWithQueuedNote,
 }
 impl Bassist {
     pub fn new(
         inner_instrument_name_16_chars: String,
-        bass_based_instrument: Box<dyn AbstractBassBasedInstrument>,
+        instrument_mono: Box<dyn AbstractInstrumentMono>,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            bass_with_queue: BassWithQueue::new(bass_based_instrument),
+            queued_instrument: InstrumentWithQueuedNote::new(instrument_mono),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -50,7 +50,7 @@ impl Bassist {
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
-        self.bass_with_queue
+        self.queued_instrument
             .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
         if let Some(pattern) = &self.pattern {
@@ -88,14 +88,14 @@ impl Bassist {
                 */
 
                 if index_1_16th_for_pattern == chord.from_1_16th_incl {
-                    self.bass_with_queue.attack_note(bass_note);
+                    self.queued_instrument.attack_note(bass_note);
                 }
                 if index_1_16th_for_pattern == chord.to_1_16th_incl {
                     // Here we check if this Chord's Notes should end on the *next* of this 1/16th
                     // (so after current 1/16th) using variable "index_1_16th_for_pattern".
                     // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
                     // absolute 1/16ths Indexes.
-                    self.bass_with_queue
+                    self.queued_instrument
                         .notify_release_note_at(bass_note, index_1_16th_sec + 1);
                 }
             }
