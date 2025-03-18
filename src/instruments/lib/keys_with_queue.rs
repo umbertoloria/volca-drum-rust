@@ -1,15 +1,15 @@
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
-use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
+use crate::instruments::lib::stop_notes_queue::StopNoteQueueForKeys;
 use crate::music::note::Note;
 
 pub struct KeysWithQueue {
-    stop_notes_queue: StopNotesQueue,
+    stop_notes_queue: StopNoteQueueForKeys,
     instrument: Box<dyn AbstractKeysBasedInstrument>,
 }
 impl KeysWithQueue {
     pub fn new(
         //
-        stop_notes_queue: StopNotesQueue,
+        stop_notes_queue: StopNoteQueueForKeys,
         instrument: Box<dyn AbstractKeysBasedInstrument>,
     ) -> Self {
         Self {

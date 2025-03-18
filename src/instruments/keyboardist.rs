@@ -1,7 +1,7 @@
 use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_keys_based_instrument::AbstractKeysBasedInstrument;
 use crate::instruments::lib::keys_with_queue::KeysWithQueue;
-use crate::instruments::lib::stop_notes_queue::StopNotesQueue;
+use crate::instruments::lib::stop_notes_queue::StopNoteQueueForKeys;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
 
@@ -28,7 +28,7 @@ impl Keyboardist {
             chord_index: 0,
             keys_with_queue: KeysWithQueue::new(
                 //
-                StopNotesQueue::new(),
+                StopNoteQueueForKeys::new(),
                 keys_based_instrument,
             ),
         }
