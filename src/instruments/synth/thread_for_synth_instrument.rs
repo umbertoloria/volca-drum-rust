@@ -1,5 +1,5 @@
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentMono;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentPoly;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentMono;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentPoly;
 use crate::instruments::synth::synth_thread::{
     create_synth_thread_comm, synth_thread, SynthCommand, SynthThreadAudioChannel,
 };

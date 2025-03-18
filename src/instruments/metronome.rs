@@ -1,5 +1,5 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentMono;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentMono;
 use crate::instruments::lib::instrument_with_queued_note::InstrumentWithQueuedNote;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{Song, SongMetronomeDataClickOn};
@@ -13,11 +13,11 @@ pub struct Metronome {
 impl Metronome {
     pub fn new(
         inner_instrument_name_16_chars: String,
-        instrument_mono: Box<dyn AbstractInstrumentMono>,
+        instrument: Box<dyn AbstractInstrumentMono>,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
-            queued_instrument: InstrumentWithQueuedNote::new(instrument_mono),
+            queued_instrument: InstrumentWithQueuedNote::new(instrument),
         }
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
@@ -27,17 +27,19 @@ impl Metronome {
 
         // Assuming every 1/4th has 4 1/16ths.
 
-        let one_click_every_n_1_16ths = match &song.metronome_data.click_on {
-            SongMetronomeDataClickOn::OnEvery1_4ths => 4,
-            SongMetronomeDataClickOn::OnEvery1_8ths => 2,
-        };
-        let offset_1_16th = (index_1_16th_sec - 1) % one_click_every_n_1_16ths;
-        if offset_1_16th == 0 {
-            // Hit the metronome!
-            let note = &song.metronome_data.note;
-            self.queued_instrument.attack_note(note);
-            self.queued_instrument
-                .notify_release_note_at(note, index_1_16th_sec + one_click_every_n_1_16ths);
+        if let Some(metronome_data) = &song.metronome_data {
+            let one_click_every_n_1_16ths = match &metronome_data.click_on {
+                SongMetronomeDataClickOn::OnEvery1_4ths => 4,
+                SongMetronomeDataClickOn::OnEvery1_8ths => 2,
+            };
+            let offset_1_16th = (index_1_16th_sec - 1) % one_click_every_n_1_16ths;
+            if offset_1_16th == 0 {
+                // Hit the metronome!
+                let note = &metronome_data.note;
+                self.queued_instrument.attack_note(note);
+                self.queued_instrument
+                    .notify_release_note_at(note, index_1_16th_sec + one_click_every_n_1_16ths);
+            }
         }
     }
 }

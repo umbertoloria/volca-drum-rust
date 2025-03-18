@@ -12,7 +12,7 @@ pub struct Song {
     pub id: String,
     pub details: SongDetails,
     pub tempo: SongTempo,
-    pub metronome_data: SongMetronomeData,
+    pub metronome_data: Option<SongMetronomeData>,
     pub drum_patterns: HashMap<String, DrumPattern>,
     pub keyboard_patterns: HashMap<String, KeyboardPattern>,
     pub bass_patterns: HashMap<String, BassPattern>,
@@ -230,10 +230,10 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
             bpm: yaml_song.tempo_1_4,
             time_signature: (4, 4),
         },
-        metronome_data: SongMetronomeData {
+        metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
             note: get_standard_click_note(),
-        },
+        }),
         drum_patterns: HashMap::new(),
         keyboard_patterns: HashMap::new(),
         bass_patterns: HashMap::new(),
@@ -264,10 +264,10 @@ pub fn get_dummy_song() -> Song {
             bpm: 85,
             time_signature: (4, 4),
         },
-        metronome_data: SongMetronomeData {
+        metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
             note: get_standard_click_note(),
-        },
+        }),
         drum_patterns: HashMap::from([
             (
                 "A".into(),

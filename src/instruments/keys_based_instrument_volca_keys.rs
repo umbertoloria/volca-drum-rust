@@ -1,5 +1,5 @@
 use crate::devices::volca_keys::VolcaKeys;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentPoly;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentPoly;
 use crate::music::note::Note;
 
 pub struct KeysBasedInstrumentVolcaKeys {

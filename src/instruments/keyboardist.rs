@@ -1,5 +1,5 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentPoly;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentPoly;
 use crate::instruments::lib::instrument_with_queued_notes::InstrumentWithQueuedNotes;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song};
@@ -18,14 +18,14 @@ pub struct Keyboardist {
 impl Keyboardist {
     pub fn new(
         inner_instrument_name_16_chars: String,
-        keys_based_instrument: Box<dyn AbstractInstrumentPoly>,
+        instrument: Box<dyn AbstractInstrumentPoly>,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            queued_instrument: InstrumentWithQueuedNotes::new(keys_based_instrument),
+            queued_instrument: InstrumentWithQueuedNotes::new(instrument),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {

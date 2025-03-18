@@ -41,10 +41,10 @@ impl Composer {
                 bpm: self.bpm,
                 time_signature: (4, 4),
             },
-            metronome_data: SongMetronomeData {
+            metronome_data: Some(SongMetronomeData {
                 click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
                 note: get_standard_click_note(),
-            },
+            }),
             drum_patterns: HashMap::from([
                 //
                 /*(

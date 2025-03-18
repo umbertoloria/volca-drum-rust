@@ -1,4 +1,4 @@
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentMono;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentMono;
 use crate::instruments::lib::stop_notes_queue::StopQueueNote;
 use crate::music::note::Note;
 

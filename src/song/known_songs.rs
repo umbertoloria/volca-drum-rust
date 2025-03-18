@@ -16,10 +16,11 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             bpm: 68,
             time_signature: (4, 4),
         },
-        metronome_data: SongMetronomeData {
+        /*metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
             note: "C4".into(),
-        },
+        }),*/
+        metronome_data: None,
         drum_patterns: HashMap::from([
             (
                 "A".into(),
@@ -261,10 +262,10 @@ pub fn get_song_o1() -> Song {
             bpm: 68,
             time_signature: (4, 4),
         },
-        metronome_data: SongMetronomeData {
+        metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
             note: "B4".into(),
-        },
+        }),
         drum_patterns: HashMap::from([
             (
                 "A".into(),
@@ -506,10 +507,10 @@ pub fn get_song_o2() -> Song {
             bpm: 40,
             time_signature: (4, 4),
         },
-        metronome_data: SongMetronomeData {
+        metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_8ths,
             note: "A4".into(),
-        },
+        }),
         drum_patterns: HashMap::from([]),
         keyboard_patterns: HashMap::from([
             (

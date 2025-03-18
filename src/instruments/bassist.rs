@@ -1,5 +1,5 @@
 use crate::instruments::abs::instrument::Instrument;
-use crate::instruments::lib::abstract_keys_based_instrument::AbstractInstrumentMono;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentMono;
 use crate::instruments::lib::instrument_with_queued_note::InstrumentWithQueuedNote;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song};
@@ -20,14 +20,14 @@ pub struct Bassist {
 impl Bassist {
     pub fn new(
         inner_instrument_name_16_chars: String,
-        instrument_mono: Box<dyn AbstractInstrumentMono>,
+        instrument: Box<dyn AbstractInstrumentMono>,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            queued_instrument: InstrumentWithQueuedNote::new(instrument_mono),
+            queued_instrument: InstrumentWithQueuedNote::new(instrument),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
