@@ -16,7 +16,7 @@ use std::thread::JoinHandle;
 pub enum SynthCommand {
     StartNotes(Vec<Note>),
     StartSounds(Vec<DrumSound>),
-    StopNote,
+    Silence,
     CloseThread,
 }
 pub fn create_synth_thread_comm() -> (
@@ -101,7 +101,7 @@ pub fn synth_thread(
                         mono_synth_players.push(mono_synth_player);
                     }
                 }
-                SynthCommand::StopNote => {
+                SynthCommand::Silence => {
                     if enable_logging {
                         println!("{synth_thread_name} -> stop");
                     }

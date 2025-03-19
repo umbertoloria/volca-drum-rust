@@ -48,7 +48,7 @@ impl AbstractInstrumentPoly for ThreadForSynthInstrument {
         // println!("play_notes_stop: {:?}", notes_str_list);
 
         // TODO: Try to use "notes"
-        self.synth_command_sender.send(SynthCommand::StopNote);
+        self.synth_command_sender.send(SynthCommand::Silence);
     }
 }
 impl AbstractInstrumentMono for ThreadForSynthInstrument {
@@ -64,7 +64,7 @@ impl AbstractInstrumentMono for ThreadForSynthInstrument {
         // println!("play_notes_stop: {:?}", note);
 
         // TODO: Try to use "note"
-        self.synth_command_sender.send(SynthCommand::StopNote);
+        self.synth_command_sender.send(SynthCommand::Silence);
     }
 }
 impl AbstractInstrumentPolyDrumSounds for ThreadForSynthInstrument {
@@ -80,6 +80,6 @@ impl AbstractInstrumentPolyDrumSounds for ThreadForSynthInstrument {
         // println!("play_sounds_stop: {:?}", sounds);
 
         // TODO: Try to use "sounds"
-        self.synth_command_sender.send(SynthCommand::StopNote);
+        self.synth_command_sender.send(SynthCommand::Silence);
     }
 }
