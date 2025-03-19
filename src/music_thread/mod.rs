@@ -1,3 +1,4 @@
+pub mod music_library;
 pub mod music_thread;
 pub mod music_thread_comm;
 pub mod play_thread;

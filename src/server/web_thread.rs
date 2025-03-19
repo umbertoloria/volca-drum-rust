@@ -1,5 +1,7 @@
 use crate::music_thread::music_thread_comm::MusicThreadCommSender;
-use crate::server::server_request_manager::ServerRequestManager;
+use crate::server::server_request_manager::{
+    ServerRequestManager, WS_CLIENT_REQUEST_READ_MUSIC_LIBRARY,
+};
 use crate::server::web_thread_comm::{
     WSClientResponse, WSMusicThreadResponse, WSResponse, WebThreadCommReceiver, WebThreadCommSender,
 };
@@ -61,7 +63,14 @@ pub async fn main_server(
             // Split the WebSocket stream into a sender and receiver
             let (mut sender, mut receiver) = ws_stream.split();
             // Sending first message to client.
-            sender.send("Welcome!".into()).await.unwrap();
+            {
+                // First message: Welcome!
+                sender.send("Welcome!".into()).await.unwrap();
+                // Second message: Music Library Songs
+                let message =
+                    server_request_manager.manage(WS_CLIENT_REQUEST_READ_MUSIC_LIBRARY.into());
+                web_thread_comm_sender_for_him.notify_from_client_thread_a_response(message);
+            }
 
             // Update clients
             let thread_connection_recv_from_outside = tokio::spawn(async move {

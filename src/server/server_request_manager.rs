@@ -1,3 +1,4 @@
+use crate::music_thread::music_library::MusicLibrary;
 use crate::music_thread::music_thread_comm::{MusicThreadCommSender, MusicThreadCommand};
 use crate::song::yaml_patch_reader::{parse_patch_from_yaml, YamlPatchFile};
 
@@ -28,6 +29,15 @@ impl ServerRequestManager {
 
                 "PATCH APPLIED".into()
             }
+            Some(WSClientRequest::ReadMusicLibrary) => {
+                let songs = MusicLibrary::get_songs();
+
+                let mut result = String::new();
+                // TODO: Convert list in JSON
+                result.push_str("[]");
+
+                result.into()
+            }
             None => "KO".into(),
         }
     }
@@ -37,6 +47,7 @@ enum WSClientRequest {
     PlaySong,
     GetPlayQueueState,
     ApplyPatch(YamlPatchFile),
+    ReadMusicLibrary,
 }
 fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
     if request == "PLAY_SONG" {
@@ -44,6 +55,9 @@ fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
     }
     if request == "GET_PLAY_QUEUE_STATE" {
         return Some(WSClientRequest::GetPlayQueueState);
+    }
+    if request == WS_CLIENT_REQUEST_READ_MUSIC_LIBRARY {
+        return Some(WSClientRequest::ReadMusicLibrary);
     }
     if request.len() > 12 {
         let initial_request = &request[..12];
@@ -134,3 +148,5 @@ fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
     println!("Unknown request: {:?}", request);
     None
 }
+
+pub const WS_CLIENT_REQUEST_READ_MUSIC_LIBRARY: &'static str = "READ_MUSIC_LIBRARY";
