@@ -133,7 +133,9 @@ fn play_song_example_with_updates(
     if !enable_interactive_cli {
         println!("Playing song now...");
     }
-    conductor.play_song(song, enable_interactive_cli).unwrap();
+    conductor
+        .play_song(song, &web_thread_comm_sender, enable_interactive_cli)
+        .unwrap();
 
     web_thread_comm_sender.notify_from_music_thread_song_ended();
 }

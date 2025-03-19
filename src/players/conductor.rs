@@ -1,5 +1,6 @@
 use crate::instruments::abs::instr_comm::InstrumentBroadcastComm;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
+use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::song::Song;
 use crate::utils::timing::get_now_millis;
 use std::time::Duration;
@@ -21,7 +22,12 @@ impl Conductor {
         }
     }
 
-    pub fn play_song(&mut self, song: Song, enable_interactive_cli: bool) -> Result<(), String> {
+    pub fn play_song(
+        &mut self,
+        song: Song,
+        web_thread_comm_sender: &WebThreadCommSender,
+        enable_interactive_cli: bool,
+    ) -> Result<(), String> {
         if song.sections.len() == 0 {
             return Err("Song has no sections".into());
         }
@@ -37,7 +43,11 @@ impl Conductor {
         while realtime_player.has_next_song_instant() {
             let tempo_snapshot = realtime_player.want_and_get_next_tempo_snapshot();
 
-            self.play_1_16th_now(tempo_snapshot, enable_interactive_cli);
+            self.play_1_16th_now(
+                tempo_snapshot,
+                &web_thread_comm_sender,
+                enable_interactive_cli,
+            );
 
             realtime_player.prepare_next_1_16th();
         }
@@ -50,8 +60,15 @@ impl Conductor {
     pub fn play_1_16th_now(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
+        web_thread_comm_sender: &WebThreadCommSender,
         enable_interactive_cli: bool,
     ) {
+        // Web Server updates
+        if tempo_snapshot.cur_1_16 == 1 {
+            // Notify only every new Quarter.
+            web_thread_comm_sender.notify_from_music_thread_song_update(&tempo_snapshot);
+        }
+
         // Interactive CLI
         if enable_interactive_cli {
             clear_terminal_screen();

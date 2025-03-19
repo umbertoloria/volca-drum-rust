@@ -1,3 +1,4 @@
+use crate::players::realtime_player::TempoSnapshot;
 use tokio::sync::broadcast;
 use tokio::sync::broadcast::error::RecvError;
 use tokio::sync::broadcast::{Receiver, Sender};
@@ -10,7 +11,7 @@ pub enum WSResponse {
 #[derive(Clone, Debug)]
 pub enum WSMusicThreadResponse {
     SongStarted,
-    SongPlayingUpdate,
+    SongPlayingUpdate(TempoSnapshot),
     SongEnded,
 }
 #[derive(Clone, Debug)]
@@ -42,6 +43,13 @@ impl WebThreadCommSender {
     }
     pub fn notify_from_music_thread_song_started(&self) {
         let ws_response = WSResponse::FromMusicThread(WSMusicThreadResponse::SongStarted);
+        self.tx.send(ws_response).unwrap();
+    }
+    pub fn notify_from_music_thread_song_update(&self, tempo_snapshot: &TempoSnapshot) {
+        // TODO: Avoid cloning Tempo Snapshot
+        let ws_response = WSResponse::FromMusicThread(WSMusicThreadResponse::SongPlayingUpdate(
+            tempo_snapshot.clone(),
+        ));
         self.tx.send(ws_response).unwrap();
     }
     pub fn notify_from_music_thread_song_ended(&self) {

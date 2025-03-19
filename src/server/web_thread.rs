@@ -82,8 +82,21 @@ pub async fn main_server(
                                 WSResponse::FromMusicThread(music_thread_response) => {
                                     match music_thread_response {
                                         WSMusicThreadResponse::SongStarted => "Song started".into(),
-                                        WSMusicThreadResponse::SongPlayingUpdate => {
-                                            "Song playing update".into()
+                                        WSMusicThreadResponse::SongPlayingUpdate(
+                                            tempo_snapshot,
+                                        ) => {
+                                            // println!("{:?}", tempo_snapshot);
+                                            // TODO: Use JSON parser
+                                            format!(
+                                                "{{\"cur_bar\":{},\"cur_quarter\":\"{}\",\"cur_1_8\":\"{}\",\"cur_1_16\":\"{}\",\"section_bar_first\":\"{}\",\"section_bar_last\":\"{}\"}}",
+                                                tempo_snapshot.cur_bar,
+                                                tempo_snapshot.cur_quarter,
+                                                tempo_snapshot.cur_1_8,
+                                                tempo_snapshot.cur_1_16,
+                                                tempo_snapshot.section_bar_first,
+                                                tempo_snapshot.section_bar_last,
+                                            )
+                                            .into()
                                         }
                                         WSMusicThreadResponse::SongEnded => "Song ended".into(),
                                     }
