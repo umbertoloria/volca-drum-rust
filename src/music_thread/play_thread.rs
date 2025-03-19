@@ -169,6 +169,7 @@ fn create_instrument_threads(
                 make_patch_metronome_click(),
                 METRONOME_SYNTH_ENABLE_LOGGING,
             )),
+            METRONOME_SYNTH_ENABLE_LOGGING,
         );
         start_listening_to_instrument_comm_commands(instr_comm_receiver_metronome, &mut metronome);
     });
@@ -198,6 +199,7 @@ fn create_instrument_threads(
                 make_patch_drums_1(),
                 DRUMS_SYNTH_ENABLE_LOGGING,
             )),
+            DRUMS_SYNTH_ENABLE_LOGGING,
         );
         start_listening_to_instrument_comm_commands(instr_comm_receiver_drummer, &mut drummer);
     });
@@ -231,6 +233,7 @@ fn create_instrument_threads(
                 make_patch_keys_1(),
                 KEYS_SYNTH_ENABLE_LOGGING,
             )),
+            KEYS_SYNTH_ENABLE_LOGGING,
         );
         start_listening_to_instrument_comm_commands(instr_comm_receiver_synth, &mut synth);
     });
@@ -246,6 +249,7 @@ fn create_instrument_threads(
                 make_patch_bass_1(),
                 BASS_SYNTH_ENABLE_LOGGING,
             )),
+            BASS_SYNTH_ENABLE_LOGGING,
         );
         start_listening_to_instrument_comm_commands(
             instr_comm_receiver_bass_synth,

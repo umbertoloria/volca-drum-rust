@@ -47,15 +47,19 @@ impl StopI2SetQueue {
 // For multiple Notes.
 pub struct StopQueueNotes {
     inner: StopI2SetQueue,
+    log: bool,
 }
 impl StopQueueNotes {
-    pub fn new() -> Self {
+    pub fn new(log: bool) -> Self {
         Self {
             inner: StopI2SetQueue::new(),
+            log,
         }
     }
     pub fn enqueue(&mut self, notes: &Vec<Note>, index_1_16th: usize) {
-        // println!("StopQueueNotes.enq {}: {:?}", index_1_16th, notes);
+        if self.log {
+            println!("StopQueueNotes.enq {}: {:?}", index_1_16th, notes);
+        }
         let mut list = Vec::new();
         for note in notes {
             let item = note.to_hash();
@@ -70,7 +74,9 @@ impl StopQueueNotes {
                 let result_item = Note::from_hash(item);
                 result.push(result_item);
             }
-            // println!("StopQueueNotes.deq {}: {:?}", index_1_16th, result);
+            if self.log {
+                println!("StopQueueNotes.deq {}: {:?}", index_1_16th, result);
+            }
             Some(result)
         } else {
             None
@@ -81,22 +87,28 @@ impl StopQueueNotes {
 // For single Note.
 pub struct StopQueueNote {
     inner: StopQueueNotes,
+    log: bool,
 }
 impl StopQueueNote {
-    pub fn new() -> Self {
+    pub fn new(log: bool) -> Self {
         Self {
-            inner: StopQueueNotes::new(),
+            inner: StopQueueNotes::new(false),
+            log,
         }
     }
     pub fn enqueue(&mut self, note: &Note, index_1_16th: usize) {
-        // println!("StopQueueNote.enq {}:       {:?}", index_1_16th, note);
+        if self.log {
+            println!("StopQueueNote.enq {}:       {:?}", index_1_16th, note);
+        }
         // TODO: Avoid cloning Note
         let list = vec![note.clone()];
         self.inner.enqueue(&list, index_1_16th);
     }
     pub fn dequeue_at(&mut self, index_1_16th: usize) -> Option<Vec<Note>> {
         let result = self.inner.dequeue_at(index_1_16th);
-        // println!("StopQueueNote.deq {}: {:?}", index_1_16th, result);
+        if self.log {
+            println!("StopQueueNote.deq {}: {:?}", index_1_16th, result);
+        }
         result
     }
 }
@@ -104,15 +116,19 @@ impl StopQueueNote {
 // For multiple Drum Sounds.
 pub struct StopQueueDrumSounds {
     inner: StopI2SetQueue,
+    log: bool,
 }
 impl StopQueueDrumSounds {
-    pub fn new() -> Self {
+    pub fn new(log: bool) -> Self {
         Self {
             inner: StopI2SetQueue::new(),
+            log,
         }
     }
     pub fn enqueue(&mut self, sounds: &Vec<DrumSound>, index_1_16th: usize) {
-        // println!("StopQueueDrumSounds.enq {}: {:?}", index_1_16th, sounds);
+        if self.log {
+            println!("StopQueueDrumSounds.enq {}: {:?}", index_1_16th, sounds);
+        }
         let mut list = Vec::new();
         for sound in sounds {
             let item = sound.to_string();
@@ -132,7 +148,9 @@ impl StopQueueDrumSounds {
                     println!("StopQueueDrumSounds: found unknown DrumSound in queue");
                 }
             }
-            // println!("StopQueueDrumSounds.deq {}: {:?}", index_1_16th, result);
+            if self.log {
+                println!("StopQueueDrumSounds.deq {}: {:?}", index_1_16th, result);
+            }
             Some(result)
         } else {
             None

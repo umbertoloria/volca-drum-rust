@@ -67,7 +67,7 @@ fn patch_bass_1(t0_ms: u128, index: f32) -> f32 {
 
 // PATCH METRONOME CLICK
 pub fn make_patch_metronome_click() -> SynthPatchInjector {
-    SynthPatchInjector::new(SynthPatch::MetronomeClick, 0.0)
+    SynthPatchInjector::new(SynthPatch::MetronomeClick, 0.5)
 }
 fn patch_metronome_click(t0_ms: u128, index: f32) -> f32 {
     // 1. Oscillator

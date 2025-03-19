@@ -504,11 +504,11 @@ pub fn get_song_o2() -> Song {
             title: "O2".into(),
         },
         tempo: SongTempo {
-            bpm: 40,
+            bpm: 80,
             time_signature: (4, 4),
         },
         metronome_data: Some(SongMetronomeData {
-            click_on: SongMetronomeDataClickOn::OnEvery1_8ths,
+            click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
             note: "A4".into(),
         }),
         drum_patterns: HashMap::from([]),
@@ -522,25 +522,25 @@ pub fn get_song_o2() -> Song {
                             chord_name: "Am".into(),
                             notes: vec!["A3".into(), "C4".into(), "E4".into()],
                             from_1_16th_incl: 1,
-                            to_1_16th_incl: 8,
+                            to_1_16th_incl: 16,
                         },
                         KeyboardPatternChord {
                             chord_name: "Em".into(),
                             notes: vec!["B3".into(), "E4".into(), "G4".into()],
-                            from_1_16th_incl: 8 + 1,
-                            to_1_16th_incl: 8 + 8,
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 16,
                         },
                         KeyboardPatternChord {
                             chord_name: "Dm".into(),
                             notes: vec!["A3".into(), "D4".into(), "F4".into()],
-                            from_1_16th_incl: 8 + 8 + 1,
-                            to_1_16th_incl: 8 + 8 + 8,
+                            from_1_16th_incl: 16 + 16 + 1,
+                            to_1_16th_incl: 16 + 16 + 16,
                         },
                         KeyboardPatternChord {
                             chord_name: "F".into(),
                             notes: vec!["C4".into(), "E4".into(), "F4".into(), "A4".into()],
-                            from_1_16th_incl: 8 + 8 + 8 + 1,
-                            to_1_16th_incl: 8 + 8 + 8 + 8,
+                            from_1_16th_incl: 16 + 16 + 16 + 1,
+                            to_1_16th_incl: 16 + 16 + 16 + 16,
                         },
                     ]
                     .into(),
@@ -555,13 +555,13 @@ pub fn get_song_o2() -> Song {
                             chord_name: "C".into(),
                             notes: vec!["C4".into(), "E4".into(), "G4".into()],
                             from_1_16th_incl: 1,
-                            to_1_16th_incl: 8,
+                            to_1_16th_incl: 16,
                         },
                         KeyboardPatternChord {
                             chord_name: "F".into(),
                             notes: vec!["C4".into(), "F4".into(), "A4".into()],
-                            from_1_16th_incl: 8 + 1,
-                            to_1_16th_incl: 8 + 8,
+                            from_1_16th_incl: 16 + 1,
+                            to_1_16th_incl: 16 + 16,
                         },
                     ]
                     .into(),
@@ -577,19 +577,19 @@ pub fn get_song_o2() -> Song {
                         parts: vec![
                             BassLinePart {
                                 tonic: "A2".into(),
-                                line: "1_1_1_11".into(),
+                                line: "1___1___1___1_1_".into(),
                             },
                             BassLinePart {
                                 tonic: "E2".into(),
-                                line: "1_1_11_1".into(),
+                                line: "1___1___1_1___1_".into(),
                             },
                             BassLinePart {
                                 tonic: "D2".into(),
-                                line: "1_11_1_1".into(),
+                                line: "1___1_1___1___1_".into(),
                             },
                             BassLinePart {
                                 tonic: "F2".into(),
-                                line: "11_1_11_".into(),
+                                line: "1_1___1___1_1___".into(),
                             },
                         ],
                     },
@@ -603,11 +603,11 @@ pub fn get_song_o2() -> Song {
                         parts: vec![
                             BassLinePart {
                                 tonic: "C2".into(),
-                                line: "1_1_11_1".into(),
+                                line: "1___1___1_1___1_".into(),
                             },
                             BassLinePart {
                                 tonic: "F2".into(),
-                                line: "1_1_11_1".into(),
+                                line: "1___1___1_1___1_".into(),
                             },
                         ],
                     },

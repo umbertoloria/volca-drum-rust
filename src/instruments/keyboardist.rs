@@ -19,13 +19,14 @@ impl Keyboardist {
     pub fn new(
         inner_instrument_name_16_chars: String,
         instrument: Box<dyn AbstractInstrumentPoly>,
+        log: bool,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             chord_index: 0,
-            queued_instrument: InstrumentWithQueuedNotes::new(instrument),
+            queued_instrument: InstrumentWithQueuedNotes::new(instrument, log),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -89,12 +90,12 @@ impl Keyboardist {
                     self.queued_instrument.attack_notes(chord_notes);
                 }
                 if index_1_16th_for_pattern == chord.to_1_16th_incl {
-                    // Here we check if this Chord's Notes should end on the *next* of this 1/16th
-                    // (so after current 1/16th) using variable "index_1_16th_for_pattern".
-                    // Queueing Notes to be stopped using "index_1_16th" since Stop Notes Queue uses
-                    // absolute 1/16ths Indexes.
+                    // Telling the Queued Instrument to stop playing this Chord at the very start of
+                    // the *next* 1/16th.
+                    let stop_on_start_of_index_1_16th_sec =
+                        (index_1_16th_sec + 1) % tempo_snapshot.get_tot_1_16ths_in_section();
                     self.queued_instrument
-                        .notify_release_notes_at(chord_notes, index_1_16th_sec + 1);
+                        .notify_release_notes_at(chord_notes, stop_on_start_of_index_1_16th_sec);
                 }
             }
         }
@@ -135,5 +136,9 @@ impl Instrument for Keyboardist {
 
             realtime_player.prepare_next_1_16th();
         }
+
+        // Stopping the Queued Instrument.
+        // TODO: Empty the Queue instead of "guessing" on the "1"...
+        self.queued_instrument.stop_notes_queued_on_this_1_16th(1);
     }
 }

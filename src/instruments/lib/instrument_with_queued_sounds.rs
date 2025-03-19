@@ -10,9 +10,10 @@ impl InstrumentWithQueuedDrumSounds {
     pub fn new(
         //
         instrument: Box<dyn AbstractInstrumentPolyDrumSounds>,
+        log: bool,
     ) -> Self {
         Self {
-            queue: StopQueueDrumSounds::new(),
+            queue: StopQueueDrumSounds::new(log),
             instrument,
         }
     }

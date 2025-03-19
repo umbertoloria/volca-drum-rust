@@ -10,9 +10,10 @@ impl InstrumentWithQueuedNotes {
     pub fn new(
         //
         instrument: Box<dyn AbstractInstrumentPoly>,
+        log: bool,
     ) -> Self {
         Self {
-            queue: StopQueueNotes::new(),
+            queue: StopQueueNotes::new(log),
             instrument,
         }
     }

@@ -14,10 +14,11 @@ impl Metronome {
     pub fn new(
         inner_instrument_name_16_chars: String,
         instrument: Box<dyn AbstractInstrumentMono>,
+        log: bool,
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
-            queued_instrument: InstrumentWithQueuedNote::new(instrument),
+            queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
         }
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
@@ -37,8 +38,12 @@ impl Metronome {
                 // Hit the metronome!
                 let note = &metronome_data.note;
                 self.queued_instrument.attack_note(note);
+                // Telling the Queued Instrument to stop playing this Chord at the very start of
+                // the *next* 1/16th.
+                let stop_on_start_of_index_1_16th_sec =
+                    index_1_16th_sec + one_click_every_n_1_16ths;
                 self.queued_instrument
-                    .notify_release_note_at(note, index_1_16th_sec + one_click_every_n_1_16ths);
+                    .notify_release_note_at(note, stop_on_start_of_index_1_16th_sec);
             }
         }
     }
@@ -62,5 +67,9 @@ impl Instrument for Metronome {
 
             realtime_player.prepare_next_1_16th();
         }
+
+        // Stopping the Queued Instrument.
+        // TODO: Empty the Queue instead of "guessing" on the "1"...
+        self.queued_instrument.stop_notes_queued_on_this_1_16th(1);
     }
 }
