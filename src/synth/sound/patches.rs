@@ -1,5 +1,6 @@
 use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::synth::lfo::lfo::LFO;
+use crate::synth::mono_synth::SynthSoundType;
 use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
 use crate::synth::oscillator::wave_tables::{create_wt_noise, create_wt_saw, create_wt_square};
 use crate::synth::sound::synth_patch_injector::SynthPatchInjector;
@@ -13,12 +14,23 @@ pub enum SynthPatch {
     Drums1,
 }
 impl SynthPatch {
-    pub fn get_sample(&self, t0_ms: u128, index: f32, drum_sound: Option<DrumSound>) -> f32 {
+    pub fn get_frequency(&self, synth_sound_type: &SynthSoundType) -> f32 {
+        match synth_sound_type {
+            SynthSoundType::Note(note) => note.get_frequency(),
+            SynthSoundType::DrumSound(drum_sound) => match drum_sound {
+                // TODO: Put this code elsewhere
+                DrumSound::KICK => 110.0,
+                DrumSound::HH => 5500.0,
+                DrumSound::SNARE => 1510.0,
+            },
+        }
+    }
+    pub fn get_sample(&self, t0_ms: u128, index: f32, synth_sound_type: SynthSoundType) -> f32 {
         match self {
             SynthPatch::Bass1 => patch_keys_1(t0_ms, index),
             SynthPatch::Keys1 => patch_bass_1(t0_ms, index),
             SynthPatch::MetronomeClick => patch_metronome_click(t0_ms, index),
-            SynthPatch::Drums1 => patch_drums_1(t0_ms, index, drum_sound),
+            SynthPatch::Drums1 => patch_drums_1(t0_ms, index, synth_sound_type),
         }
     }
 }
@@ -79,18 +91,18 @@ pub fn patch_metronome_click(t0_ms: u128, index: f32) -> f32 {
 pub fn make_patch_drums_1() -> SynthPatchInjector {
     SynthPatchInjector::new(SynthPatch::Drums1, 1.0)
 }
-pub fn patch_drums_1(t0_ms: u128, index: f32, drum_sound: Option<DrumSound>) -> f32 {
-    match drum_sound {
-        Some(drum_sound) => {
-            return match drum_sound {
-                DrumSound::KICK => patch_drums_1_kick(t0_ms, index),
-                DrumSound::HH => patch_drums_1_hh(t0_ms, index),
-                DrumSound::SNARE => patch_drums_1_snare(t0_ms, index),
-            }
+pub fn patch_drums_1(t0_ms: u128, index: f32, synth_sound_type: SynthSoundType) -> f32 {
+    match synth_sound_type {
+        SynthSoundType::DrumSound(drum_sound) => match drum_sound {
+            DrumSound::KICK => patch_drums_1_kick(t0_ms, index),
+            DrumSound::HH => patch_drums_1_hh(t0_ms, index),
+            DrumSound::SNARE => patch_drums_1_snare(t0_ms, index),
+        },
+        _ => {
+            // Silence.
+            0.0
         }
-        None => {}
     }
-    0.0
 }
 pub fn patch_drums_1_kick(t0_ms: u128, index: f32) -> f32 {
     // 1. Oscillator

@@ -2,7 +2,7 @@ use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::music::note::Note;
 use crate::synth::audio_channel::AudioChannel;
 use crate::synth::digital_mono_synth_sample_source::DigitalMonoSynthSampleSource;
-use crate::synth::mono_synth::MonoSynth;
+use crate::synth::mono_synth::{MonoSynth, SynthSoundType};
 use crate::synth::mono_synth_player::MonoSynthPlayer;
 use crate::synth::sound::synth_patch_injector::SynthPatchInjector;
 use crate::thread_comm::thread_comm::{
@@ -54,10 +54,9 @@ pub fn synth_thread(
 
                     for note in notes {
                         let synth_patch = synth_patch_injector.get_synth_patch().clone();
+                        let synth_sound_type = SynthSoundType::Note(note);
 
-                        let frequency = note.get_frequency();
-                        let mut mono_synth = MonoSynth::new(synth_patch, t0_ms, None);
-                        mono_synth.set_frequency(frequency);
+                        let mono_synth = MonoSynth::new(synth_patch, synth_sound_type, t0_ms);
 
                         let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
                         let samples_converter = sample_source.convert_samples();
@@ -78,18 +77,9 @@ pub fn synth_thread(
 
                     for drum_sound in drum_sounds {
                         let synth_patch = synth_patch_injector.get_synth_patch().clone();
+                        let synth_sound_type = SynthSoundType::DrumSound(drum_sound);
 
-                        // FIXME: Avoid cloning Drum Sound
-                        let mut mono_synth =
-                            MonoSynth::new(synth_patch, t0_ms, Some(drum_sound.clone()));
-                        mono_synth.set_frequency(
-                            // TODO: Decide frequencies elsewhere
-                            match &drum_sound {
-                                DrumSound::KICK => 110.0,
-                                DrumSound::HH => 5500.0,
-                                DrumSound::SNARE => 1510.0,
-                            },
-                        );
+                        let mono_synth = MonoSynth::new(synth_patch, synth_sound_type, t0_ms);
 
                         let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
                         let samples_converter = sample_source.convert_samples();
