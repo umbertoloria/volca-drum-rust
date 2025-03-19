@@ -1,3 +1,4 @@
+use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::music::note::Note;
 
 pub trait AbstractInstrumentPoly {
@@ -8,4 +9,9 @@ pub trait AbstractInstrumentPoly {
 pub trait AbstractInstrumentMono {
     fn play_notes_start(&mut self, note: &Note);
     fn play_notes_stop(&mut self, note: &Note);
+}
+
+pub trait AbstractInstrumentPolyDrumSounds {
+    fn play_sounds_start(&mut self, sounds: &Vec<DrumSound>);
+    fn play_sounds_stop(&mut self, sounds: &Vec<DrumSound>);
 }

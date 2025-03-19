@@ -1,5 +1,8 @@
-use crate::instruments::lib::abstract_instruments::AbstractInstrumentMono;
 use crate::instruments::lib::abstract_instruments::AbstractInstrumentPoly;
+use crate::instruments::lib::abstract_instruments::{
+    AbstractInstrumentMono, AbstractInstrumentPolyDrumSounds,
+};
+use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::instruments::synth::synth_thread::{
     create_synth_thread_comm, synth_thread, SynthCommand, SynthThreadAudioChannel,
 };
@@ -61,6 +64,22 @@ impl AbstractInstrumentMono for ThreadForSynthInstrument {
         // println!("play_notes_stop: {:?}", note);
 
         // TODO: Try to use "note"
+        self.synth_command_sender.send(SynthCommand::StopNote);
+    }
+}
+impl AbstractInstrumentPolyDrumSounds for ThreadForSynthInstrument {
+    fn play_sounds_start(&mut self, sounds: &Vec<DrumSound>) {
+        // println!("play_sounds_start: {:?}", sounds);
+
+        // TODO: Avoid cloning Sounds
+        self.synth_command_sender
+            .send(SynthCommand::StartSounds(sounds.clone()));
+    }
+
+    fn play_sounds_stop(&mut self, sounds: &Vec<DrumSound>) {
+        // println!("play_sounds_stop: {:?}", sounds);
+
+        // TODO: Try to use "sounds"
         self.synth_command_sender.send(SynthCommand::StopNote);
     }
 }

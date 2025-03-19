@@ -1,3 +1,4 @@
+use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::music::note::Note;
 use std::collections::{BTreeSet, HashMap};
 
@@ -97,5 +98,44 @@ impl StopQueueNote {
         let result = self.inner.dequeue_at(index_1_16th);
         // println!("StopQueueNote.deq {}: {:?}", index_1_16th, result);
         result
+    }
+}
+
+// For multiple Drum Sounds.
+pub struct StopQueueDrumSounds {
+    inner: StopI2SetQueue,
+}
+impl StopQueueDrumSounds {
+    pub fn new() -> Self {
+        Self {
+            inner: StopI2SetQueue::new(),
+        }
+    }
+    pub fn enqueue(&mut self, sounds: &Vec<DrumSound>, index_1_16th: usize) {
+        // println!("StopQueueDrumSounds.enq {}: {:?}", index_1_16th, sounds);
+        let mut list = Vec::new();
+        for sound in sounds {
+            let item = sound.to_string();
+            list.push(item);
+        }
+        self.inner.add_notes_to_stop(&list, index_1_16th);
+    }
+    pub fn dequeue_at(&mut self, index_1_16th: usize) -> Option<Vec<DrumSound>> {
+        if let Some(list) = self.inner.dequeue_notes_at_this_1_16th(index_1_16th) {
+            let mut result = Vec::new();
+            for item in list {
+                let result_item = DrumSound::from_string(&item);
+                if let Some(result_item) = result_item {
+                    result.push(result_item);
+                } else {
+                    // Should never happen.
+                    println!("StopQueueDrumSounds: found unknown DrumSound in queue");
+                }
+            }
+            // println!("StopQueueDrumSounds.deq {}: {:?}", index_1_16th, result);
+            Some(result)
+        } else {
+            None
+        }
     }
 }

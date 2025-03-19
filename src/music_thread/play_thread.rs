@@ -17,7 +17,7 @@ use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::song::Song;
 use crate::song::yaml_patch_reader::read_patch_from_yaml;
 use crate::synth::sound::patches::{
-    make_patch_bass_1, make_patch_keys_1, make_patch_metronome_click,
+    make_patch_bass_1, make_patch_drums_1, make_patch_keys_1, make_patch_metronome_click,
 };
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
@@ -141,6 +141,7 @@ fn play_song_example_with_updates(
 // INSTRUMENTS THREADS
 type InstrumentThreadType = JoinHandle<()>;
 const METRONOME_SYNTH_ENABLE_LOGGING: bool = false;
+const DRUMS_SYNTH_ENABLE_LOGGING: bool = false;
 const KEYS_SYNTH_ENABLE_LOGGING: bool = false;
 const BASS_SYNTH_ENABLE_LOGGING: bool = false;
 fn create_instrument_threads(
@@ -191,6 +192,12 @@ fn create_instrument_threads(
             //
             "Drummer         ".into(),
             volca_drum,
+            Box::new(ThreadForSynthInstrument::new(
+                "ThreadDrumsSynth".into(),
+                SynthThreadAudioChannel::Main,
+                make_patch_drums_1(),
+                DRUMS_SYNTH_ENABLE_LOGGING,
+            )),
         );
         start_listening_to_instrument_comm_commands(instr_comm_receiver_drummer, &mut drummer);
     });

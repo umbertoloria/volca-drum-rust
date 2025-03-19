@@ -1,6 +1,7 @@
+use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::synth::lfo::lfo::LFO;
 use crate::synth::oscillator::wave_table_oscillator::WaveTableOscillator;
-use crate::synth::oscillator::wave_tables::{create_wt_saw, create_wt_square};
+use crate::synth::oscillator::wave_tables::{create_wt_noise, create_wt_saw, create_wt_square};
 use crate::synth::sound::synth_patch_injector::SynthPatchInjector;
 use crate::utils::timing::get_now_millis;
 
@@ -9,13 +10,15 @@ pub enum SynthPatch {
     Bass1,
     Keys1,
     MetronomeClick,
+    Drums1,
 }
 impl SynthPatch {
-    pub fn get_sample(&self, t0_ms: u128, index: f32) -> f32 {
+    pub fn get_sample(&self, t0_ms: u128, index: f32, drum_sound: Option<DrumSound>) -> f32 {
         match self {
             SynthPatch::Bass1 => patch_keys_1(t0_ms, index),
             SynthPatch::Keys1 => patch_bass_1(t0_ms, index),
             SynthPatch::MetronomeClick => patch_metronome_click(t0_ms, index),
+            SynthPatch::Drums1 => patch_drums_1(t0_ms, index, drum_sound),
         }
     }
 }
@@ -67,6 +70,61 @@ pub fn patch_metronome_click(t0_ms: u128, index: f32) -> f32 {
     // 2. LFO
     let ms = get_now_millis() - t0_ms;
     let lfo = LFO::new(10, 300, 0.0);
+    let lfo_value = lfo.get_value(ms);
+
+    oscillator_value * lfo_value
+}
+
+// PATCH DRUMS 1
+pub fn make_patch_drums_1() -> SynthPatchInjector {
+    SynthPatchInjector::new(SynthPatch::Drums1, 1.0)
+}
+pub fn patch_drums_1(t0_ms: u128, index: f32, drum_sound: Option<DrumSound>) -> f32 {
+    match drum_sound {
+        Some(drum_sound) => {
+            return match drum_sound {
+                DrumSound::KICK => patch_drums_1_kick(t0_ms, index),
+                DrumSound::HH => patch_drums_1_hh(t0_ms, index),
+                DrumSound::SNARE => patch_drums_1_snare(t0_ms, index),
+            }
+        }
+        None => {}
+    }
+    0.0
+}
+pub fn patch_drums_1_kick(t0_ms: u128, index: f32) -> f32 {
+    // 1. Oscillator
+    let oscillator = WaveTableOscillator::new(create_wt_saw());
+    let oscillator_value = oscillator.lerp(index);
+
+    // 2. LFO
+    let ms = get_now_millis() - t0_ms;
+    let lfo = LFO::new(30, 300, 0.0);
+    let lfo_value = lfo.get_value(ms);
+
+    oscillator_value * lfo_value
+}
+pub fn patch_drums_1_hh(t0_ms: u128, index: f32) -> f32 {
+    // 1. Oscillator
+    // let oscillator = WaveTableOscillator::new(create_wt_square());
+    let oscillator = WaveTableOscillator::new(create_wt_noise());
+    let oscillator_value = oscillator.lerp(index);
+
+    // 2. LFO
+    let ms = get_now_millis() - t0_ms;
+    let lfo = LFO::new(10, 80, 0.0);
+    let lfo_value = lfo.get_value(ms);
+
+    oscillator_value * lfo_value
+}
+pub fn patch_drums_1_snare(t0_ms: u128, index: f32) -> f32 {
+    // 1. Oscillator
+    let oscillator = WaveTableOscillator::new(create_wt_noise());
+    let oscillator_value = oscillator.lerp(index);
+
+    // 2. LFO
+    let ms = get_now_millis() - t0_ms;
+    let lfo = LFO::new(10, 250, 0.0);
     let lfo_value = lfo.get_value(ms);
 
     oscillator_value * lfo_value

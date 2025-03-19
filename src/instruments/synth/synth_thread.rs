@@ -1,3 +1,4 @@
+use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::music::note::Note;
 use crate::synth::audio_channel::AudioChannel;
 use crate::synth::digital_mono_synth_sample_source::DigitalMonoSynthSampleSource;
@@ -14,6 +15,7 @@ use std::thread::JoinHandle;
 
 pub enum SynthCommand {
     StartNotes(Vec<Note>),
+    StartSounds(Vec<DrumSound>),
     StopNote,
     CloseThread,
 }
@@ -54,8 +56,40 @@ pub fn synth_thread(
                         let synth_patch = synth_patch_injector.get_synth_patch().clone();
 
                         let frequency = note.get_frequency();
-                        let mut mono_synth = MonoSynth::new(synth_patch, t0_ms);
+                        let mut mono_synth = MonoSynth::new(synth_patch, t0_ms, None);
                         mono_synth.set_frequency(frequency);
+
+                        let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
+                        let samples_converter = sample_source.convert_samples();
+
+                        let mut mono_synth_player =
+                            MonoSynthPlayer::new(&audio_channel, synth_patch_injector.get_volume());
+                        mono_synth_player.play(samples_converter);
+
+                        mono_synth_players.push(mono_synth_player);
+                    }
+                }
+                SynthCommand::StartSounds(drum_sounds) => {
+                    if enable_logging {
+                        println!("{synth_thread_name} -> play {:?}", drum_sounds);
+                    }
+
+                    let t0_ms = get_now_millis();
+
+                    for drum_sound in drum_sounds {
+                        let synth_patch = synth_patch_injector.get_synth_patch().clone();
+
+                        // FIXME: Avoid cloning Drum Sound
+                        let mut mono_synth =
+                            MonoSynth::new(synth_patch, t0_ms, Some(drum_sound.clone()));
+                        mono_synth.set_frequency(
+                            // TODO: Decide frequencies elsewhere
+                            match &drum_sound {
+                                DrumSound::KICK => 110.0,
+                                DrumSound::HH => 5500.0,
+                                DrumSound::SNARE => 1510.0,
+                            },
+                        );
 
                         let sample_source = DigitalMonoSynthSampleSource::new(mono_synth);
                         let samples_converter = sample_source.convert_samples();

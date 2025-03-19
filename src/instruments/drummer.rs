@@ -1,5 +1,8 @@
 use crate::devices::volca_drum::VolcaDrum;
 use crate::instruments::abs::instrument::Instrument;
+use crate::instruments::lib::abstract_instruments::AbstractInstrumentPolyDrumSounds;
+use crate::instruments::lib::drum_sounds::DrumSound;
+use crate::instruments::lib::instrument_with_queued_sounds::InstrumentWithQueuedDrumSounds;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{DrumPattern, Song};
 
@@ -12,14 +15,20 @@ pub struct Drummer {
 
     // Outputs
     volca_drum: VolcaDrum,
+    queued_instrument: InstrumentWithQueuedDrumSounds,
 }
 impl Drummer {
-    pub fn new(inner_instrument_name_16_chars: String, volca_drum: VolcaDrum) -> Self {
+    pub fn new(
+        inner_instrument_name_16_chars: String,
+        volca_drum: VolcaDrum,
+        instrument: Box<dyn AbstractInstrumentPolyDrumSounds>,
+    ) -> Self {
         Self {
             inner_instrument_name_16_chars,
             curr_section_index: 0,
             pattern: None,
             volca_drum,
+            queued_instrument: InstrumentWithQueuedDrumSounds::new(instrument),
         }
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
@@ -41,6 +50,10 @@ impl Drummer {
         }
     }
     fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
+        let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
+        self.queued_instrument
+            .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
+
         if let Some(pattern) = &self.pattern {
             let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_bar_from_1() - 1;
 
@@ -49,14 +62,23 @@ impl Drummer {
             let kk_symbol = pattern.kk.get(index_1_16th..=index_1_16th).unwrap();
 
             // TODO: Let Volca Drum commands happen via something abstract
+            let mut attack_notes = Vec::new();
             if hh_symbol != " " {
                 self.volca_drum.hit_hh();
+                attack_notes.push(DrumSound::HH);
             }
             if kk_symbol != " " {
                 self.volca_drum.hit_kick();
+                attack_notes.push(DrumSound::KICK);
             }
             if sn_symbol != " " {
                 self.volca_drum.hit_snare();
+                attack_notes.push(DrumSound::SNARE);
+            }
+            if !attack_notes.is_empty() {
+                self.queued_instrument.attack_notes(&attack_notes);
+                self.queued_instrument
+                    .notify_release_notes_at(&attack_notes, index_1_16th_sec + 4)
             }
         }
 
