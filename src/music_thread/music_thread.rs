@@ -59,16 +59,18 @@ pub fn get_song_to_play() -> Song {
     let song = convert_yaml_into_song(song_yaml);
     */
     // let song = get_dummy_song();
+    let composer = Composer::new(
+        //
+        55,
+        10,
+        false,
+        TonalityNote::C,
+        TonalityMode::Major,
+    );
+    // let song = composer.compose_new_song();
     // let song = get_song_coez_la_musica_non_c_e();
     // let song = get_song_o1();
-    let song = get_song_o2();
-    let composer = Composer {
-        bpm: 55,
-        num_sections: 10,
-        click: false,
-        tonality_note: TonalityNote::C,
-        tonality_mode: TonalityMode::Major,
-    };
-    // let song = composer.compose_new_song();
+    let song = get_song_o2(80);
+    let song = get_song_o2(100);
     song
 }

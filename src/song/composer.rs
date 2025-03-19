@@ -4,13 +4,6 @@ use crate::song::song::{
 };
 use std::collections::HashMap;
 
-pub struct Composer {
-    pub bpm: usize,
-    pub num_sections: usize,
-    pub click: bool,
-    pub tonality_note: TonalityNote,
-    pub tonality_mode: TonalityMode,
-}
 pub enum TonalityNote {
     C,
     Cs, // Or Db, for now are the same...
@@ -29,7 +22,29 @@ pub enum TonalityMode {
     Major,
     Minor,
 }
+pub struct Composer {
+    pub bpm: usize,
+    pub num_sections: usize,
+    pub click: bool,
+    pub tonality_note: TonalityNote,
+    pub tonality_mode: TonalityMode,
+}
 impl Composer {
+    pub fn new(
+        bpm: usize,
+        num_sections: usize,
+        click: bool,
+        tonality_note: TonalityNote,
+        tonality_mode: TonalityMode,
+    ) -> Self {
+        Self {
+            bpm,
+            num_sections,
+            click,
+            tonality_note,
+            tonality_mode,
+        }
+    }
     pub fn compose_new_song(&self) -> Song {
         Song {
             id: "composed-song".into(),

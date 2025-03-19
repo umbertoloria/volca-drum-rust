@@ -496,7 +496,7 @@ pub fn get_song_o1() -> Song {
     }
 }
 
-pub fn get_song_o2() -> Song {
+pub fn get_song_o2(bpm: usize) -> Song {
     Song {
         id: "o2".into(),
         details: SongDetails {
@@ -504,7 +504,8 @@ pub fn get_song_o2() -> Song {
             title: "O2".into(),
         },
         tempo: SongTempo {
-            bpm: 80,
+            // bpm: 80, // Default is "80".
+            bpm,
             time_signature: (4, 4),
         },
         metronome_data: Some(SongMetronomeData {
