@@ -7,7 +7,7 @@ pub fn get_standard_click_note() -> Note {
     "A4".into()
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Song {
     pub id: String,
     pub details: SongDetails,
@@ -30,30 +30,30 @@ impl Song {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SongDetails {
     pub author: String,
     pub title: String,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SongTempo {
     pub bpm: usize,
     // Assuming bpm ticks to 1/4.
     pub time_signature: (usize, usize), // Es. (4, 4) for 4/4 bars.
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SongMetronomeData {
     pub click_on: SongMetronomeDataClickOn,
     pub note: Note,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SongMetronomeDataClickOn {
     OnEvery1_4ths,
     OnEvery1_8ths,
 }
 
 // Song Section
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SongSection {
     pub kind: SongSectionKind,
     pub bars: usize,
@@ -70,7 +70,7 @@ impl SongSection {
         self.bars * self.time_signature.0 * self.time_signature.1
     }
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum SongSectionKind {
     Intro,
     Verse,
@@ -103,7 +103,7 @@ pub fn convert_section_kind_from_string(
 }
 
 // Drum Pattern
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DrumPattern {
     pub key: String, // Es. "A"
     pub num_1_4: usize,
@@ -111,7 +111,7 @@ pub struct DrumPattern {
     pub sn: String, // Es. "    x  x    x   "
     pub kk: String, // Es. "x       x x    x"
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct KeyboardPattern {
     pub key: String, // Es. "A"
     pub chords: Vec<KeyboardPatternChord>,
@@ -130,15 +130,15 @@ impl KeyboardPattern {
         ceil_1_4ths / 4
     }
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct KeyboardPatternChord {
-    pub chord_name: &'static str, // Es. "Fmaj7"
-    pub notes: Vec<Note>,         // Es. ["F3", "A3", "C4"]
+    pub chord_name: String, // Es. "Fmaj7"
+    pub notes: Vec<Note>,   // Es. ["F3", "A3", "C4"]
     // Params "from_1_16th_incl" and "to_1_16th_incl" start from 1.
     pub from_1_16th_incl: usize,
     pub to_1_16th_incl: usize,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BassPattern {
     pub key: String, // Es. "A"
     pub bass_line: BassLine,
@@ -208,11 +208,11 @@ pub struct BassPatternChord {
     pub from_1_16th_incl: usize,
     pub to_1_16th_incl: usize,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BassLine {
     pub parts: Vec<BassLinePart>,
 }
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BassLinePart {
     pub tonic: Note,        // Es. "F2"
     pub line: &'static str, // Es. "1_1_1___"

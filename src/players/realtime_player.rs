@@ -83,7 +83,7 @@ impl RealtimePlayer {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct SongInstant {
     pub i_section: usize,
     i_section_bar: usize,
@@ -172,7 +172,7 @@ pub fn create_realtime_player(song: &Song, start_from_millis: u128) -> RealtimeP
 }
 
 // TEMPO SNAPSHOT
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct TempoSnapshot {
     pub cur_bar: usize,
     pub cur_quarter: usize,

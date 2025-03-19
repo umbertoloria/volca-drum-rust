@@ -1,11 +1,12 @@
+use crate::music::note::Note;
 use crate::music_thread::music_thread_comm::{MusicThreadCommReceiver, MusicThreadCommand};
 use crate::music_thread::play_thread::{
     create_play_queue_comm, play_queue_thread, PlayQueueCommand,
 };
 use crate::music_thread::volca_drum_thread::{create_volca_drum_thread_comm, VolcaDrumCommand};
 use crate::server::web_thread_comm::WebThreadCommSender;
-use crate::song::composer::{Composer, TonalityMode, TonalityNote};
-use crate::song::known_songs::get_song_o2;
+use crate::song::composer::Composer;
+use crate::song::known_songs::{get_song_coez_la_musica_non_c_e, get_song_o1, get_song_o2};
 use crate::song::song::Song;
 use std::thread;
 use std::thread::JoinHandle;
@@ -59,17 +60,19 @@ pub fn get_song_to_play() -> Song {
     let song = convert_yaml_into_song(song_yaml);
     */
     // let song = get_dummy_song();
-    let composer = Composer::new(
+    let mut composer = Composer::new(
         //
-        55,
-        10,
+        210,
+        // true,
         false,
-        TonalityNote::C,
-        TonalityMode::Major,
+        // TonalityNote::C,
+        // TonalityMode::Major,
+        Note::new("C4"),
     );
-    // let song = composer.compose_new_song();
-    // let song = get_song_coez_la_musica_non_c_e();
-    // let song = get_song_o1();
+    composer.compose_new_song(10);
+    let song = composer.get_song();
+    let song = get_song_coez_la_musica_non_c_e();
+    let song = get_song_o1();
     let song = get_song_o2(80);
     let song = get_song_o2(100);
     song
