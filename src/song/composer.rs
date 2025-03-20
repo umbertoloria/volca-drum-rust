@@ -30,6 +30,7 @@ pub struct Composer {
     // pub tonality_note: TonalityNote,
     // pub tonality_mode: TonalityMode,
     pub tonality_note: Note,
+    pub composer_mode: ComposerMode,
     pub num_keyboard_patterns: usize,
     pub song: Song,
 }
@@ -39,6 +40,7 @@ impl Composer {
         bpm: usize,
         click: bool,
         tonality_note: Note,
+        composer_mode: ComposerMode,
     ) -> Self {
         let song = Song {
             id: "composed-song".into(),
@@ -67,6 +69,7 @@ impl Composer {
             bpm,
             click,
             tonality_note,
+            composer_mode,
             num_keyboard_patterns: 0,
             song,
         }
@@ -80,13 +83,13 @@ impl Composer {
         // Generate Chords
         let mut chords = Vec::new();
         // First Chord is on the Tonic.
-        let chord = ComposerChord::new(&self.tonality_note, 1);
+        let chord = ComposerChord::new(&self.composer_mode, &self.tonality_note, 1);
         // println!("First chord: {:?}", chord);
         chords.push(chord);
         let mut rng = rand::rng();
         for _ in 1..bars {
-            let rand_degree = rng.random_range(1..=6usize); // From 1 to 6.
-            let chord = ComposerChord::new(&self.tonality_note, rand_degree);
+            let rand_degree = rng.random_range(1..=7usize); // From 1 to 7.
+            let chord = ComposerChord::new(&self.composer_mode, &self.tonality_note, rand_degree);
             // println!("New random chord: {:?}", chord);
             chords.push(chord);
         }
@@ -153,20 +156,11 @@ pub struct ComposerChord {
 impl ComposerChord {
     pub fn new(
         //
+        composer_mode: &ComposerMode,
         base_note: &Note,
         degree: usize, // From 1 to 7.
     ) -> Self {
-        // TODO: Support multiple Modes
-        let offsets = [
-            // 1
-            0, // 2
-            2, // 3
-            4, // 4
-            5, // 5
-            7, // 6
-            9, // 7
-            11,
-        ];
+        let offsets = get_scale_offsets_by_mode(composer_mode);
 
         let root_note = Note {
             octave: base_note.octave,
@@ -191,3 +185,38 @@ impl ComposerChord {
     }
 }
 const NUM_NOTES_12: u8 = 12;
+
+pub enum ComposerMode {
+    // TODO: Support other Modes
+    Major, // Ionian
+    // Dorian,
+    // Phrygian,
+    // Lydian,
+    // Mixolydian,
+    Minor, // Aeolian
+           // Locrian,
+}
+const SCALE_MAJOR: [u8; 7] = [
+    0,  // 1 T
+    2,  // 2 T
+    4,  // 3 S
+    5,  // 4 T
+    7,  // 5 T
+    9,  // 6 T
+    11, // 7 S
+];
+const SCALE_MINOR: [u8; 7] = [
+    0,  // 1 T
+    2,  // 2 S
+    3,  // 3 T
+    5,  // 4 T
+    7,  // 5 S
+    8,  // 6 T
+    10, // 7 T
+];
+fn get_scale_offsets_by_mode(composer_mode: &ComposerMode) -> [u8; 7] {
+    match composer_mode {
+        ComposerMode::Major => SCALE_MAJOR,
+        ComposerMode::Minor => SCALE_MINOR,
+    }
+}

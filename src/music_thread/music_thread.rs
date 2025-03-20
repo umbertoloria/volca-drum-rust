@@ -5,7 +5,7 @@ use crate::music_thread::play_thread::{
 };
 use crate::music_thread::volca_drum_thread::{create_volca_drum_thread_comm, VolcaDrumCommand};
 use crate::server::web_thread_comm::WebThreadCommSender;
-use crate::song::composer::Composer;
+use crate::song::composer::{Composer, ComposerMode};
 use crate::song::known_songs::{get_song_coez_la_musica_non_c_e, get_song_o1, get_song_o2};
 use crate::song::song::Song;
 use std::thread;
@@ -68,6 +68,8 @@ pub fn get_song_to_play() -> Song {
         // TonalityNote::C,
         // TonalityMode::Major,
         Note::new("C4"),
+        ComposerMode::Major,
+        // ComposerMode::Minor,
     );
     composer.compose_new_song(10);
     let song = composer.get_song();
