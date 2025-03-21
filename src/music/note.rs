@@ -127,6 +127,30 @@ impl Note {
             offset: self.offset,
         }
     }
+    fn get_new_applying_offset(&self, shift_offset: u8) -> Self {
+        let mut offset = self.offset + shift_offset;
+        let mut octave = self.octave;
+        while offset >= 12 {
+            offset -= 12;
+            octave += 1;
+        }
+        Self { octave, offset }
+    }
+    pub fn get_minor_third(&self) -> Self {
+        self.get_new_applying_offset(3)
+    }
+    pub fn get_major_third(&self) -> Self {
+        self.get_new_applying_offset(4)
+    }
+    pub fn get_fifth(&self) -> Self {
+        self.get_new_applying_offset(7)
+    }
+    pub fn get_minor_seventh(&self) -> Self {
+        self.get_new_applying_offset(7 + 3)
+    }
+    pub fn get_major_seventh(&self) -> Self {
+        self.get_new_applying_offset(7 + 4)
+    }
     pub fn get_frequency(&self) -> f32 {
         // TODO: This code must be very numerically precise!
         let base_frequency: f32 = match self.offset {
@@ -176,6 +200,61 @@ impl Note {
     pub fn to_hash(&self) -> String {
         let numeric_hash = (self.octave as usize) * 100 + (self.offset as usize);
         format!("{}", numeric_hash)
+    }
+    // PRETTY
+    pub fn to_pretty_string(&self) -> Result<String, String> {
+        // NOTE: This function always prefers "C#" over "Db", for example. So don't use for
+        // something like hashing.
+
+        let letter_note = match self.offset {
+            // C
+            0 => Some("C"),
+
+            // C#/Db
+            1 => Some("C#"),
+
+            // D
+            2 => Some("D"),
+
+            // D#/Eb
+            3 => Some("D#"),
+
+            // E
+            4 => Some("E"),
+
+            // F
+            5 => Some("F"),
+
+            // F#/Gb
+            6 => Some("F#"),
+
+            // G
+            7 => Some("G"),
+
+            // G#/Ab
+            8 => Some("G#"),
+
+            // A
+            9 => Some("A"),
+
+            // A#/Bb
+            10 => Some("A#"),
+
+            // B
+            11 => Some("B"),
+
+            _ => None,
+        };
+        /*
+        let letter_note = letter_note.expect("Invalid note");
+        format!("{}{}", letter_note, self.octave)
+        */
+        if let Some(letter_note) = letter_note {
+            let result = format!("{}{}", letter_note, self.octave);
+            Ok(result)
+        } else {
+            Err("Invalid note".into())
+        }
     }
 }
 impl From<&str> for Note {

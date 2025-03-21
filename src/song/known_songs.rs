@@ -1,3 +1,4 @@
+use crate::music::chord::Chord;
 use crate::song::song::{
     BassLine, BassLinePart, BassPattern, DrumPattern, KeyboardPattern, KeyboardPatternChord, Song,
     SongDetails, SongMetronomeData, SongMetronomeDataClickOn, SongSection, SongSectionKind,
@@ -521,25 +522,25 @@ pub fn get_song_o2(bpm: usize) -> Song {
                     chords: [
                         KeyboardPatternChord {
                             chord_name: "Am".into(),
-                            notes: vec!["A3".into(), "C4".into(), "E4".into()],
+                            notes: Chord::new_from_string("A3m".into()).get_notes(),
                             from_1_16th_incl: 1,
                             to_1_16th_incl: 16,
                         },
                         KeyboardPatternChord {
                             chord_name: "Em".into(),
-                            notes: vec!["B3".into(), "E4".into(), "G4".into()],
+                            notes: Chord::new_from_string_inversion("E3m".into(), 2).get_notes(),
                             from_1_16th_incl: 16 + 1,
                             to_1_16th_incl: 16 + 16,
                         },
                         KeyboardPatternChord {
                             chord_name: "Dm".into(),
-                            notes: vec!["A3".into(), "D4".into(), "F4".into()],
+                            notes: Chord::new_from_string_inversion("D3m".into(), 2).get_notes(),
                             from_1_16th_incl: 16 + 16 + 1,
                             to_1_16th_incl: 16 + 16 + 16,
                         },
                         KeyboardPatternChord {
-                            chord_name: "F".into(),
-                            notes: vec!["C4".into(), "E4".into(), "F4".into(), "A4".into()],
+                            chord_name: "Fmaj7".into(),
+                            notes: Chord::new_from_string_inversion("F3maj7".into(), 2).get_notes(),
                             from_1_16th_incl: 16 + 16 + 16 + 1,
                             to_1_16th_incl: 16 + 16 + 16 + 16,
                         },
@@ -554,13 +555,13 @@ pub fn get_song_o2(bpm: usize) -> Song {
                     chords: [
                         KeyboardPatternChord {
                             chord_name: "C".into(),
-                            notes: vec!["C4".into(), "E4".into(), "G4".into()],
+                            notes: Chord::new_from_string("C4".into()).get_notes(),
                             from_1_16th_incl: 1,
                             to_1_16th_incl: 16,
                         },
                         KeyboardPatternChord {
                             chord_name: "F".into(),
-                            notes: vec!["C4".into(), "F4".into(), "A4".into()],
+                            notes: Chord::new_from_string_inversion("F4".into(), -1).get_notes(),
                             from_1_16th_incl: 16 + 1,
                             to_1_16th_incl: 16 + 16,
                         },
