@@ -1,5 +1,6 @@
 use crate::devices::sound_panel::SoundPanel;
 use crate::devices::volca_drum::VolcaDrum;
+use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::abs::instr_comm::{
     create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
     InstrumentCommReceiver,
@@ -7,6 +8,7 @@ use crate::instruments::abs::instr_comm::{
 use crate::instruments::bassist::Bassist;
 use crate::instruments::drummer::Drummer;
 use crate::instruments::keyboardist::Keyboardist;
+use crate::instruments::keys_based_instrument_volca_keys::KeysBasedInstrumentVolcaKeys;
 use crate::instruments::metronome::Metronome;
 use crate::instruments::synth::synth_thread::SynthThreadAudioChannel;
 use crate::instruments::synth::thread_for_synth_instrument::ThreadForSynthInstrument;
@@ -51,7 +53,7 @@ pub fn play_queue_thread(
         // INSTRUMENTS THREADS
         let (instr_comm_sender_metronome, instr_comm_receiver_metronome) = create_instrument_comm();
         let (instr_comm_sender_drummer, instr_comm_receiver_drummer) = create_instrument_comm();
-        // let (instr_comm_sender_keyboard, instr_comm_receiver_keyboard) = create_instrument_comm();
+        let (instr_comm_sender_keyboard, instr_comm_receiver_keyboard) = create_instrument_comm();
         let (instr_comm_sender_synth, instr_comm_receiver_synth) = create_instrument_comm();
         let (instr_comm_sender_bass_synth, instr_comm_receiver_bass_synth) =
             create_instrument_comm();
@@ -59,13 +61,13 @@ pub fn play_queue_thread(
             //
             metronome_thread,
             drummer_thread,
-            // keyboard_thread,
+            keyboard_thread,
             synth_thread,
             bass_synth_thread,
         ) = create_instrument_threads(
             instr_comm_receiver_metronome,
             instr_comm_receiver_drummer,
-            // instr_comm_receiver_keyboard,
+            instr_comm_receiver_keyboard,
             instr_comm_receiver_synth,
             instr_comm_receiver_bass_synth,
         );
@@ -74,7 +76,7 @@ pub fn play_queue_thread(
                 // List of Instruments Communicators
                 instr_comm_sender_metronome,
                 instr_comm_sender_drummer,
-                // instr_comm_sender_keyboard,
+                instr_comm_sender_keyboard,
                 instr_comm_sender_synth,
                 instr_comm_sender_bass_synth,
             ],
@@ -114,7 +116,7 @@ pub fn play_queue_thread(
         // CLOSE INSTRUMENTS THREADS
         metronome_thread.join().unwrap();
         drummer_thread.join().unwrap();
-        // keyboard_thread.join().unwrap();
+        keyboard_thread.join().unwrap();
         synth_thread.join().unwrap();
         bass_synth_thread.join().unwrap();
     })
@@ -149,14 +151,14 @@ const BASS_SYNTH_ENABLE_LOGGING: bool = false;
 fn create_instrument_threads(
     instr_comm_receiver_metronome: InstrumentCommReceiver,
     instr_comm_receiver_drummer: InstrumentCommReceiver,
-    // instr_comm_receiver_keyboard: InstrumentCommReceiver,
+    instr_comm_receiver_keyboard: InstrumentCommReceiver,
     instr_comm_receiver_synth: InstrumentCommReceiver,
     instr_comm_receiver_bass_synth: InstrumentCommReceiver,
 ) -> (
     // Instruments Threads
     InstrumentThreadType, // Metronome
     InstrumentThreadType, // Drummer
-    // InstrumentThreadType, // Keyboard
+    InstrumentThreadType, // Keyboard
     InstrumentThreadType, // Synth
     InstrumentThreadType, // Bass
 ) {
@@ -207,11 +209,10 @@ fn create_instrument_threads(
     });
 
     // Keyboard
-    /*
     let keyboard_thread = thread::spawn(move || {
         // Keyboard disabled for now.
 
-        let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
+        let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
@@ -219,10 +220,10 @@ fn create_instrument_threads(
         let mut keyboard = Keyboardist::new(
             "Keyboard        ".into(),
             Box::new(KeysBasedInstrumentVolcaKeys::new(volca_keys)),
+            KEYS_SYNTH_ENABLE_LOGGING,
         );
         start_listening_to_instrument_comm_commands(instr_comm_receiver_keyboard, &mut keyboard);
     });
-    */
 
     // Synth
     let synth_thread = thread::spawn(move || {
@@ -263,7 +264,7 @@ fn create_instrument_threads(
         // Instruments Threads
         metronome_thread,
         drummer_thread,
-        // keyboard_thread,
+        keyboard_thread,
         synth_thread,
         bass_synth_thread,
     )
