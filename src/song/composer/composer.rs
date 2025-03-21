@@ -1,11 +1,10 @@
 use crate::music::note::Note;
+use crate::song::composer::random_chord_progression_composer::RandomChordProgressionComposer;
 use crate::song::song::{
     get_standard_click_note, KeyboardPattern, KeyboardPatternChord, Song, SongDetails,
     SongMetronomeData, SongMetronomeDataClickOn, SongSection, SongSectionKind, SongTempo,
 };
-use rand::Rng;
 use std::collections::HashMap;
-
 /*pub enum TonalityNote {
     C,
     Cs, // Or Db, for now are the same...
@@ -76,21 +75,21 @@ impl Composer {
     }
     pub fn compose_new_song(&mut self, num_sections: usize) {
         for _ in 0..num_sections {
-            self.add_new_section(8);
+            self.add_new_random_section(8);
         }
     }
-    fn add_new_section(&mut self, bars: usize) {
+    fn add_new_random_section(&mut self, bars: usize) {
         // Generate Chords
         let mut chords = Vec::new();
         // First Chord is on the Tonic.
-        let chord = ComposerChord::new(&self.composer_mode, &self.tonality_note, 1);
-        // println!("First chord: {:?}", chord);
+        let first_degree = 1;
+        let chord = ComposerChord::new(&self.composer_mode, &self.tonality_note, first_degree);
         chords.push(chord);
-        let mut rng = rand::rng();
+
+        let mut random_composer = RandomChordProgressionComposer::new(first_degree);
         for _ in 1..bars {
-            let rand_degree = rng.random_range(1..=7usize); // From 1 to 7.
+            let rand_degree = random_composer.generate_new_degree();
             let chord = ComposerChord::new(&self.composer_mode, &self.tonality_note, rand_degree);
-            // println!("New random chord: {:?}", chord);
             chords.push(chord);
         }
 
