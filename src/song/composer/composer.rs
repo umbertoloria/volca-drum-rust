@@ -83,14 +83,18 @@ impl Composer {
         let mut chords = Vec::new();
         // First Chord is on the Tonic.
         let first_degree = 1;
-        let chord = ComposerChord::new(&self.composer_mode, &self.tonality_note, first_degree);
-        chords.push(chord);
+        chords.push(
+            //
+            ComposerChord::new(&self.composer_mode, &self.tonality_note, first_degree),
+        );
 
         let mut random_composer = RandomChordProgressionComposer::new(first_degree);
         for _ in 1..bars {
             let rand_degree = random_composer.generate_new_degree();
-            let chord = ComposerChord::new(&self.composer_mode, &self.tonality_note, rand_degree);
-            chords.push(chord);
+            chords.push(
+                //
+                ComposerChord::new(&self.composer_mode, &self.tonality_note, rand_degree),
+            );
         }
 
         // Keyboard Pattern
@@ -177,8 +181,8 @@ impl ComposerChord {
 
         // TODO: Support Chords Inversions and Voice Leading
         Self {
-            // TODO: Improve Chord Name
-            chord_name: root_note.to_string().into(),
+            // TODO: Improve Chord Name using notes from Tonality Mode
+            chord_name: root_note.to_pretty_string().unwrap().into(),
             notes: vec![root_note, third_note, fifth_note],
         }
     }
