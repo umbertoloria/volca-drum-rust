@@ -15,6 +15,23 @@ impl JsonSong {
         let mut i_bar = 1;
         let mut sections = Vec::new();
         for section in song.sections {
+            // Chord Changes in Time
+            let mut chord_changes_in_time = Vec::new();
+            if let Some(keyboard_pattern_key) = section.keyboard_pattern_key {
+                let keyboard_pattern = song.keyboard_patterns.get(&keyboard_pattern_key).unwrap();
+                for keyboard_pattern_chord in &keyboard_pattern.chords {
+                    chord_changes_in_time.push(
+                        //
+                        JsonSongSectionChordChange {
+                            i_1_16th_start: keyboard_pattern_chord.from_1_16th_incl,
+                            // TODO: Avoid Keyboard Pattern Chord Name clone
+                            chord_name: keyboard_pattern_chord.chord_name.clone(),
+                        },
+                    );
+                }
+            }
+
+            // Section
             sections.push(
                 //
                 JsonSongSection {
@@ -24,6 +41,7 @@ impl JsonSong {
                     first_bar_num: i_bar,
                     time_signature_top: section.time_signature.0,
                     time_signature_down: section.time_signature.1,
+                    chord_changes_in_time,
                 },
             );
             i_bar += section.bars;
@@ -61,6 +79,12 @@ pub struct JsonSongSection {
     first_bar_num: usize,
     time_signature_top: usize,
     time_signature_down: usize,
+    chord_changes_in_time: Vec<JsonSongSectionChordChange>,
+}
+#[derive(Serialize, Deserialize)]
+pub struct JsonSongSectionChordChange {
+    i_1_16th_start: usize,
+    chord_name: String,
 }
 
 fn get_song_section_kind_string(kind: &SongSectionKind) -> String {
