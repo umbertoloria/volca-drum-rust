@@ -1,4 +1,6 @@
 use crate::music_thread::music_thread_comm::MusicThreadCommSender;
+use crate::server::api::json_song::JsonSong;
+use crate::server::api::json_tempo_snapshot::JsonTempoSnapshot;
 use crate::server::server_request_manager::{
     ServerRequestManager, WS_CLIENT_REQUEST_READ_MUSIC_LIBRARY,
 };
@@ -81,22 +83,19 @@ pub async fn main_server(
                             let payload = match message {
                                 WSResponse::FromMusicThread(music_thread_response) => {
                                     match music_thread_response {
-                                        WSMusicThreadResponse::SongStarted => "Song started".into(),
+                                        WSMusicThreadResponse::SongStarted(song) => {
+                                            // TODO: Send also Millis Estimations avoid Song Playing
+                                            let json_song = JsonSong::new(song);
+                                            let json = json_song.to_json();
+                                            format!("SONG_STARTED:\n{}", json)
+                                        }
                                         WSMusicThreadResponse::SongPlayingUpdate(
                                             tempo_snapshot,
                                         ) => {
-                                            // println!("{:?}", tempo_snapshot);
-                                            // TODO: Use JSON parser
-                                            format!(
-                                                "{{\"cur_bar\":{},\"cur_quarter\":\"{}\",\"cur_1_8\":\"{}\",\"cur_1_16\":\"{}\",\"section_bar_first\":\"{}\",\"section_bar_last\":\"{}\"}}",
-                                                tempo_snapshot.cur_bar,
-                                                tempo_snapshot.cur_quarter,
-                                                tempo_snapshot.cur_1_8,
-                                                tempo_snapshot.cur_1_16,
-                                                tempo_snapshot.section_bar_first,
-                                                tempo_snapshot.section_bar_last,
-                                            )
-                                            .into()
+                                            let json_tempo_snapshot =
+                                                JsonTempoSnapshot::new(&tempo_snapshot);
+                                            let json = json_tempo_snapshot.to_json();
+                                            format!("SONG_PLAYING_UPDATE:\n{}", json)
                                         }
                                         WSMusicThreadResponse::SongEnded => "Song ended".into(),
                                     }

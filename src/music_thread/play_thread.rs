@@ -44,6 +44,7 @@ pub fn create_play_queue_comm() -> (
 }
 
 pub fn play_queue_thread(
+    play_queue_instruments_threads_conf: PlayQueueInstrumentsThreadsConf,
     play_queue_comm_receiver: PlayQueueRequestReceiver,
     web_thread_comm_sender: WebThreadCommSender,
 ) -> JoinHandle<()> {
@@ -51,37 +52,42 @@ pub fn play_queue_thread(
     let is_playing = Arc::new(Mutex::new(AtomicBool::new(false)));
     thread::spawn(move || {
         // INSTRUMENTS THREADS
-        let (instr_comm_sender_metronome, instr_comm_receiver_metronome) = create_instrument_comm();
+        let (instr_comm_sender_metronome_synth, instr_comm_receiver_metronome_synth) =
+            create_instrument_comm();
         let (instr_comm_sender_drummer, instr_comm_receiver_drummer) = create_instrument_comm();
         let (instr_comm_sender_keyboard, instr_comm_receiver_keyboard) = create_instrument_comm();
-        let (instr_comm_sender_synth, instr_comm_receiver_synth) = create_instrument_comm();
+        let (instr_comm_sender_keys_synth, instr_comm_receiver_keys_synth) =
+            create_instrument_comm();
         let (instr_comm_sender_bass_synth, instr_comm_receiver_bass_synth) =
             create_instrument_comm();
         let (
             //
-            metronome_thread,
+            metronome_synth_thread,
             drummer_thread,
             keyboard_thread,
-            synth_thread,
+            keys_synth_thread,
             bass_synth_thread,
         ) = create_instrument_threads(
-            instr_comm_receiver_metronome,
+            play_queue_instruments_threads_conf,
+            instr_comm_receiver_metronome_synth,
             instr_comm_receiver_drummer,
             instr_comm_receiver_keyboard,
-            instr_comm_receiver_synth,
+            instr_comm_receiver_keys_synth,
             instr_comm_receiver_bass_synth,
         );
-        let instrument_broadcast_comm = InstrumentBroadcastComm {
-            instrument_comm_senders_list: vec![
-                // List of Instruments Communicators
-                instr_comm_sender_metronome,
-                instr_comm_sender_drummer,
-                instr_comm_sender_keyboard,
-                instr_comm_sender_synth,
-                instr_comm_sender_bass_synth,
-            ],
-        };
-        let mut conductor = Conductor::new(instrument_broadcast_comm);
+        let mut conductor = Conductor::new(
+            //
+            InstrumentBroadcastComm {
+                instrument_comm_senders_list: vec![
+                    // List of Instruments Communicators
+                    instr_comm_sender_metronome_synth,
+                    instr_comm_sender_drummer,
+                    instr_comm_sender_keyboard,
+                    instr_comm_sender_keys_synth,
+                    instr_comm_sender_bass_synth,
+                ],
+            },
+        );
 
         // PLAY THREAD
         for command in play_queue_comm_receiver.get_recv_iter() {
@@ -114,10 +120,10 @@ pub fn play_queue_thread(
         }
 
         // CLOSE INSTRUMENTS THREADS
-        metronome_thread.join().unwrap();
+        metronome_synth_thread.join().unwrap();
         drummer_thread.join().unwrap();
         keyboard_thread.join().unwrap();
-        synth_thread.join().unwrap();
+        keys_synth_thread.join().unwrap();
         bass_synth_thread.join().unwrap();
     })
 }
@@ -127,7 +133,8 @@ fn play_song_example_with_updates(
     web_thread_comm_sender: WebThreadCommSender,
     conductor: &mut Conductor,
 ) {
-    web_thread_comm_sender.notify_from_music_thread_song_started();
+    // TODO: Avoid cloning Song
+    web_thread_comm_sender.notify_from_music_thread_song_started(song.clone());
 
     // TODO: Enable Interactive CLI or not
     // let enable_interactive_cli = true;
@@ -149,37 +156,46 @@ const DRUMS_SYNTH_ENABLE_LOGGING: bool = false;
 const KEYS_SYNTH_ENABLE_LOGGING: bool = false;
 const BASS_SYNTH_ENABLE_LOGGING: bool = false;
 fn create_instrument_threads(
-    instr_comm_receiver_metronome: InstrumentCommReceiver,
+    play_queue_instruments_threads_conf: PlayQueueInstrumentsThreadsConf,
+    instr_comm_receiver_metronome_synth: InstrumentCommReceiver,
     instr_comm_receiver_drummer: InstrumentCommReceiver,
     instr_comm_receiver_keyboard: InstrumentCommReceiver,
-    instr_comm_receiver_synth: InstrumentCommReceiver,
+    instr_comm_receiver_keys_synth: InstrumentCommReceiver,
     instr_comm_receiver_bass_synth: InstrumentCommReceiver,
 ) -> (
     // Instruments Threads
-    InstrumentThreadType, // Metronome
+    InstrumentThreadType, // Metronome Synth
     InstrumentThreadType, // Drummer
     InstrumentThreadType, // Keyboard
-    InstrumentThreadType, // Synth
-    InstrumentThreadType, // Bass
+    InstrumentThreadType, // Keys Synth
+    InstrumentThreadType, // Bass Synth
 ) {
-    // Metronome
-    let metronome_thread = thread::spawn(move || {
-        // Instrument
-        let mut metronome = Metronome::new(
+    // Metronome Synth
+    let metronome_synth_thread = thread::spawn(move || {
+        let mut metronome_synth = Metronome::new(
             "SynthMetronome  ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadMetronomeSynth".into(),
                 SynthThreadAudioChannel::MetronomeClick,
-                make_patch_metronome_click(),
+                make_patch_metronome_click(
+                    play_queue_instruments_threads_conf.metronome_synth_enabled,
+                ),
                 METRONOME_SYNTH_ENABLE_LOGGING,
             )),
             METRONOME_SYNTH_ENABLE_LOGGING,
         );
-        start_listening_to_instrument_comm_commands(instr_comm_receiver_metronome, &mut metronome);
+        start_listening_to_instrument_comm_commands(
+            instr_comm_receiver_metronome_synth,
+            &mut metronome_synth,
+        );
     });
 
     // Drummer
     let drummer_thread = thread::spawn(move || {
+        if !play_queue_instruments_threads_conf.drummer_enabled {
+            return;
+        }
+
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let mut volca_drum = VolcaDrum::new(midi_device);
@@ -192,7 +208,6 @@ fn create_instrument_threads(
         // TODO: Make sure it always sounds ok from the first hit
         sound_panel.set_from_patch(patch1);
 
-        // Instrument
         let mut drummer = Drummer::new(
             //
             "Drummer         ".into(),
@@ -210,13 +225,14 @@ fn create_instrument_threads(
 
     // Keyboard
     let keyboard_thread = thread::spawn(move || {
-        // Keyboard disabled for now.
+        if !play_queue_instruments_threads_conf.keyboard_enabled {
+            return;
+        }
 
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
-        // Instrument
         let mut keyboard = Keyboardist::new(
             "Keyboard        ".into(),
             Box::new(KeysBasedInstrumentVolcaKeys::new(volca_keys)),
@@ -225,31 +241,32 @@ fn create_instrument_threads(
         start_listening_to_instrument_comm_commands(instr_comm_receiver_keyboard, &mut keyboard);
     });
 
-    // Synth
-    let synth_thread = thread::spawn(move || {
-        // Instrument
-        let mut synth = Keyboardist::new(
+    // Keys Synth
+    let keys_synth_thread = thread::spawn(move || {
+        let mut keys_synth = Keyboardist::new(
             "SynthKeys       ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadKeysSynth".into(),
                 SynthThreadAudioChannel::Main,
-                make_patch_keys_1(),
+                make_patch_keys_1(play_queue_instruments_threads_conf.keys_synth_enabled),
                 KEYS_SYNTH_ENABLE_LOGGING,
             )),
             KEYS_SYNTH_ENABLE_LOGGING,
         );
-        start_listening_to_instrument_comm_commands(instr_comm_receiver_synth, &mut synth);
+        start_listening_to_instrument_comm_commands(
+            instr_comm_receiver_keys_synth,
+            &mut keys_synth,
+        );
     });
 
     // Bass Synth
     let bass_synth_thread = thread::spawn(move || {
-        // Instrument
         let mut bass_synth = Bassist::new(
             "SynthBass       ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadBassSynth".into(),
                 SynthThreadAudioChannel::Main,
-                make_patch_bass_1(),
+                make_patch_bass_1(play_queue_instruments_threads_conf.bass_synth_enabled),
                 BASS_SYNTH_ENABLE_LOGGING,
             )),
             BASS_SYNTH_ENABLE_LOGGING,
@@ -262,10 +279,18 @@ fn create_instrument_threads(
 
     (
         // Instruments Threads
-        metronome_thread,
+        metronome_synth_thread,
         drummer_thread,
         keyboard_thread,
-        synth_thread,
+        keys_synth_thread,
         bass_synth_thread,
     )
+}
+
+pub struct PlayQueueInstrumentsThreadsConf {
+    pub metronome_synth_enabled: bool,
+    pub drummer_enabled: bool,
+    pub keyboard_enabled: bool,
+    pub keys_synth_enabled: bool,
+    pub bass_synth_enabled: bool,
 }

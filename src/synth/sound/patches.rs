@@ -33,8 +33,8 @@ impl SynthPatch {
 }
 
 // PATCH KEYS 1
-pub fn make_patch_keys_1() -> SynthPatchInjector {
-    SynthPatchInjector::new(SynthPatch::Keys1, 1.0)
+pub fn make_patch_keys_1(enable: bool) -> SynthPatchInjector {
+    SynthPatchInjector::new(SynthPatch::Keys1, if enable { 1.0 } else { 0.0 })
 }
 fn patch_keys_1(t0_ms: u128, index: f32) -> f32 {
     // 1. Oscillator
@@ -50,8 +50,8 @@ fn patch_keys_1(t0_ms: u128, index: f32) -> f32 {
 }
 
 // PATCH BASS 1
-pub fn make_patch_bass_1() -> SynthPatchInjector {
-    SynthPatchInjector::new(SynthPatch::Bass1, 0.1)
+pub fn make_patch_bass_1(enable: bool) -> SynthPatchInjector {
+    SynthPatchInjector::new(SynthPatch::Bass1, if enable { 0.1 } else { 0.0 })
 }
 fn patch_bass_1(t0_ms: u128, index: f32) -> f32 {
     // 1. Oscillator
@@ -67,8 +67,8 @@ fn patch_bass_1(t0_ms: u128, index: f32) -> f32 {
 }
 
 // PATCH METRONOME CLICK
-pub fn make_patch_metronome_click() -> SynthPatchInjector {
-    SynthPatchInjector::new(SynthPatch::MetronomeClick, 0.2)
+pub fn make_patch_metronome_click(enable: bool) -> SynthPatchInjector {
+    SynthPatchInjector::new(SynthPatch::MetronomeClick, if enable { 0.2 } else { 0.0 })
 }
 fn patch_metronome_click(t0_ms: u128, index: f32) -> f32 {
     // 1. Oscillator

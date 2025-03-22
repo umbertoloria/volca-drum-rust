@@ -151,7 +151,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             },
             // Post-chorus 2
             SongSection {
-                kind: SongSectionKind::Verse,
+                kind: SongSectionKind::PostChorus,
                 bars: 2,
                 time_signature: (4, 4),
                 num_1_16s_in_a_quarter: 4,

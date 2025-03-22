@@ -74,7 +74,9 @@ impl SongSection {
 pub enum SongSectionKind {
     Intro,
     Verse,
+    PreChorus,
     Chorus,
+    PostChorus,
     Bridge,
     Outro,
 }
@@ -83,7 +85,9 @@ impl Display for SongSectionKind {
         match self {
             SongSectionKind::Intro => write!(f, "Intro"),
             SongSectionKind::Verse => write!(f, "Verse"),
+            SongSectionKind::PreChorus => write!(f, "PreChorus"),
             SongSectionKind::Chorus => write!(f, "Chorus"),
+            SongSectionKind::PostChorus => write!(f, "PostChorus"),
             SongSectionKind::Bridge => write!(f, "Bridge"),
             SongSectionKind::Outro => write!(f, "Outro"),
         }
@@ -251,226 +255,5 @@ pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
                 notes: section.notes.clone(),
             })
             .collect(),
-    }
-}
-pub fn get_dummy_song() -> Song {
-    Song {
-        id: "dummy-song".into(),
-        details: SongDetails {
-            author: "Author 1".into(),
-            title: "Title 1".into(),
-        },
-        tempo: SongTempo {
-            bpm: 85,
-            time_signature: (4, 4),
-        },
-        metronome_data: Some(SongMetronomeData {
-            click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
-            note: get_standard_click_note(),
-        }),
-        drum_patterns: HashMap::from([
-            (
-                "A".into(),
-                DrumPattern {
-                    key: "A".into(),
-                    num_1_4: 2,
-                    hh: "x x x x x x x x ".into(),
-                    sn: "    x  x    x   ".into(),
-                    kk: "x       x x    x".into(),
-                },
-            ),
-            (
-                "B".into(),
-                DrumPattern {
-                    key: "B".into(),
-                    num_1_4: 2,
-                    hh: "x x x xxx x x xx".into(),
-                    sn: "    x       x   ".into(),
-                    kk: "x       x x     ".into(),
-                },
-            ),
-        ]),
-        keyboard_patterns: HashMap::from([
-            (
-                "A".into(),
-                KeyboardPattern {
-                    key: "A".into(),
-                    chords: [
-                        KeyboardPatternChord {
-                            chord_name: "F".into(),
-                            from_1_16th_incl: 1,
-                            to_1_16th_incl: 16,
-                            notes: [
-                                //
-                                "F3".into(),
-                                //
-                                "A3".into(),
-                                //
-                                "C4".into(),
-                            ]
-                            .into(),
-                        },
-                        KeyboardPatternChord {
-                            chord_name: "Dm".into(),
-                            from_1_16th_incl: 16 + 1,
-                            to_1_16th_incl: 16 + 16,
-                            notes: [
-                                //
-                                "D3".into(),
-                                //
-                                "F3".into(),
-                                //
-                                "A3".into(),
-                            ]
-                            .into(),
-                        },
-                        KeyboardPatternChord {
-                            chord_name: "C".into(),
-                            from_1_16th_incl: 16 + 16 + 1,
-                            to_1_16th_incl: 16 + 16 + 32,
-                            notes: [
-                                //
-                                "C3".into(),
-                                //
-                                "E3".into(),
-                                //
-                                "G3".into(),
-                            ]
-                            .into(),
-                        },
-                    ]
-                    .into(),
-                },
-            ),
-            (
-                "B".into(),
-                KeyboardPattern {
-                    key: "B".into(),
-                    chords: [
-                        KeyboardPatternChord {
-                            chord_name: "F".into(),
-                            from_1_16th_incl: 1,
-                            to_1_16th_incl: 16,
-                            notes: [
-                                //
-                                "F3".into(),
-                                //
-                                "A3".into(),
-                                //
-                                "C4".into(),
-                            ]
-                            .into(),
-                        },
-                        KeyboardPatternChord {
-                            chord_name: "Dm".into(),
-                            from_1_16th_incl: 16 + 1,
-                            to_1_16th_incl: 16 + 16,
-                            notes: [
-                                //
-                                "D3".into(),
-                                //
-                                "F3".into(),
-                                //
-                                "A3".into(),
-                            ]
-                            .into(),
-                        },
-                        KeyboardPatternChord {
-                            chord_name: "C".into(),
-                            from_1_16th_incl: 16 + 16 + 1,
-                            to_1_16th_incl: 16 + 16 + 16,
-                            notes: [
-                                //
-                                "C3".into(),
-                                //
-                                "E3".into(),
-                                //
-                                "G3".into(),
-                            ]
-                            .into(),
-                        },
-                        KeyboardPatternChord {
-                            chord_name: "G".into(),
-                            from_1_16th_incl: 16 + 16 + 16 + 1,
-                            to_1_16th_incl: 16 + 16 + 16 + 16,
-                            notes: [
-                                //
-                                "D3".into(),
-                                //
-                                "G3".into(),
-                                //
-                                "B3".into(),
-                            ]
-                            .into(),
-                        },
-                    ]
-                    .into(),
-                },
-            ),
-        ]),
-        bass_patterns: HashMap::new(),
-        sections: [
-            SongSection {
-                kind: SongSectionKind::Intro,
-                bars: 4,
-                time_signature: (4, 4),
-                num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("A".into()),
-                bass_pattern_key: None,
-                notes: None,
-            },
-            SongSection {
-                kind: SongSectionKind::Verse,
-                bars: 8,
-                time_signature: (4, 4),
-                num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("A".into()),
-                bass_pattern_key: None,
-                notes: None,
-            },
-            SongSection {
-                kind: SongSectionKind::Chorus,
-                bars: 8,
-                time_signature: (4, 4),
-                num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("B".into()),
-                bass_pattern_key: None,
-                notes: None,
-            },
-            SongSection {
-                kind: SongSectionKind::Verse,
-                bars: 8,
-                time_signature: (4, 4),
-                num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("A".into()),
-                bass_pattern_key: None,
-                notes: None,
-            },
-            SongSection {
-                kind: SongSectionKind::Chorus,
-                bars: 8,
-                time_signature: (4, 4),
-                num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("B".into()),
-                bass_pattern_key: None,
-                notes: None,
-            },
-            SongSection {
-                kind: SongSectionKind::Outro,
-                bars: 4,
-                time_signature: (4, 4),
-                num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: Some("A".into()),
-                keyboard_pattern_key: Some("A".into()),
-                bass_pattern_key: None,
-                notes: None,
-            },
-        ]
-        .into(),
     }
 }

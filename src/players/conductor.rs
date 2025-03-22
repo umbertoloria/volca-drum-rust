@@ -64,10 +64,9 @@ impl Conductor {
         enable_interactive_cli: bool,
     ) {
         // Web Server updates
-        if tempo_snapshot.cur_1_16 == 1 {
-            // Notify only every new Quarter.
-            web_thread_comm_sender.notify_from_music_thread_song_update(&tempo_snapshot);
-        }
+        // if tempo_snapshot.cur_1_16 == 1 {}
+        // Notify only every new 1/16th.
+        web_thread_comm_sender.notify_from_music_thread_song_update(&tempo_snapshot);
 
         // Interactive CLI
         if enable_interactive_cli {
