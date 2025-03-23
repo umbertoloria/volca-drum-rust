@@ -26,27 +26,23 @@ impl Drummer {
             queued_instrument: InstrumentWithQueuedDrumSounds::new(instrument, log),
         }
     }
-    fn get_instrument_pattern(
+    fn get_instrument_pattern<'a>(
         &mut self,
-        song: &Song,
+        song: &'a Song,
         song_section: &SongSection,
-    ) -> Option<DrumPattern> {
+    ) -> Option<&'a DrumPattern> {
         match &song_section.drum_pattern_key {
-            Some(drum_pattern_key) => {
-                let drum_pattern = song
-                    .get_drum_pattern_from_key(drum_pattern_key.into())
-                    .expect("Unable to find right Drum Pattern")
-                    // TODO: Avoid cloning pattern
-                    .clone();
-                Some(drum_pattern)
-            }
+            Some(drum_pattern_key) => Some(
+                song.get_drum_pattern_from_key(drum_pattern_key)
+                    .expect("Unable to find right Drum Pattern"),
+            ),
             None => None,
         }
     }
     fn play_1_16th(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
-        instrument_pattern: Option<DrumPattern>,
+        instrument_pattern: Option<&DrumPattern>,
     ) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument

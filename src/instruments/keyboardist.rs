@@ -21,27 +21,23 @@ impl Keyboardist {
             queued_instrument: InstrumentWithQueuedNotes::new(instrument, log),
         }
     }
-    fn get_instrument_pattern(
+    fn get_instrument_pattern<'a>(
         &mut self,
-        song: &Song,
+        song: &'a Song,
         song_section: &SongSection,
-    ) -> Option<KeyboardPattern> {
+    ) -> Option<&'a KeyboardPattern> {
         match &song_section.keyboard_pattern_key {
-            Some(keyboard_pattern_key) => {
-                let keyboard_pattern = song
-                    .get_keyboard_pattern_from_key(keyboard_pattern_key.into())
-                    .expect("Unable to find right Keyboard Pattern")
-                    // TODO: Avoid cloning pattern
-                    .clone();
-                Some(keyboard_pattern)
-            }
+            Some(keyboard_pattern_key) => Some(
+                song.get_keyboard_pattern_from_key(keyboard_pattern_key)
+                    .expect("Unable to find right Keyboard Pattern"),
+            ),
             None => None,
         }
     }
     fn play_1_16th(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
-        instrument_pattern: Option<KeyboardPattern>,
+        instrument_pattern: Option<&KeyboardPattern>,
     ) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument

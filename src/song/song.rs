@@ -18,14 +18,14 @@ pub struct Song {
     pub sections: Vec<SongSection>,
 }
 impl Song {
-    pub fn get_drum_pattern_from_key(&self, pattern_key: String) -> Option<&DrumPattern> {
-        self.drum_patterns.get(&pattern_key)
+    pub fn get_drum_pattern_from_key(&self, pattern_key: &String) -> Option<&DrumPattern> {
+        self.drum_patterns.get(pattern_key)
     }
-    pub fn get_keyboard_pattern_from_key(&self, pattern_key: String) -> Option<&KeyboardPattern> {
-        self.keyboard_patterns.get(&pattern_key)
+    pub fn get_keyboard_pattern_from_key(&self, pattern_key: &String) -> Option<&KeyboardPattern> {
+        self.keyboard_patterns.get(pattern_key)
     }
-    pub fn get_bass_pattern_from_key(&self, pattern_key: String) -> Option<&BassPattern> {
-        self.bass_patterns.get(&pattern_key)
+    pub fn get_bass_pattern_from_key(&self, pattern_key: &String) -> Option<&BassPattern> {
+        self.bass_patterns.get(pattern_key)
     }
 }
 

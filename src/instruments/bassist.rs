@@ -4,8 +4,7 @@ use crate::instruments::lib::instrument_with_queued_note::InstrumentWithQueuedNo
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{BassPattern, Song, SongSection};
 
-// FIXME: Too much similar to Keyboardist
-// FIXME: Too few similar to Drummer
+// FIXME: Too much similarities between Drummer, Bassist, Keyboardist, Metronome
 pub struct Bassist {
     inner_instrument_name_16_chars: String,
 
@@ -23,27 +22,23 @@ impl Bassist {
             queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
         }
     }
-    fn get_instrument_pattern(
+    fn get_instrument_pattern<'a>(
         &mut self,
-        song: &Song,
+        song: &'a Song,
         song_section: &SongSection,
-    ) -> Option<BassPattern> {
-        match &song_section.keyboard_pattern_key {
-            Some(bass_pattern_key) => {
-                let bass_pattern = song
-                    .get_bass_pattern_from_key(bass_pattern_key.into())
-                    .expect("Unable to find right Bass Pattern")
-                    // TODO: Avoid cloning pattern
-                    .clone();
-                Some(bass_pattern)
-            }
+    ) -> Option<&'a BassPattern> {
+        match &song_section.bass_pattern_key {
+            Some(bass_pattern_key) => Some(
+                song.get_bass_pattern_from_key(bass_pattern_key)
+                    .expect("Unable to find right Bass Pattern"),
+            ),
             None => None,
         }
     }
     fn play_1_16th(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
-        instrument_pattern: Option<BassPattern>,
+        instrument_pattern: Option<&BassPattern>,
     ) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument
