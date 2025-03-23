@@ -14,16 +14,6 @@ impl Metronome {
             queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
         }
     }
-    fn get_instrument_pattern<'a>(
-        &mut self,
-        song: &'a Song,
-        song_section: &SongSection,
-    ) -> Option<&'a SongMetronomeData> {
-        match &song.metronome_data {
-            Some(metronome_data) => Some(metronome_data),
-            None => None,
-        }
-    }
     fn play_1_16th(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
@@ -55,7 +45,17 @@ impl Metronome {
         }
     }
 }
-impl Instrument for Metronome {
+impl Instrument<SongMetronomeData> for Metronome {
+    fn get_instrument_pattern<'a>(
+        &mut self,
+        song: &'a Song,
+        song_section: &SongSection,
+    ) -> Option<&'a SongMetronomeData> {
+        match &song.metronome_data {
+            Some(metronome_data) => Some(metronome_data),
+            None => None,
+        }
+    }
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
         let mut realtime_player = create_realtime_player(&song, start_from_millis);

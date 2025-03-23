@@ -22,19 +22,6 @@ impl Drummer {
             queued_instrument: InstrumentWithQueuedDrumSounds::new(instrument, log),
         }
     }
-    fn get_instrument_pattern<'a>(
-        &mut self,
-        song: &'a Song,
-        song_section: &SongSection,
-    ) -> Option<&'a DrumPattern> {
-        match &song_section.drum_pattern_key {
-            Some(drum_pattern_key) => Some(
-                song.get_drum_pattern_from_key(drum_pattern_key)
-                    .expect("Unable to find right Drum Pattern"),
-            ),
-            None => None,
-        }
-    }
     fn play_1_16th(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
@@ -77,7 +64,20 @@ impl Drummer {
         }
     }
 }
-impl Instrument for Drummer {
+impl Instrument<DrumPattern> for Drummer {
+    fn get_instrument_pattern<'a>(
+        &mut self,
+        song: &'a Song,
+        song_section: &SongSection,
+    ) -> Option<&'a DrumPattern> {
+        match &song_section.drum_pattern_key {
+            Some(drum_pattern_key) => Some(
+                song.get_drum_pattern_from_key(drum_pattern_key)
+                    .expect("Unable to find right Drum Pattern"),
+            ),
+            None => None,
+        }
+    }
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
         let mut realtime_player = create_realtime_player(&song, start_from_millis);

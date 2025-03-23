@@ -47,9 +47,9 @@ impl InstrumentBroadcastComm {
         }
     }*/
 }
-pub fn start_listening_to_instrument_comm_commands(
+pub fn start_listening_to_instrument_comm_commands<InstrumentPatternType>(
     instrument_comm_receiver: InstrumentCommReceiver,
-    instrument: &mut impl Instrument,
+    instrument: &mut impl Instrument<InstrumentPatternType>,
 ) {
     for command in instrument_comm_receiver.get_recv_iter() {
         match command {

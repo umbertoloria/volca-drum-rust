@@ -15,19 +15,6 @@ impl Bassist {
             queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
         }
     }
-    fn get_instrument_pattern<'a>(
-        &mut self,
-        song: &'a Song,
-        song_section: &SongSection,
-    ) -> Option<&'a BassPattern> {
-        match &song_section.bass_pattern_key {
-            Some(bass_pattern_key) => Some(
-                song.get_bass_pattern_from_key(bass_pattern_key)
-                    .expect("Unable to find right Bass Pattern"),
-            ),
-            None => None,
-        }
-    }
     fn play_1_16th(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
@@ -86,7 +73,20 @@ impl Bassist {
         }
     }
 }
-impl Instrument for Bassist {
+impl Instrument<BassPattern> for Bassist {
+    fn get_instrument_pattern<'a>(
+        &mut self,
+        song: &'a Song,
+        song_section: &SongSection,
+    ) -> Option<&'a BassPattern> {
+        match &song_section.bass_pattern_key {
+            Some(bass_pattern_key) => Some(
+                song.get_bass_pattern_from_key(bass_pattern_key)
+                    .expect("Unable to find right Bass Pattern"),
+            ),
+            None => None,
+        }
+    }
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
