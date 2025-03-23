@@ -37,8 +37,6 @@ pub struct SongDetails {
 #[derive(Clone, Debug)]
 pub struct SongTempo {
     pub bpm: usize,
-    // Assuming bpm ticks to 1/4.
-    pub time_signature: SongTimeSignature,
 }
 #[derive(Clone, Debug)]
 pub struct SongTimeSignature {
@@ -68,7 +66,6 @@ pub struct SongSection {
     pub kind: SongSectionKind,
     pub bars: usize,
     pub time_signature: SongTimeSignature,
-    pub num_1_16s_in_a_quarter: usize,
     pub drum_pattern_key: Option<String>,
     pub keyboard_pattern_key: Option<String>,
     pub bass_pattern_key: Option<String>,

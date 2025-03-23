@@ -31,8 +31,8 @@ impl Keyboardist {
     }
     fn update_pattern_from_song_section(&mut self, song: &Song) {
         if self.curr_section_index < song.sections.len() {
-            let current_song_section = &song.sections[self.curr_section_index];
-            self.pattern = match &current_song_section.keyboard_pattern_key {
+            let curr_song_section = &song.sections[self.curr_section_index];
+            self.pattern = match &curr_song_section.keyboard_pattern_key {
                 Some(keyboard_pattern_key) => {
                     let keyboard_pattern = song
                         .get_keyboard_pattern_from_key(keyboard_pattern_key.into())
@@ -101,7 +101,8 @@ impl Keyboardist {
         }
 
         // Preparing the next hit!
-        if tempo_snapshot.is_this_the_last_1_16th_of_this_section(&song) {
+        let curr_song_section = &song.sections[self.curr_section_index];
+        if tempo_snapshot.is_this_the_last_1_16th_of_this_section(&curr_song_section) {
             self.curr_section_index += 1;
             self.update_pattern_from_song_section(&song);
         }

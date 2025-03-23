@@ -60,9 +60,6 @@ impl JsonSong {
             title: song.details.title,
             tempo: JsonSongTempo {
                 bpm: song.tempo.bpm,
-                time_signature_top: song.tempo.time_signature.top,
-                time_signature_down: song.tempo.time_signature.down,
-                // TODO: Support 1/8ths in triplets subdivisions
             },
             sections,
         }
@@ -75,8 +72,6 @@ impl JsonSong {
 #[derive(Serialize, Deserialize)]
 pub struct JsonSongTempo {
     bpm: usize,
-    time_signature_top: usize,  // Es. 6 for 6/8 bars.
-    time_signature_down: usize, // Es. 8 for 6/8 bars.
 }
 
 #[derive(Serialize, Deserialize)]

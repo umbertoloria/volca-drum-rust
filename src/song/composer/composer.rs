@@ -48,10 +48,7 @@ impl Composer {
                 author: "Smart composer".into(),
                 title: "Smart song".into(),
             },
-            tempo: SongTempo {
-                bpm,
-                time_signature: TIME_SIGNATURE_4_4,
-            },
+            tempo: SongTempo { bpm },
             metronome_data: if click {
                 Some(SongMetronomeData {
                     click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
@@ -108,7 +105,6 @@ impl Composer {
                 kind: SongSectionKind::Verse,
                 bars,
                 time_signature: TIME_SIGNATURE_4_4,
-                num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some(keyboard_pattern_key),
                 bass_pattern_key: None,
