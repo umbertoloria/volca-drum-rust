@@ -19,15 +19,22 @@ impl JsonSong {
             let mut chord_changes_in_time = Vec::new();
             if let Some(keyboard_pattern_key) = section.keyboard_pattern_key {
                 let keyboard_pattern = song.keyboard_patterns.get(&keyboard_pattern_key).unwrap();
-                for keyboard_pattern_chord in &keyboard_pattern.chords {
-                    chord_changes_in_time.push(
-                        //
-                        JsonSongSectionChordChange {
-                            i_1_16th_start: keyboard_pattern_chord.from_1_16th_incl,
-                            // TODO: Avoid Keyboard Pattern Chord Name clone
-                            chord_name: keyboard_pattern_chord.chord_name.clone(),
-                        },
-                    );
+                let mut num_bars_covered_for_now = 0;
+                while num_bars_covered_for_now < section.bars {
+                    for keyboard_pattern_chord in &keyboard_pattern.chords {
+                        // Assuming 4/4 bars with 1/4ths made of *4* 1/16ths.
+                        let num_1_16ths_in_bar = num_bars_covered_for_now * 4 * 4;
+                        chord_changes_in_time.push(
+                            //
+                            JsonSongSectionChordChange {
+                                i_1_16th_start: num_1_16ths_in_bar
+                                    + keyboard_pattern_chord.from_1_16th_incl,
+                                // TODO: Avoid Keyboard Pattern Chord Name clone
+                                chord_name: keyboard_pattern_chord.chord_name.clone(),
+                            },
+                        );
+                    }
+                    num_bars_covered_for_now += keyboard_pattern.get_ceil_num_bars_coverage();
                 }
             }
 

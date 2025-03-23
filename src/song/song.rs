@@ -122,7 +122,7 @@ pub struct KeyboardPattern {
 }
 impl KeyboardPattern {
     // TODO: Duplicated code (*pkf)
-    pub fn get_total_to_1_16th_incl(&self) -> usize {
+    fn get_total_to_1_16th_incl(&self) -> usize {
         let last_chord = &self.chords[self.chords.len() - 1];
         last_chord.to_1_16th_incl
     }
@@ -190,7 +190,7 @@ impl BassPattern {
         chords
     }
     // TODO: Duplicated code (*pkf)
-    pub fn get_total_to_1_16th_incl(&self) -> usize {
+    fn get_total_to_1_16th_incl(&self) -> usize {
         let bass_chords = self.get_chords();
         let last_chord = &bass_chords[bass_chords.len() - 1];
         last_chord.to_1_16th_incl
