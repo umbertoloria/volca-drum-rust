@@ -65,10 +65,6 @@ fn music_thread_logics(
 
 pub fn get_song_to_play() -> Song {
     // SONG
-    /*
-    let song_yaml = read_song_from_yaml("files/songs/harry-styles-sign-of-the-times.yaml");
-    let song = convert_yaml_into_song(song_yaml);
-    */
     let mut composer = Composer::new(
         //
         210,
@@ -86,5 +82,7 @@ pub fn get_song_to_play() -> Song {
     // let song = get_song_o1();
     // let song = get_song_o2(80);
     // let song = get_song_o2(100);
+    // let song = get_song_o2(120);
+    // let song = get_song_o2(135);
     song
 }

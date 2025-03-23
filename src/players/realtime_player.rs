@@ -137,7 +137,7 @@ fn create_song_instant_list_from_song_and_start_from_millis(
         for i_section_bar in 0..section.bars {
             // Beginning of a new bar.
 
-            for i_quarter in 0..song.tempo.time_signature.0 {
+            for i_quarter in 0..song.tempo.time_signature.top {
                 // Beginning of a quarter.
 
                 for i_quarter_1_16th in 0..4 {
@@ -203,7 +203,7 @@ impl TempoSnapshot {
     pub fn is_this_the_last_1_16th_of_this_section(&self, song: &Song) -> bool {
         // Assuming this is the last hit (what if there was a "6/8"?)
         self.cur_bar == self.section_bar_last
-            && self.cur_quarter == song.tempo.time_signature.0
+            && self.cur_quarter == song.tempo.time_signature.top
             && self.cur_1_16 == 4
     }
     pub fn string_info(&self) -> String {

@@ -3,6 +3,7 @@ use crate::song::composer::random_chord_progression_composer::RandomChordProgres
 use crate::song::song::{
     get_standard_click_note, KeyboardPattern, KeyboardPatternChord, Song, SongDetails,
     SongMetronomeData, SongMetronomeDataClickOn, SongSection, SongSectionKind, SongTempo,
+    TIME_SIGNATURE_4_4,
 };
 use std::collections::HashMap;
 /*pub enum TonalityNote {
@@ -49,7 +50,7 @@ impl Composer {
             },
             tempo: SongTempo {
                 bpm,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
             },
             metronome_data: if click {
                 Some(SongMetronomeData {
@@ -106,7 +107,7 @@ impl Composer {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some(keyboard_pattern_key),
@@ -181,7 +182,7 @@ impl ComposerChord {
 
         // TODO: Support Chords Inversions and Voice Leading
         Self {
-            // TODO: Improve Chord Name using notes from Tonality Mode
+            // TODO: Improve Chord Name using notes from Tonality Mode, since we only have Root info
             chord_name: root_note.to_pretty_string().unwrap().into(),
             notes: vec![root_note, third_note, fifth_note],
         }

@@ -2,7 +2,7 @@ use crate::music::chord::Chord;
 use crate::song::song::{
     BassLine, BassLinePart, BassPattern, DrumPattern, KeyboardPattern, KeyboardPatternChord, Song,
     SongDetails, SongMetronomeData, SongMetronomeDataClickOn, SongSection, SongSectionKind,
-    SongTempo,
+    SongTempo, TIME_SIGNATURE_4_4,
 };
 use std::collections::HashMap;
 
@@ -15,7 +15,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
         },
         tempo: SongTempo {
             bpm: 68,
-            time_signature: (4, 4),
+            time_signature: TIME_SIGNATURE_4_4,
         },
         /*metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
@@ -119,7 +119,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Intro,
                 bars: 3 + 1,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 // drum_pattern_key: None, // Always have HH or some sort of click.
                 drum_pattern_key: Some("C".into()),
@@ -131,7 +131,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4 + 2,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
@@ -142,7 +142,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Chorus,
                 bars: 4 + 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("B".into()),
                 keyboard_pattern_key: Some("A".into()),
@@ -153,7 +153,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::PostChorus,
                 bars: 2,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("C".into()),
                 keyboard_pattern_key: Some("A".into()),
@@ -164,7 +164,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4 + 2,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("A".into()),
                 keyboard_pattern_key: Some("A".into()),
@@ -175,7 +175,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Chorus,
                 bars: 4 + 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("B".into()),
                 keyboard_pattern_key: Some("A".into()),
@@ -186,7 +186,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Avoid having no drums at all!
                 keyboard_pattern_key: Some("A".into()),
@@ -197,7 +197,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Have "Distant Drums"!
                 keyboard_pattern_key: Some("A".into()),
@@ -208,7 +208,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("C".into()),
                 keyboard_pattern_key: Some("A".into()),
@@ -219,7 +219,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Avoid having no drums at all!
                 keyboard_pattern_key: Some("A".into()),
@@ -230,7 +230,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Chorus,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: Some("B".into()),
                 keyboard_pattern_key: Some("A".into()),
@@ -241,7 +241,7 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
             SongSection {
                 kind: SongSectionKind::Outro,
                 bars: 2,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None, // Avoid having no drums at all!
                 keyboard_pattern_key: Some("A".into()),
@@ -261,7 +261,7 @@ pub fn get_song_o1() -> Song {
         },
         tempo: SongTempo {
             bpm: 68,
-            time_signature: (4, 4),
+            time_signature: TIME_SIGNATURE_4_4,
         },
         metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
@@ -441,7 +441,7 @@ pub fn get_song_o1() -> Song {
             SongSection {
                 kind: SongSectionKind::Intro,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -452,7 +452,7 @@ pub fn get_song_o1() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -463,7 +463,7 @@ pub fn get_song_o1() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("C".into()),
@@ -474,7 +474,7 @@ pub fn get_song_o1() -> Song {
             SongSection {
                 kind: SongSectionKind::Bridge,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("D".into()),
@@ -485,7 +485,7 @@ pub fn get_song_o1() -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 4,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("C".into()),
@@ -507,7 +507,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
         tempo: SongTempo {
             // bpm: 80, // Default is "80".
             bpm,
-            time_signature: (4, 4),
+            time_signature: TIME_SIGNATURE_4_4,
         },
         metronome_data: Some(SongMetronomeData {
             click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
@@ -622,7 +622,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -633,7 +633,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -645,7 +645,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -656,7 +656,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -668,7 +668,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -679,7 +679,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -691,7 +691,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -702,7 +702,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -714,7 +714,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -725,7 +725,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -737,7 +737,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -748,7 +748,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -760,7 +760,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -771,7 +771,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),
@@ -783,7 +783,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("A".into()),
@@ -794,7 +794,7 @@ pub fn get_song_o2(bpm: usize) -> Song {
             SongSection {
                 kind: SongSectionKind::Verse,
                 bars: 8,
-                time_signature: (4, 4),
+                time_signature: TIME_SIGNATURE_4_4,
                 num_1_16s_in_a_quarter: 4,
                 drum_pattern_key: None,
                 keyboard_pattern_key: Some("B".into()),

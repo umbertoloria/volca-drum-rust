@@ -46,8 +46,8 @@ impl JsonSong {
                     kind: get_song_section_kind_string(&section.kind),
                     bars: section.bars,
                     first_bar_num: i_bar,
-                    time_signature_top: section.time_signature.0,
-                    time_signature_down: section.time_signature.1,
+                    time_signature_top: section.time_signature.top,
+                    time_signature_down: section.time_signature.down,
                     chord_changes_in_time,
                 },
             );
@@ -60,8 +60,9 @@ impl JsonSong {
             title: song.details.title,
             tempo: JsonSongTempo {
                 bpm: song.tempo.bpm,
-                time_signature_top: song.tempo.time_signature.0,
-                time_signature_down: song.tempo.time_signature.1,
+                time_signature_top: song.tempo.time_signature.top,
+                time_signature_down: song.tempo.time_signature.down,
+                // TODO: Support 1/8ths in triplets subdivisions
             },
             sections,
         }

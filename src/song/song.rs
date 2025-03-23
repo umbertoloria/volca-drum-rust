@@ -1,5 +1,4 @@
 use crate::music::note::Note;
-use crate::song::yaml_song_reader::{YamlSong, YamlSongSection};
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter};
 
@@ -39,8 +38,19 @@ pub struct SongDetails {
 pub struct SongTempo {
     pub bpm: usize,
     // Assuming bpm ticks to 1/4.
-    pub time_signature: (usize, usize), // Es. (4, 4) for 4/4 bars.
+    pub time_signature: SongTimeSignature,
 }
+#[derive(Clone, Debug)]
+pub struct SongTimeSignature {
+    pub top: usize,
+    pub down: usize,
+    pub i_1_8ths_triplets: bool,
+}
+pub const TIME_SIGNATURE_4_4: SongTimeSignature = SongTimeSignature {
+    top: 4,
+    down: 4,
+    i_1_8ths_triplets: false,
+};
 #[derive(Clone, Debug)]
 pub struct SongMetronomeData {
     pub click_on: SongMetronomeDataClickOn,
@@ -57,7 +67,7 @@ pub enum SongMetronomeDataClickOn {
 pub struct SongSection {
     pub kind: SongSectionKind,
     pub bars: usize,
-    pub time_signature: (usize, usize), // Es. (4, 4) for 4/4 bars.
+    pub time_signature: SongTimeSignature,
     pub num_1_16s_in_a_quarter: usize,
     pub drum_pattern_key: Option<String>,
     pub keyboard_pattern_key: Option<String>,
@@ -66,8 +76,9 @@ pub struct SongSection {
 }
 impl SongSection {
     pub fn get_num_1_16s(&self) -> usize {
-        // Assuming "self.time_signature.1" is 4.
-        self.bars * self.time_signature.0 * self.time_signature.1
+        // Assuming "self.time_signature.down" is 4, so 1/4ths.
+        let num_1_16ths_in_one_quarter = 4;
+        self.bars * self.time_signature.top * num_1_16ths_in_one_quarter
     }
 }
 #[derive(Clone, Debug)]
@@ -91,18 +102,6 @@ impl Display for SongSectionKind {
             SongSectionKind::Bridge => write!(f, "Bridge"),
             SongSectionKind::Outro => write!(f, "Outro"),
         }
-    }
-}
-pub fn convert_section_kind_from_string(
-    section: &YamlSongSection,
-) -> Result<SongSectionKind, &str> {
-    match section.kind.as_str() {
-        "Intro" => Ok(SongSectionKind::Intro),
-        "Verse" => Ok(SongSectionKind::Verse),
-        "Chorus" => Ok(SongSectionKind::Chorus),
-        "Bridge" => Ok(SongSectionKind::Bridge),
-        "Outro" => Ok(SongSectionKind::Outro),
-        _ => Err("Unknown Song Kind"),
     }
 }
 
@@ -220,40 +219,4 @@ pub struct BassLine {
 pub struct BassLinePart {
     pub tonic: Note,        // Es. "F2"
     pub line: &'static str, // Es. "1_1_1___"
-}
-
-// Songs
-pub fn convert_yaml_into_song(yaml_song: YamlSong) -> Song {
-    Song {
-        id: "from-yaml".into(),
-        details: SongDetails {
-            title: yaml_song.title,
-            author: yaml_song.author,
-        },
-        tempo: SongTempo {
-            bpm: yaml_song.tempo_1_4,
-            time_signature: (4, 4),
-        },
-        metronome_data: Some(SongMetronomeData {
-            click_on: SongMetronomeDataClickOn::OnEvery1_4ths,
-            note: get_standard_click_note(),
-        }),
-        drum_patterns: HashMap::new(),
-        keyboard_patterns: HashMap::new(),
-        bass_patterns: HashMap::new(),
-        sections: yaml_song
-            .sections
-            .iter()
-            .map(|section| SongSection {
-                kind: convert_section_kind_from_string(section).unwrap(),
-                bars: section.bars,
-                time_signature: (4, 4),
-                num_1_16s_in_a_quarter: 4,
-                drum_pattern_key: None,
-                keyboard_pattern_key: None,
-                bass_pattern_key: None,
-                notes: section.notes.clone(),
-            })
-            .collect(),
-    }
 }
