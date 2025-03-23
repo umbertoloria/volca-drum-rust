@@ -5,19 +5,12 @@ use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{KeyboardPattern, Song, SongSection};
 
 pub struct Keyboardist {
-    inner_instrument_name_16_chars: String,
-
     // Outputs
     queued_instrument: InstrumentWithQueuedNotes,
 }
 impl Keyboardist {
-    pub fn new(
-        inner_instrument_name_16_chars: String,
-        instrument: Box<dyn AbstractInstrumentPoly>,
-        log: bool,
-    ) -> Self {
+    pub fn new(instrument: Box<dyn AbstractInstrumentPoly>, log: bool) -> Self {
         Self {
-            inner_instrument_name_16_chars,
             queued_instrument: InstrumentWithQueuedNotes::new(instrument, log),
         }
     }
@@ -93,20 +86,6 @@ impl Keyboardist {
     }
 }
 impl Instrument for Keyboardist {
-    fn get_instrument_name_16_chars(&self) -> String {
-        // TODO: Avoid cloning Instrument Name
-        self.inner_instrument_name_16_chars.clone()
-    }
-    /*fn get_short_info(&self) -> String {
-        if let Some(pattern) = &self.pattern {
-            let keys_chords = &pattern.chords;
-            if self.chord_index < keys_chords.len() {
-                let chord = &keys_chords[self.chord_index];
-                return format!("part \"{}\" / {} chord", pattern.key, chord.chord_name);
-            }
-        }
-        "".to_string()
-    }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
         let mut realtime_player = create_realtime_player(&song, start_from_millis);

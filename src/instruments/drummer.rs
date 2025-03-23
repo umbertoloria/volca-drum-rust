@@ -7,21 +7,17 @@ use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
 use crate::song::song::{DrumPattern, Song, SongSection};
 
 pub struct Drummer {
-    inner_instrument_name_16_chars: String,
-
     // Outputs
     volca_drum: VolcaDrum,
     queued_instrument: InstrumentWithQueuedDrumSounds,
 }
 impl Drummer {
     pub fn new(
-        inner_instrument_name_16_chars: String,
         volca_drum: VolcaDrum,
         instrument: Box<dyn AbstractInstrumentPolyDrumSounds>,
         log: bool,
     ) -> Self {
         Self {
-            inner_instrument_name_16_chars,
             volca_drum,
             queued_instrument: InstrumentWithQueuedDrumSounds::new(instrument, log),
         }
@@ -82,17 +78,6 @@ impl Drummer {
     }
 }
 impl Instrument for Drummer {
-    fn get_instrument_name_16_chars(&self) -> String {
-        // TODO: Avoid cloning Instrument Name
-        self.inner_instrument_name_16_chars.clone()
-    }
-    /*fn get_short_info(&self) -> String {
-        if let Some(pattern) = &self.pattern {
-            format!("part \"{}\"", pattern.key)
-        } else {
-            "no drums".to_string()
-        }
-    }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
         let mut realtime_player = create_realtime_player(&song, start_from_millis);

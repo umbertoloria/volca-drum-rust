@@ -2,29 +2,32 @@ use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_instruments::AbstractInstrumentMono;
 use crate::instruments::lib::instrument_with_queued_note::InstrumentWithQueuedNote;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
-use crate::song::song::{Song, SongMetronomeData, SongMetronomeDataClickOn};
+use crate::song::song::{Song, SongMetronomeData, SongMetronomeDataClickOn, SongSection};
 
 pub struct Metronome {
-    inner_instrument_name_16_chars: String,
-
     // Outputs
     queued_instrument: InstrumentWithQueuedNote,
 }
 impl Metronome {
-    pub fn new(
-        inner_instrument_name_16_chars: String,
-        instrument: Box<dyn AbstractInstrumentMono>,
-        log: bool,
-    ) -> Self {
+    pub fn new(instrument: Box<dyn AbstractInstrumentMono>, log: bool) -> Self {
         Self {
-            inner_instrument_name_16_chars,
             queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
+        }
+    }
+    fn get_instrument_pattern<'a>(
+        &mut self,
+        song: &'a Song,
+        song_section: &SongSection,
+    ) -> Option<&'a SongMetronomeData> {
+        match &song.metronome_data {
+            Some(metronome_data) => Some(metronome_data),
+            None => None,
         }
     }
     fn play_1_16th(
         &mut self,
         tempo_snapshot: &TempoSnapshot,
-        instrument_pattern: &Option<SongMetronomeData>,
+        instrument_pattern: Option<&SongMetronomeData>,
     ) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument
@@ -53,20 +56,14 @@ impl Metronome {
     }
 }
 impl Instrument for Metronome {
-    fn get_instrument_name_16_chars(&self) -> String {
-        // TODO: Avoid cloning Instrument Name
-        self.inner_instrument_name_16_chars.clone()
-    }
-    /*fn get_short_info(&self) -> String {
-        "Metronome".to_string()
-    }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
         while realtime_player.has_next_song_instant() {
-            let (_, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
+            let (i_section, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
 
-            let instrument_pattern = &song.metronome_data;
+            let curr_song_section = &song.sections[i_section];
+            let instrument_pattern = self.get_instrument_pattern(&song, &curr_song_section);
             self.play_1_16th(tempo_snapshot, instrument_pattern);
 
             realtime_player.prepare_next_1_16th();

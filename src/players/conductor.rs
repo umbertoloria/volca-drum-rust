@@ -81,7 +81,7 @@ impl Conductor {
             // TODO: Print info about what all instruments are playing...
             /*
             for instrument in &mut self.instruments {
-                let instrument_name = instrument.get_instrument_name();
+                let instrument_name = instrument.get_instrument_name_16_chars();
                 let short_info = instrument.get_short_info();
                 println!("  {}: {}", instrument_name, short_info);
             }

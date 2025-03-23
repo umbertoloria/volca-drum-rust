@@ -173,7 +173,6 @@ fn create_instrument_threads(
     // Metronome Synth
     let metronome_synth_thread = thread::spawn(move || {
         let mut metronome_synth = Metronome::new(
-            "SynthMetronome  ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadMetronomeSynth".into(),
                 SynthThreadAudioChannel::MetronomeClick,
@@ -209,8 +208,6 @@ fn create_instrument_threads(
         sound_panel.set_from_patch(patch1);
 
         let mut drummer = Drummer::new(
-            //
-            "Drummer         ".into(),
             volca_drum,
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadDrumsSynth".into(),
@@ -234,7 +231,6 @@ fn create_instrument_threads(
         let volca_keys = VolcaKeys::new(midi_device);
 
         let mut keyboard = Keyboardist::new(
-            "Keyboard        ".into(),
             Box::new(KeysBasedInstrumentVolcaKeys::new(volca_keys)),
             KEYS_SYNTH_ENABLE_LOGGING,
         );
@@ -244,7 +240,6 @@ fn create_instrument_threads(
     // Keys Synth
     let keys_synth_thread = thread::spawn(move || {
         let mut keys_synth = Keyboardist::new(
-            "SynthKeys       ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadKeysSynth".into(),
                 SynthThreadAudioChannel::Main,
@@ -262,7 +257,6 @@ fn create_instrument_threads(
     // Bass Synth
     let bass_synth_thread = thread::spawn(move || {
         let mut bass_synth = Bassist::new(
-            "SynthBass       ".into(),
             Box::new(ThreadForSynthInstrument::new(
                 "ThreadBassSynth".into(),
                 SynthThreadAudioChannel::Main,

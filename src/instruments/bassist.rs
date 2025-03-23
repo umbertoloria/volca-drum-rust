@@ -6,19 +6,12 @@ use crate::song::song::{BassPattern, Song, SongSection};
 
 // FIXME: Too much similarities between Drummer, Bassist, Keyboardist, Metronome
 pub struct Bassist {
-    inner_instrument_name_16_chars: String,
-
     // Outputs
     queued_instrument: InstrumentWithQueuedNote,
 }
 impl Bassist {
-    pub fn new(
-        inner_instrument_name_16_chars: String,
-        instrument: Box<dyn AbstractInstrumentMono>,
-        log: bool,
-    ) -> Self {
+    pub fn new(instrument: Box<dyn AbstractInstrumentMono>, log: bool) -> Self {
         Self {
-            inner_instrument_name_16_chars,
             queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
         }
     }
@@ -94,20 +87,6 @@ impl Bassist {
     }
 }
 impl Instrument for Bassist {
-    fn get_instrument_name_16_chars(&self) -> String {
-        // TODO: Avoid cloning Instrument Name
-        self.inner_instrument_name_16_chars.clone()
-    }
-    /*fn get_short_info(&self) -> String {
-        if let Some(pattern) = &self.pattern {
-            let bass_chords = pattern.get_chords();
-            if self.chord_index < bass_chords.len() {
-                let chord = &bass_chords[self.chord_index];
-                return format!("part \"{}\" / {} chord", pattern.key, chord.chord_name);
-            }
-        }
-        "".to_string()
-    }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
