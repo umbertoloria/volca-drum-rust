@@ -3,7 +3,7 @@ use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_instruments::AbstractInstrumentPolyDrumSounds;
 use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::instruments::lib::instrument_with_queued_sounds::InstrumentWithQueuedDrumSounds;
-use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
+use crate::players::realtime_player::TempoSnapshot;
 use crate::song::song::{DrumPattern, Song, SongSection};
 
 pub struct Drummer {
@@ -20,6 +20,21 @@ impl Drummer {
         Self {
             volca_drum,
             queued_instrument: InstrumentWithQueuedDrumSounds::new(instrument, log),
+        }
+    }
+}
+impl Instrument<DrumPattern> for Drummer {
+    fn get_instrument_pattern<'a>(
+        &mut self,
+        song: &'a Song,
+        song_section: &SongSection,
+    ) -> Option<&'a DrumPattern> {
+        match &song_section.drum_pattern_key {
+            Some(drum_pattern_key) => Some(
+                song.get_drum_pattern_from_key(drum_pattern_key)
+                    .expect("Unable to find right Drum Pattern"),
+            ),
+            None => None,
         }
     }
     fn play_1_16th(
@@ -63,34 +78,7 @@ impl Drummer {
             }
         }
     }
-}
-impl Instrument<DrumPattern> for Drummer {
-    fn get_instrument_pattern<'a>(
-        &mut self,
-        song: &'a Song,
-        song_section: &SongSection,
-    ) -> Option<&'a DrumPattern> {
-        match &song_section.drum_pattern_key {
-            Some(drum_pattern_key) => Some(
-                song.get_drum_pattern_from_key(drum_pattern_key)
-                    .expect("Unable to find right Drum Pattern"),
-            ),
-            None => None,
-        }
-    }
-    fn play_song(&mut self, song: Song, start_from_millis: u128) {
-        // TODO: Duplicated code (*hjk)
-        let mut realtime_player = create_realtime_player(&song, start_from_millis);
-        while realtime_player.has_next_song_instant() {
-            let (i_section, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
-
-            let curr_song_section = &song.sections[i_section];
-            let instrument_pattern = self.get_instrument_pattern(&song, &curr_song_section);
-            self.play_1_16th(tempo_snapshot, instrument_pattern);
-
-            realtime_player.prepare_next_1_16th();
-        }
-
+    fn clean_up(&mut self) {
         // Stopping the Queued Instrument.
         // TODO: Empty the Queue instead of "guessing" on the "1"...
         self.queued_instrument.stop_notes_queued_on_this_1_16th(1);
