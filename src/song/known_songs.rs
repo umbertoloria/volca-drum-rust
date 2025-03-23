@@ -252,6 +252,165 @@ pub fn get_song_coez_la_musica_non_c_e() -> Song {
         .into(),
     }
 }
+pub fn get_song_harry_styles_sign_of_the_times() -> Song {
+    Song {
+        id: "harry-styles-sign-of-the-times".into(),
+        details: SongDetails {
+            author: "Harry Styles".into(),
+            title: "Sign of the times".into(),
+        },
+        tempo: SongTempo {
+            bpm: 60,
+            time_signature: TIME_SIGNATURE_4_4,
+        },
+        /*metronome_data: Some(SongMetronomeData {
+            click_on: SongMetronomeDataClickOn::OnEvery1_8ths,
+            note: "C4".into(),
+        }),*/
+        metronome_data: None,
+        drum_patterns: HashMap::new(),
+        keyboard_patterns: HashMap::new(),
+        bass_patterns: HashMap::new(),
+        sections: [
+            // Intro 4
+            SongSection {
+                kind: SongSectionKind::Intro,
+                bars: 4,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: None,
+            },
+            // Verse 8
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: None,
+            },
+            // Verse 8
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("Fill!!!".into()),
+            },
+            // Chorus 8
+            SongSection {
+                kind: SongSectionKind::Chorus,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("2 fill".into()),
+            },
+            // Verse 8
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("2 fill".into()),
+            },
+            // Verse 8
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("\"We never learn, we've been here before\", mini-fill, fill".into()),
+            },
+            // Chorus 8
+            SongSection {
+                kind: SongSectionKind::Chorus,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("2 fill".into()),
+            },
+            // Verse 8
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some(
+                    "\"We never learn, we've been here before\", fill & climax, fill".into(),
+                ),
+            },
+            // Bridge 8
+            SongSection {
+                kind: SongSectionKind::Verse,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("Tanti fill".into()),
+            },
+            // Chorus 4
+            SongSection {
+                kind: SongSectionKind::Chorus,
+                bars: 4,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("Climax -> \"We got to get away\"".into()),
+            },
+            // Chorus 8
+            SongSection {
+                kind: SongSectionKind::Chorus,
+                bars: 8,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("\"We got to get away\", fill, fill & crash!".into()),
+            },
+            // Outro 4
+            SongSection {
+                kind: SongSectionKind::Outro,
+                bars: 4,
+                time_signature: TIME_SIGNATURE_4_4,
+                num_1_16s_in_a_quarter: 4,
+                drum_pattern_key: None,
+                keyboard_pattern_key: None,
+                bass_pattern_key: None,
+                notes: Some("Slight arpeggio".into()),
+            },
+        ]
+        .into(),
+    }
+}
+
 pub fn get_song_o1() -> Song {
     Song {
         id: "o1".into(),
