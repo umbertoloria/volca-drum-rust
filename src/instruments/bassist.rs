@@ -9,11 +9,6 @@ use crate::song::song::{BassPattern, Song, SongSection};
 pub struct Bassist {
     inner_instrument_name_16_chars: String,
 
-    // Charts
-    // FIXME: Avoid saving these two as well
-    pattern: Option<BassPattern>,
-    chord_index: usize,
-
     // Outputs
     queued_instrument: InstrumentWithQueuedNote,
 }
@@ -25,30 +20,36 @@ impl Bassist {
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
-            pattern: None,
-            chord_index: 0,
             queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
         }
     }
-    fn use_song_section(&mut self, song: &Song, song_section: &SongSection) {
-        self.pattern = match &song_section.keyboard_pattern_key {
+    fn get_instrument_pattern(
+        &mut self,
+        song: &Song,
+        song_section: &SongSection,
+    ) -> Option<BassPattern> {
+        match &song_section.keyboard_pattern_key {
             Some(bass_pattern_key) => {
-                let keyboard_pattern = song
+                let bass_pattern = song
                     .get_bass_pattern_from_key(bass_pattern_key.into())
                     .expect("Unable to find right Bass Pattern")
                     // TODO: Avoid cloning pattern
                     .clone();
-                Some(keyboard_pattern)
+                Some(bass_pattern)
             }
             None => None,
-        };
+        }
     }
-    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
+    fn play_1_16th(
+        &mut self,
+        tempo_snapshot: &TempoSnapshot,
+        instrument_pattern: Option<BassPattern>,
+    ) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument
             .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
-        if let Some(pattern) = &self.pattern {
+        if let Some(pattern) = instrument_pattern {
             let bars_covered_by_pattern = pattern.get_ceil_num_bars_coverage();
             // Adjusting because we may have 4 bars patter onto 8 bars section.
             let index_1_16th_for_pattern =
@@ -57,19 +58,19 @@ impl Bassist {
             let bass_chords = pattern.get_chords();
 
             // FIXME: This is slow
+            let mut chord = None;
             let mut i = 0;
-            for chord in &bass_chords {
-                if chord.from_1_16th_incl <= index_1_16th_for_pattern
-                    && index_1_16th_for_pattern <= chord.to_1_16th_incl
+            for _chord in &bass_chords {
+                if _chord.from_1_16th_incl <= index_1_16th_for_pattern
+                    && index_1_16th_for_pattern <= _chord.to_1_16th_incl
                 {
-                    self.chord_index = i;
+                    chord = Some(_chord);
                     break;
                 }
                 i += 1;
             }
 
-            if 0 <= self.chord_index && self.chord_index < bass_chords.len() {
-                let chord = &bass_chords[self.chord_index];
+            if let Some(chord) = chord {
                 let bass_note = &chord.note;
 
                 /*
@@ -114,15 +115,13 @@ impl Instrument for Bassist {
     }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
-        self.pattern = None;
-        self.chord_index = 0;
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
         while realtime_player.has_next_song_instant() {
             let (i_section, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
 
             let curr_song_section = &song.sections[i_section];
-            self.use_song_section(&song, &curr_song_section);
-            self.play_1_16th(tempo_snapshot);
+            let instrument_pattern = self.get_instrument_pattern(&song, &curr_song_section);
+            self.play_1_16th(tempo_snapshot, instrument_pattern);
 
             realtime_player.prepare_next_1_16th();
         }

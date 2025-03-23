@@ -9,11 +9,6 @@ use crate::song::song::{DrumPattern, Song, SongSection};
 pub struct Drummer {
     inner_instrument_name_16_chars: String,
 
-    // Charts
-    // FIXME: Avoid saving these two as well
-    curr_section_index: usize,
-    pattern: Option<DrumPattern>,
-
     // Outputs
     volca_drum: VolcaDrum,
     queued_instrument: InstrumentWithQueuedDrumSounds,
@@ -27,14 +22,16 @@ impl Drummer {
     ) -> Self {
         Self {
             inner_instrument_name_16_chars,
-            curr_section_index: 0,
-            pattern: None,
             volca_drum,
             queued_instrument: InstrumentWithQueuedDrumSounds::new(instrument, log),
         }
     }
-    fn use_song_section(&mut self, song: &Song, song_section: &SongSection) {
-        self.pattern = match &song_section.drum_pattern_key {
+    fn get_instrument_pattern(
+        &mut self,
+        song: &Song,
+        song_section: &SongSection,
+    ) -> Option<DrumPattern> {
+        match &song_section.drum_pattern_key {
             Some(drum_pattern_key) => {
                 let drum_pattern = song
                     .get_drum_pattern_from_key(drum_pattern_key.into())
@@ -44,14 +41,18 @@ impl Drummer {
                 Some(drum_pattern)
             }
             None => None,
-        };
+        }
     }
-    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
+    fn play_1_16th(
+        &mut self,
+        tempo_snapshot: &TempoSnapshot,
+        instrument_pattern: Option<DrumPattern>,
+    ) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument
             .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
-        if let Some(pattern) = &self.pattern {
+        if let Some(pattern) = instrument_pattern {
             let index_1_16th = tempo_snapshot.get_cur_1_16ths_in_bar_from_1() - 1;
 
             let hh_symbol = pattern.hh.get(index_1_16th..=index_1_16th).unwrap();
@@ -98,15 +99,13 @@ impl Instrument for Drummer {
     }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
-        self.curr_section_index = 0;
-        self.pattern = None;
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
         while realtime_player.has_next_song_instant() {
             let (i_section, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
 
             let curr_song_section = &song.sections[i_section];
-            self.use_song_section(&song, &curr_song_section);
-            self.play_1_16th(tempo_snapshot);
+            let instrument_pattern = self.get_instrument_pattern(&song, &curr_song_section);
+            self.play_1_16th(tempo_snapshot, instrument_pattern);
 
             realtime_player.prepare_next_1_16th();
         }

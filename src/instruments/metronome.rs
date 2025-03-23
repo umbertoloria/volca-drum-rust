@@ -2,7 +2,7 @@ use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_instruments::AbstractInstrumentMono;
 use crate::instruments::lib::instrument_with_queued_note::InstrumentWithQueuedNote;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
-use crate::song::song::{Song, SongMetronomeDataClickOn};
+use crate::song::song::{Song, SongMetronomeData, SongMetronomeDataClickOn};
 
 pub struct Metronome {
     inner_instrument_name_16_chars: String,
@@ -21,14 +21,18 @@ impl Metronome {
             queued_instrument: InstrumentWithQueuedNote::new(instrument, log),
         }
     }
-    fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
+    fn play_1_16th(
+        &mut self,
+        tempo_snapshot: &TempoSnapshot,
+        instrument_pattern: &Option<SongMetronomeData>,
+    ) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument
             .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
 
         // Assuming every 1/4th has 4 1/16ths.
 
-        if let Some(metronome_data) = &song.metronome_data {
+        if let Some(metronome_data) = instrument_pattern {
             let one_click_every_n_1_16ths = match &metronome_data.click_on {
                 SongMetronomeDataClickOn::OnEvery1_4ths => 4,
                 SongMetronomeDataClickOn::OnEvery1_8ths => 2,
@@ -62,7 +66,8 @@ impl Instrument for Metronome {
         while realtime_player.has_next_song_instant() {
             let (_, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
 
-            self.play_1_16th(&song, tempo_snapshot);
+            let instrument_pattern = &song.metronome_data;
+            self.play_1_16th(tempo_snapshot, instrument_pattern);
 
             realtime_player.prepare_next_1_16th();
         }
