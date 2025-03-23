@@ -41,7 +41,9 @@ impl Conductor {
 
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
         while realtime_player.has_next_song_instant() {
-            let tempo_snapshot = realtime_player.want_and_get_next_tempo_snapshot();
+            let (i_section, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
+            // TODO: Maybe use "i_section" to understand what Instruments are doing (why not let
+            //  them inform you directly?) in order to send those info to Web Clients
 
             self.play_1_16th_now(
                 tempo_snapshot,

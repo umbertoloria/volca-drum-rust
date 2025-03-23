@@ -33,7 +33,7 @@ impl RealtimePlayer {
     pub fn has_next_song_instant(&self) -> bool {
         self.i_next_song_instant < self.song_instants.len()
     }
-    pub fn want_and_get_next_tempo_snapshot(&mut self) -> &TempoSnapshot {
+    pub fn want_and_get_next_tempo_snapshot(&mut self) -> (usize, &TempoSnapshot) {
         // Assuming "self.has_next_song_instant()" is *TRUE*.
         let song_instant = &self.song_instants[self.i_next_song_instant];
         self.i_next_song_instant += 1;
@@ -62,7 +62,11 @@ impl RealtimePlayer {
         );
         */
 
-        tempo_snapshot
+        (
+            //
+            song_instant.i_section,
+            tempo_snapshot,
+        )
     }
     pub fn prepare_next_1_16th(&mut self) {
         self.tempo_snapshot.cur_1_16 += 1;
@@ -174,6 +178,7 @@ pub fn create_realtime_player(song: &Song, start_from_millis: u128) -> RealtimeP
 // TEMPO SNAPSHOT
 #[derive(Clone, Debug)]
 pub struct TempoSnapshot {
+    // Here every index starts from 1.
     pub cur_bar: usize,
     pub cur_quarter: usize,
     pub cur_1_8: usize,

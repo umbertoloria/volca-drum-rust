@@ -53,15 +53,14 @@ impl Instrument for Metronome {
         // TODO: Avoid cloning Instrument Name
         self.inner_instrument_name_16_chars.clone()
     }
-    fn get_short_info(&self) -> String {
+    /*fn get_short_info(&self) -> String {
         "Metronome".to_string()
-    }
+    }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
-
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
         while realtime_player.has_next_song_instant() {
-            let tempo_snapshot = realtime_player.want_and_get_next_tempo_snapshot();
+            let (_, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
 
             self.play_1_16th(&song, tempo_snapshot);
 

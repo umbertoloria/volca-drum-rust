@@ -4,12 +4,13 @@ use crate::instruments::lib::abstract_instruments::AbstractInstrumentPolyDrumSou
 use crate::instruments::lib::drum_sounds::DrumSound;
 use crate::instruments::lib::instrument_with_queued_sounds::InstrumentWithQueuedDrumSounds;
 use crate::players::realtime_player::{create_realtime_player, TempoSnapshot};
-use crate::song::song::{DrumPattern, Song};
+use crate::song::song::{DrumPattern, Song, SongSection};
 
 pub struct Drummer {
     inner_instrument_name_16_chars: String,
 
     // Charts
+    // FIXME: Avoid saving these two as well
     curr_section_index: usize,
     pattern: Option<DrumPattern>,
 
@@ -32,25 +33,20 @@ impl Drummer {
             queued_instrument: InstrumentWithQueuedDrumSounds::new(instrument, log),
         }
     }
-    fn update_pattern_from_song_section(&mut self, song: &Song) {
-        if self.curr_section_index < song.sections.len() {
-            let curr_song_section = &song.sections[self.curr_section_index];
-            self.pattern = match &curr_song_section.drum_pattern_key {
-                Some(drum_pattern_key) => {
-                    let drum_pattern = song
-                        .get_drum_pattern_from_key(drum_pattern_key.into())
-                        .expect("Unable to find right Drum Pattern")
-                        // TODO: Avoid cloning pattern
-                        .clone();
-                    Some(drum_pattern)
-                }
-                None => None,
+    fn use_song_section(&mut self, song: &Song, song_section: &SongSection) {
+        self.pattern = match &song_section.drum_pattern_key {
+            Some(drum_pattern_key) => {
+                let drum_pattern = song
+                    .get_drum_pattern_from_key(drum_pattern_key.into())
+                    .expect("Unable to find right Drum Pattern")
+                    // TODO: Avoid cloning pattern
+                    .clone();
+                Some(drum_pattern)
             }
-        } else {
-            self.pattern = None;
-        }
+            None => None,
+        };
     }
-    fn play_1_16th(&mut self, song: &Song, tempo_snapshot: &TempoSnapshot) {
+    fn play_1_16th(&mut self, tempo_snapshot: &TempoSnapshot) {
         let index_1_16th_sec = tempo_snapshot.get_cur_1_16ths_in_section_from_1();
         self.queued_instrument
             .stop_notes_queued_on_this_1_16th(index_1_16th_sec);
@@ -86,13 +82,6 @@ impl Drummer {
                     .notify_release_notes_at(&attack_notes, stop_on_start_of_index_1_16th_sec)
             }
         }
-
-        // Preparing the next hit!
-        let curr_song_section = &song.sections[self.curr_section_index];
-        if tempo_snapshot.is_this_the_last_1_16th_of_this_section(&curr_song_section) {
-            self.curr_section_index += 1;
-            self.update_pattern_from_song_section(&song);
-        }
     }
 }
 impl Instrument for Drummer {
@@ -100,24 +89,24 @@ impl Instrument for Drummer {
         // TODO: Avoid cloning Instrument Name
         self.inner_instrument_name_16_chars.clone()
     }
-    fn get_short_info(&self) -> String {
+    /*fn get_short_info(&self) -> String {
         if let Some(pattern) = &self.pattern {
             format!("part \"{}\"", pattern.key)
         } else {
             "no drums".to_string()
         }
-    }
+    }*/
     fn play_song(&mut self, song: Song, start_from_millis: u128) {
         // TODO: Duplicated code (*hjk)
-        // Start from beginning.
         self.curr_section_index = 0;
-        self.update_pattern_from_song_section(&song);
-
+        self.pattern = None;
         let mut realtime_player = create_realtime_player(&song, start_from_millis);
         while realtime_player.has_next_song_instant() {
-            let tempo_snapshot = realtime_player.want_and_get_next_tempo_snapshot();
+            let (i_section, tempo_snapshot) = realtime_player.want_and_get_next_tempo_snapshot();
 
-            self.play_1_16th(&song, tempo_snapshot);
+            let curr_song_section = &song.sections[i_section];
+            self.use_song_section(&song, &curr_song_section);
+            self.play_1_16th(tempo_snapshot);
 
             realtime_player.prepare_next_1_16th();
         }

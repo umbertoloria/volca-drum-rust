@@ -51,7 +51,7 @@ fn patch_keys_1(t0_ms: u128, index: f32) -> f32 {
 
 // PATCH BASS 1
 pub fn make_patch_bass_1(enable: bool) -> SynthPatchInjector {
-    SynthPatchInjector::new(SynthPatch::Bass1, if enable { 0.1 } else { 0.0 })
+    SynthPatchInjector::new(SynthPatch::Bass1, if enable { 0.25 } else { 0.0 })
 }
 fn patch_bass_1(t0_ms: u128, index: f32) -> f32 {
     // 1. Oscillator

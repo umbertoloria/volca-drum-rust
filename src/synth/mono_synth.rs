@@ -38,7 +38,7 @@ impl MonoSynth {
     pub fn get_sample_and_prepare_next(&mut self) -> f32 {
         // Don't change method signature.
         let index = self.get_index_and_prepare_next();
-        // FIXME: Avoid cloning Synth Sound Type
+        // TODO: Avoid cloning Synth Sound Type
         self.synth_patch
             .get_sample(self.t0_ms, index, self.synth_sound_type.clone())
     }
