@@ -1,5 +1,6 @@
 use crate::devices::sound_panel::SoundPanel;
-use crate::devices::volca_drum::VolcaDrum;
+use crate::devices::volca_drum::volca_drum::VolcaDrum;
+use crate::devices::volca_drum::volca_drum_patches::get_volca_drum_patch_1;
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::abs::instr_comm::{
     create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
@@ -17,7 +18,6 @@ use crate::midi::midi_device::MidiDeviceConcrete;
 use crate::players::conductor::Conductor;
 use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::song::Song;
-use crate::song::yaml_patch_reader::read_patch_from_yaml;
 use crate::synth::sound::patches::{
     make_patch_bass_1, make_patch_drums_1, make_patch_keys_1, make_patch_metronome_click,
 };
@@ -203,7 +203,7 @@ fn create_instrument_threads(
         let mut sound_panel = SoundPanel {
             volca_drum: &mut volca_drum,
         };
-        let patch1 = read_patch_from_yaml("files/patches/1-patch.yaml");
+        let patch1 = get_volca_drum_patch_1();
         // TODO: Make sure it always sounds ok from the first hit
         sound_panel.set_from_patch(patch1);
 

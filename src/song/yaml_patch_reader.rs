@@ -46,7 +46,6 @@ pub enum YamlPatchLayoutAmpEg {
 
 pub fn read_patch_from_yaml(filepath: &str) -> YamlPatchFile {
     let contents = fs::read_to_string(filepath).expect("Unable to read patch file");
-
     parse_patch_from_yaml(&contents).expect("Unable to parse patch YAML file")
 }
 

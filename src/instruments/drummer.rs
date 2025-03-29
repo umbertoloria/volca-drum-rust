@@ -1,4 +1,4 @@
-use crate::devices::volca_drum::VolcaDrum;
+use crate::devices::volca_drum::volca_drum::VolcaDrum;
 use crate::instruments::abs::instrument::Instrument;
 use crate::instruments::lib::abstract_instruments::AbstractInstrumentPolyDrumSounds;
 use crate::instruments::lib::drum_sounds::DrumSound;

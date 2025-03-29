@@ -17,13 +17,15 @@ mod thread_comm;
 mod utils;
 
 fn main() {
-    // let enable_instruments = false;
     let enable_instruments = true;
+    let enable_keyboards = true;
+    // let enable_instruments = false;
+    // let enable_keyboards = false;
     let play_queue_instruments_threads_conf = PlayQueueInstrumentsThreadsConf {
         metronome_synth_enabled: enable_instruments,
         drummer_enabled: enable_instruments,
-        keyboard_enabled: enable_instruments,
-        keys_synth_enabled: enable_instruments,
+        keyboard_enabled: enable_keyboards,
+        keys_synth_enabled: enable_keyboards,
         bass_synth_enabled: enable_instruments,
     };
 
