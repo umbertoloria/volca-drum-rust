@@ -19,7 +19,7 @@ pub struct VolcaDrumPatchLayout {
     pub mod_amount: usize,
     pub mod_rate: usize,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum VolcaDrumPatchLayoutSoundSrcType {
     WaveSine,
     WaveSaw,
@@ -27,13 +27,13 @@ pub enum VolcaDrumPatchLayoutSoundSrcType {
     WaveNoiseLPF,
     WaveNoiseBPF,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum VolcaDrumPatchLayoutModType {
     ModExp,
     ModTri,
     ModRand,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum VolcaDrumPatchLayoutAmpEg {
     EnvAd,
     EnvExp,
