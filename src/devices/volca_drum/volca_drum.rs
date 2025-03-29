@@ -6,6 +6,10 @@ use crate::midi::midi_device::MidiDevice;
 pub const DRUM_CH_KICK: u8 = 0;
 pub const DRUM_CH_HH: u8 = 1;
 pub const DRUM_CH_SNARE: u8 = 2;
+pub const DRUM_CH_SOUND_4: u8 = 3;
+pub const DRUM_CH_SOUND_5: u8 = 4;
+pub const DRUM_CH_SOUND_6: u8 = 5;
+
 // TODO: Understand what's the "right" default note value.
 const DEFAULT_NOTE_VALUE: u8 = 7;
 
@@ -50,10 +54,9 @@ impl VolcaDrum {
         self.send_plain_message(NOTE_OFF_MSG, note, VELOCITY);
     }
 
-    // SOUNDS (Layout 1 only)
-    pub fn apply_sound(&mut self, volca_drum_patch: VolcaDrumPatch) {
-        self.patch_manager
-            .apply_patch_on_diffs(&mut self.device, volca_drum_patch);
+    // SOUNDS
+    pub fn apply_patch(&mut self, volca_drum_patch: VolcaDrumPatch) {
+        self.patch_manager.apply(&mut self.device, volca_drum_patch);
     }
 
     // LOW LEVEL

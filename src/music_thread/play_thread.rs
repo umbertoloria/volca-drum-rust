@@ -201,7 +201,7 @@ fn create_instrument_threads(
         // Sounds
         let patch1 = get_volca_drum_patch_1();
         // TODO: Make sure it always sounds ok from the first hit
-        volca_drum.apply_sound(patch1);
+        volca_drum.apply_patch(patch1);
 
         let mut drummer = Drummer::new(
             volca_drum,

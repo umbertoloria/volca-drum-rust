@@ -1,10 +1,13 @@
-use crate::devices::volca_drum::volca_drum::{DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE};
+use crate::devices::volca_drum::volca_drum::{
+    DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE, DRUM_CH_SOUND_4, DRUM_CH_SOUND_5, DRUM_CH_SOUND_6,
+};
 use crate::devices::volca_drum::volca_drum_patch::{
     VolcaDrumPatch, VolcaDrumPatchLayout, VolcaDrumPatchLayoutAmpEg, VolcaDrumPatchLayoutModType,
     VolcaDrumPatchLayoutSoundSrcType,
 };
 use crate::midi::midi_device::MidiDevice;
 
+// TODO: Support Waveguide Resonator on Volca Drum
 type BoxMidiDevice = Box<dyn MidiDevice>;
 pub struct VolcaDrumPatchManager {
     patch: VolcaDrumPatch,
@@ -15,78 +18,132 @@ impl VolcaDrumPatchManager {
             patch: volca_drum_patch.clone(),
         };
 
+        // Layer 1
+        result.apply_patch_on_diffs_or_force(device, volca_drum_patch, true);
+
+        // Layer 2 (mute)
         mute_layer_2(device, DRUM_CH_KICK);
         mute_layer_2(device, DRUM_CH_HH);
         mute_layer_2(device, DRUM_CH_SNARE);
-
-        result.apply_patch_on_diffs(device, volca_drum_patch);
+        mute_layer_2(device, DRUM_CH_SOUND_4);
+        mute_layer_2(device, DRUM_CH_SOUND_5);
+        mute_layer_2(device, DRUM_CH_SOUND_6);
 
         result
     }
-    pub fn apply_patch_on_diffs(&mut self, device: &mut BoxMidiDevice, patch: VolcaDrumPatch) {
+    pub fn apply(&mut self, device: &mut BoxMidiDevice, patch: VolcaDrumPatch) {
+        self.apply_patch_on_diffs_or_force(device, patch, false);
+    }
+    fn apply_patch_on_diffs_or_force(
+        &mut self,
+        device: &mut BoxMidiDevice,
+        patch: VolcaDrumPatch,
+        force: bool,
+    ) {
         // Layout 1
-        apply_sound_layout(device, DRUM_CH_KICK, &mut self.patch.kick, patch.kick);
-        apply_sound_layout(device, DRUM_CH_HH, &mut self.patch.hh, patch.hh);
-        apply_sound_layout(device, DRUM_CH_SNARE, &mut self.patch.snare, patch.snare);
-        // TODO: Manage all Sounds and all Layers
+        apply_patch_layout(
+            DRUM_CH_KICK,
+            patch.kick,
+            &mut self.patch.kick,
+            device,
+            force,
+        );
+        apply_patch_layout(DRUM_CH_HH, patch.hh, &mut self.patch.hh, device, force);
+        apply_patch_layout(
+            DRUM_CH_SNARE,
+            patch.snare,
+            &mut self.patch.snare,
+            device,
+            force,
+        );
+        apply_patch_layout(
+            DRUM_CH_SOUND_4,
+            patch.sound4,
+            &mut self.patch.sound4,
+            device,
+            force,
+        );
+        apply_patch_layout(
+            DRUM_CH_SOUND_5,
+            patch.sound5,
+            &mut self.patch.sound5,
+            device,
+            force,
+        );
+        apply_patch_layout(
+            DRUM_CH_SOUND_6,
+            patch.sound6,
+            &mut self.patch.sound6,
+            device,
+            force,
+        );
     }
 }
 
 // HIGH LEVEL
-fn apply_sound_layout(
-    device: &mut BoxMidiDevice,
+fn apply_patch_layout(
     channel: u8,
-    curr_layout_to_edit: &mut VolcaDrumPatchLayout,
     new_layout: VolcaDrumPatchLayout,
+    mut_curr_layout: &mut VolcaDrumPatchLayout,
+    device: &mut BoxMidiDevice,
+    force: bool,
 ) {
-    if curr_layout_to_edit.sound_src_type != new_layout.sound_src_type
-        || curr_layout_to_edit.mod_type != new_layout.mod_type
-        || curr_layout_to_edit.amp_eg != new_layout.amp_eg
+    if force
+        || mut_curr_layout.sound_src_type != new_layout.sound_src_type
+        || mut_curr_layout.mod_type != new_layout.mod_type
+        || mut_curr_layout.amp_eg != new_layout.amp_eg
     {
-        curr_layout_to_edit.sound_src_type = new_layout.sound_src_type;
-        curr_layout_to_edit.mod_type = new_layout.mod_type;
-        curr_layout_to_edit.amp_eg = new_layout.amp_eg;
+        mut_curr_layout.sound_src_type = new_layout.sound_src_type;
+        mut_curr_layout.mod_type = new_layout.mod_type;
+        mut_curr_layout.amp_eg = new_layout.amp_eg;
         set_patch_sound(
             device,
             channel,
-            &curr_layout_to_edit.sound_src_type,
-            &curr_layout_to_edit.mod_type,
-            &curr_layout_to_edit.amp_eg,
+            &mut_curr_layout.sound_src_type,
+            &mut_curr_layout.mod_type,
+            &mut_curr_layout.amp_eg,
         );
     }
-    if curr_layout_to_edit.level != new_layout.level {
-        curr_layout_to_edit.level = new_layout.level;
-        set_patch_level(device, channel, curr_layout_to_edit.level);
+    if force || mut_curr_layout.level != new_layout.level {
+        mut_curr_layout.level = new_layout.level;
+        set_patch_level(device, channel, mut_curr_layout.level);
     }
-    if curr_layout_to_edit.pitch != new_layout.pitch {
-        curr_layout_to_edit.pitch = new_layout.pitch;
-        set_patch_pitch(device, channel, curr_layout_to_edit.pitch);
+    if force || mut_curr_layout.pitch != new_layout.pitch {
+        mut_curr_layout.pitch = new_layout.pitch;
+        set_patch_pitch(device, channel, mut_curr_layout.pitch);
     }
-    if curr_layout_to_edit.eg_attack != new_layout.eg_attack {
-        curr_layout_to_edit.eg_attack = new_layout.eg_attack;
-        set_patch_eg_att(device, channel, curr_layout_to_edit.eg_attack);
+    if force || mut_curr_layout.eg_attack != new_layout.eg_attack {
+        mut_curr_layout.eg_attack = new_layout.eg_attack;
+        set_patch_eg_att(device, channel, mut_curr_layout.eg_attack);
     }
-    if curr_layout_to_edit.eg_release != new_layout.eg_release {
-        curr_layout_to_edit.eg_release = new_layout.eg_release;
-        set_patch_eg_rel(device, channel, curr_layout_to_edit.eg_release);
+    if force || mut_curr_layout.eg_release != new_layout.eg_release {
+        mut_curr_layout.eg_release = new_layout.eg_release;
+        set_patch_eg_rel(device, channel, mut_curr_layout.eg_release);
     }
-    if curr_layout_to_edit.mod_amount != new_layout.mod_amount {
-        curr_layout_to_edit.mod_amount = new_layout.mod_amount;
-        set_patch_mod_amount(device, channel, curr_layout_to_edit.mod_amount);
+    if force || mut_curr_layout.mod_amount != new_layout.mod_amount {
+        mut_curr_layout.mod_amount = new_layout.mod_amount;
+        set_patch_mod_amount(device, channel, mut_curr_layout.mod_amount);
     }
-    if curr_layout_to_edit.mod_rate != new_layout.mod_rate {
-        curr_layout_to_edit.mod_rate = new_layout.mod_rate;
-        set_patch_mod_rate(device, channel, curr_layout_to_edit.mod_rate);
+    if force || mut_curr_layout.mod_rate != new_layout.mod_rate {
+        mut_curr_layout.mod_rate = new_layout.mod_rate;
+        set_patch_mod_rate(device, channel, mut_curr_layout.mod_rate);
     }
 }
+
 const CC_SOUND_1: u8 = 14;
 const CC_LEVEL_1: u8 = 17;
 const CC_PITCH_1: u8 = 26;
 const CC_EG_ATT_1: u8 = 20;
 const CC_EG_REL_1: u8 = 23;
-const CC_MOD_AMOUNT: u8 = 29;
+const CC_MOD_AMOUNT_1: u8 = 29;
 const CC_MOD_RATE_1: u8 = 46;
-const CC_LEVEL_2: u8 = 18;
+// const CC_SOUND_2: u8 = CC_SOUND_1 + 1;
+const CC_LEVEL_2: u8 = CC_LEVEL_1 + 1;
+// const CC_PITCH_2: u8 = CC_PITCH_1 + 1;
+// const CC_EG_ATT_2: u8 = CC_EG_ATT_1 + 1;
+// const CC_EG_REL_2: u8 = CC_EG_REL_1 + 1;
+// const CC_MOD_AMOUNT_2: u8 = CC_MOD_AMOUNT_1 + 1;
+// const CC_MOD_RATE_2: u8 = CC_MOD_RATE_1 + 1;
 pub fn set_patch_sound(
     device: &mut BoxMidiDevice,
     channel: u8,
@@ -113,50 +170,50 @@ pub fn set_patch_sound(
     };
     let value = source_type_value + mod_type_value + amp_eg_value;
     send_cc_message(device, channel, CC_SOUND_1, value);
-    println!(
+    /*println!(
         "Volca Drum: updated channel={} sound to {:?}/{:?}/{:?}",
         channel, &sound_src_type, &mod_type, &amp_eg
-    );
+    );*/
 }
 pub fn set_patch_level(device: &mut BoxMidiDevice, channel: u8, value: u8) {
     send_cc_message(device, channel, CC_LEVEL_1, value);
-    println!("Volca Drum: updated channel={} level to {}", channel, value);
+    // println!("Volca Drum: updated channel={} level to {}", channel, value);
 }
 pub fn set_patch_pitch(device: &mut BoxMidiDevice, channel: u8, value: u8) {
     send_cc_message(device, channel, CC_PITCH_1, value);
-    println!("Volca Drum: updated channel={} pitch to {}", channel, value);
+    // println!("Volca Drum: updated channel={} pitch to {}", channel, value);
 }
 pub fn set_patch_eg_att(device: &mut BoxMidiDevice, channel: u8, value: u8) {
     send_cc_message(device, channel, CC_EG_ATT_1, value);
-    println!(
+    /*println!(
         "Volca Drum: updated channel={} eg_att to {}",
         channel, value
-    );
+    );*/
 }
 pub fn set_patch_eg_rel(device: &mut BoxMidiDevice, channel: u8, value: u8) {
     send_cc_message(device, channel, CC_EG_REL_1, value);
-    println!(
+    /*println!(
         "Volca Drum: updated channel={} eg_rel to {}",
         channel, value
-    );
+    );*/
 }
 pub fn set_patch_mod_amount(device: &mut BoxMidiDevice, channel: u8, value: u8) {
-    send_cc_message(device, channel, CC_MOD_AMOUNT, value);
-    println!(
+    send_cc_message(device, channel, CC_MOD_AMOUNT_1, value);
+    /*println!(
         "Volca Drum: updated channel={} mod_amount to {}",
         channel, value
-    );
+    );*/
 }
 pub fn set_patch_mod_rate(device: &mut BoxMidiDevice, channel: u8, value: u8) {
     send_cc_message(device, channel, CC_MOD_RATE_1, value);
-    println!(
+    /*println!(
         "Volca Drum: updated channel={} mod_rate to {}",
         channel, value
-    );
+    );*/
 }
 pub fn mute_layer_2(device: &mut BoxMidiDevice, channel: u8) {
     send_cc_message(device, channel, CC_LEVEL_2, 0);
-    println!("Volca Drum: updated channel={} muted layer 2", channel);
+    // println!("Volca Drum: updated channel={} muted layer 2", channel);
 }
 
 // LOW LEVEL

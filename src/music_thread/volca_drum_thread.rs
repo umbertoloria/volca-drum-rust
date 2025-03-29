@@ -31,12 +31,12 @@ pub fn volca_drum_thread(
         // Sounds
         let patch1 = get_volca_drum_patch_1();
         // TODO: Make sure it always sounds ok from the first hit
-        volca_drum.apply_sound(patch1);
+        volca_drum.apply_patch(patch1);
 
         for command in volca_drum_command_receiver.get_recv_iter() {
             match command {
                 VolcaDrumCommand::ApplyPatch(volca_drum_patch) => {
-                    volca_drum.apply_sound(volca_drum_patch);
+                    volca_drum.apply_patch(volca_drum_patch);
                 }
                 VolcaDrumCommand::CloseThread => {
                     break;
