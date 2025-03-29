@@ -53,7 +53,7 @@ impl VolcaDrum {
     // SOUNDS (Layout 1 only)
     pub fn apply_sound(&mut self, volca_drum_patch: VolcaDrumPatch) {
         self.patch_manager
-            .apply_sound(&mut self.device, volca_drum_patch);
+            .apply_patch_on_diffs(&mut self.device, volca_drum_patch);
     }
 
     // LOW LEVEL
