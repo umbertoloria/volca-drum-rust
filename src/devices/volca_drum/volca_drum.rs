@@ -19,8 +19,10 @@ pub struct VolcaDrum {
 }
 impl VolcaDrum {
     pub fn new(mut device: Box<dyn MidiDevice>) -> Self {
+        // TODO: This is the Default Volca Drum Patch. Have Volca Drum Patches inside Songs.
         let default_volca_drum_patch = get_volca_drum_patch_1();
         let patch_manager = VolcaDrumPatchManager::new(&mut device, default_volca_drum_patch);
+
         Self {
             device,
             patch_manager,

@@ -1,5 +1,4 @@
 use crate::devices::volca_drum::volca_drum::VolcaDrum;
-use crate::devices::volca_drum::volca_drum_patches::get_volca_drum_patch_1;
 use crate::devices::volca_keys::VolcaKeys;
 use crate::instruments::abs::instr_comm::{
     create_instrument_comm, start_listening_to_instrument_comm_commands, InstrumentBroadcastComm,
@@ -196,12 +195,7 @@ fn create_instrument_threads(
 
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
-        let mut volca_drum = VolcaDrum::new(Box::new(midi_device));
-
-        // Sounds
-        let patch1 = get_volca_drum_patch_1();
-        // TODO: Make sure it always sounds ok from the first hit
-        volca_drum.apply_patch(patch1);
+        let volca_drum = VolcaDrum::new(Box::new(midi_device));
 
         let mut drummer = Drummer::new(
             volca_drum,
@@ -213,6 +207,7 @@ fn create_instrument_threads(
             )),
             DRUMS_SYNTH_ENABLE_LOGGING,
         );
+        // FIXME: Merge Drummer and Volca Drum Threads to change Patches while playing songs
         start_listening_to_instrument_comm_commands(instr_comm_receiver_drummer, &mut drummer);
     });
 
@@ -222,7 +217,7 @@ fn create_instrument_threads(
             return;
         }
 
-        let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(1)).unwrap());
+        let midi_device = MidiDeviceConcrete::new(init_midi_controller("KEYS", Some(0)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
         let volca_keys = VolcaKeys::new(midi_device);
 
