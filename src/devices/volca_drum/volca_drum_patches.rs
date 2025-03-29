@@ -1,14 +1,14 @@
-use crate::song::yaml_patch_reader::{
-    YamlPatchFile, YamlPatchLayout, YamlPatchLayoutAmpEg, YamlPatchLayoutModulationType,
-    YamlPatchLayoutSoundSrcType,
+use crate::devices::volca_drum::volca_drum_patch::{
+    VolcaDrumPatch, VolcaDrumPatchLayout, VolcaDrumPatchLayoutAmpEg, VolcaDrumPatchLayoutModType,
+    VolcaDrumPatchLayoutSoundSrcType,
 };
 
-pub fn get_volca_drum_patch_1() -> YamlPatchFile {
-    YamlPatchFile {
-        kick: YamlPatchLayout {
-            sound_src_type: YamlPatchLayoutSoundSrcType::WaveSine,
-            mod_type: YamlPatchLayoutModulationType::ModExp,
-            amp_eg: YamlPatchLayoutAmpEg::EnvAd,
+pub fn get_volca_drum_patch_1() -> VolcaDrumPatch {
+    VolcaDrumPatch {
+        kick: VolcaDrumPatchLayout {
+            sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveSine,
+            mod_type: VolcaDrumPatchLayoutModType::ModExp,
+            amp_eg: VolcaDrumPatchLayoutAmpEg::EnvAd,
             level: 127,
             pitch: 80,
             eg_attack: 5,
@@ -16,10 +16,10 @@ pub fn get_volca_drum_patch_1() -> YamlPatchFile {
             mod_amount: 120,
             mod_rate: 120,
         },
-        hh: YamlPatchLayout {
-            sound_src_type: YamlPatchLayoutSoundSrcType::WaveSine,
-            mod_type: YamlPatchLayoutModulationType::ModExp,
-            amp_eg: YamlPatchLayoutAmpEg::EnvAd,
+        hh: VolcaDrumPatchLayout {
+            sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveSine,
+            mod_type: VolcaDrumPatchLayoutModType::ModExp,
+            amp_eg: VolcaDrumPatchLayoutAmpEg::EnvAd,
             level: 127,
             pitch: 37,
             eg_attack: 13,
@@ -27,10 +27,10 @@ pub fn get_volca_drum_patch_1() -> YamlPatchFile {
             mod_amount: 9,
             mod_rate: 20,
         },
-        snare: YamlPatchLayout {
-            sound_src_type: YamlPatchLayoutSoundSrcType::WaveSaw,
-            mod_type: YamlPatchLayoutModulationType::ModExp,
-            amp_eg: YamlPatchLayoutAmpEg::EnvAd,
+        snare: VolcaDrumPatchLayout {
+            sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveSaw,
+            mod_type: VolcaDrumPatchLayoutModType::ModExp,
+            amp_eg: VolcaDrumPatchLayoutAmpEg::EnvAd,
             level: 127,
             pitch: 40,
             eg_attack: 5,
@@ -38,10 +38,10 @@ pub fn get_volca_drum_patch_1() -> YamlPatchFile {
             mod_amount: 120,
             mod_rate: 120,
         },
-        sound4: YamlPatchLayout {
-            sound_src_type: YamlPatchLayoutSoundSrcType::WaveSine,
-            mod_type: YamlPatchLayoutModulationType::ModExp,
-            amp_eg: YamlPatchLayoutAmpEg::EnvAd,
+        sound4: VolcaDrumPatchLayout {
+            sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveSine,
+            mod_type: VolcaDrumPatchLayoutModType::ModExp,
+            amp_eg: VolcaDrumPatchLayoutAmpEg::EnvAd,
             level: 127,
             pitch: 37,
             eg_attack: 13,
@@ -49,10 +49,10 @@ pub fn get_volca_drum_patch_1() -> YamlPatchFile {
             mod_amount: 9,
             mod_rate: 20,
         },
-        sound5: YamlPatchLayout {
-            sound_src_type: YamlPatchLayoutSoundSrcType::WaveSine,
-            mod_type: YamlPatchLayoutModulationType::ModExp,
-            amp_eg: YamlPatchLayoutAmpEg::EnvAd,
+        sound5: VolcaDrumPatchLayout {
+            sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveSine,
+            mod_type: VolcaDrumPatchLayoutModType::ModExp,
+            amp_eg: VolcaDrumPatchLayoutAmpEg::EnvAd,
             level: 127,
             pitch: 37,
             eg_attack: 13,
@@ -60,10 +60,10 @@ pub fn get_volca_drum_patch_1() -> YamlPatchFile {
             mod_amount: 9,
             mod_rate: 20,
         },
-        sound6: YamlPatchLayout {
-            sound_src_type: YamlPatchLayoutSoundSrcType::WaveSine,
-            mod_type: YamlPatchLayoutModulationType::ModExp,
-            amp_eg: YamlPatchLayoutAmpEg::EnvAd,
+        sound6: VolcaDrumPatchLayout {
+            sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveSine,
+            mod_type: VolcaDrumPatchLayoutModType::ModExp,
+            amp_eg: VolcaDrumPatchLayoutAmpEg::EnvAd,
             level: 127,
             pitch: 37,
             eg_attack: 13,

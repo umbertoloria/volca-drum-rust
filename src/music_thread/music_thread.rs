@@ -3,10 +3,12 @@ use crate::music_thread::music_thread_comm::{MusicThreadCommReceiver, MusicThrea
 use crate::music_thread::play_thread::{
     create_play_queue_comm, play_queue_thread, PlayQueueCommand, PlayQueueInstrumentsThreadsConf,
 };
-use crate::music_thread::volca_drum_thread::{create_volca_drum_thread_comm, VolcaDrumCommand};
+use crate::music_thread::volca_drum_thread::{
+    create_volca_drum_thread_comm, volca_drum_thread, VolcaDrumCommand,
+};
 use crate::server::web_thread_comm::WebThreadCommSender;
 use crate::song::composer::composer::{Composer, ComposerMode};
-use crate::song::known_songs::get_song_coez_la_musica_non_c_e;
+use crate::song::known_songs::{get_song_coez_la_musica_non_c_e, get_song_o2};
 use crate::song::song::Song;
 use std::thread;
 use std::thread::JoinHandle;
@@ -32,8 +34,8 @@ fn music_thread_logics(
 ) {
     // Volca Drum Thread
     let (volca_drum_command_sender, volca_drum_command_receiver) = create_volca_drum_thread_comm();
-    // TODO: For now it's disabled
-    // let volca_drum_thread = volca_drum_thread(volca_drum_command_receiver);
+    // TODO: Have only one Thread for Volca Drum (as Drummer and Sound Panel)
+    let volca_drum_thread = volca_drum_thread(volca_drum_command_receiver);
 
     // Play Queue Thread
     let (play_queue_comm_sender, play_queue_comm_receiver) = create_play_queue_comm();
@@ -50,8 +52,8 @@ fn music_thread_logics(
                 let song = get_song_to_play();
                 play_queue_comm_sender.send(PlayQueueCommand::RequestToPlay(song));
             }
-            MusicThreadCommand::ApplyVolcaDrumPatch(yaml_patch_file) => {
-                volca_drum_command_sender.send(VolcaDrumCommand::ApplyPatch(yaml_patch_file));
+            MusicThreadCommand::ApplyVolcaDrumPatch(volca_drum_patch) => {
+                volca_drum_command_sender.send(VolcaDrumCommand::ApplyPatch(volca_drum_patch));
             }
         }
     }
@@ -60,7 +62,7 @@ fn music_thread_logics(
     play_queue_thread.join().unwrap();
 
     volca_drum_command_sender.send(VolcaDrumCommand::CloseThread);
-    // volca_drum_thread.join().unwrap();
+    volca_drum_thread.join().unwrap();
 }
 
 pub fn get_song_to_play() -> Song {
@@ -81,7 +83,7 @@ pub fn get_song_to_play() -> Song {
     let song = get_song_coez_la_musica_non_c_e();
     // let song = get_song_harry_styles_sign_of_the_times();
     // let song = get_song_o1();
-    // let song = get_song_o2(80);
+    let song = get_song_o2(80);
     // let song = get_song_o2(100);
     // let song = get_song_o2(120);
     // let song = get_song_o2(135);

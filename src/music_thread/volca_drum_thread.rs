@@ -1,9 +1,9 @@
 use crate::devices::sound_panel::SoundPanel;
 use crate::devices::volca_drum::volca_drum::VolcaDrum;
+use crate::devices::volca_drum::volca_drum_patch::VolcaDrumPatch;
 use crate::devices::volca_drum::volca_drum_patches::get_volca_drum_patch_1;
 use crate::midi::midi_controller::init_midi_controller;
 use crate::midi::midi_device::MidiDeviceConcrete;
-use crate::song::yaml_patch_reader::YamlPatchFile;
 use crate::thread_comm::thread_comm::{
     create_thread_comm_instances, ThreadCommReceiver, ThreadCommSender,
 };
@@ -11,7 +11,7 @@ use std::thread;
 use std::thread::JoinHandle;
 
 pub enum VolcaDrumCommand {
-    ApplyPatch(YamlPatchFile),
+    ApplyPatch(VolcaDrumPatch),
     CloseThread,
 }
 pub fn create_volca_drum_thread_comm() -> (
@@ -37,8 +37,8 @@ pub fn volca_drum_thread(
 
         for command in volca_drum_command_receiver.get_recv_iter() {
             match command {
-                VolcaDrumCommand::ApplyPatch(yaml_patch_file) => {
-                    sound_panel.set_from_patch(yaml_patch_file);
+                VolcaDrumCommand::ApplyPatch(volca_drum_patch) => {
+                    sound_panel.set_from_patch(volca_drum_patch);
                 }
                 VolcaDrumCommand::CloseThread => {
                     break;

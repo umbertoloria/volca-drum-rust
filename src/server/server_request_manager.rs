@@ -1,6 +1,7 @@
+use crate::devices::volca_drum::volca_drum_patch::VolcaDrumPatch;
+use crate::devices::volca_drum::yaml_patch_reader::parse_patch_from_yaml;
 use crate::music_thread::music_library::MusicLibrary;
 use crate::music_thread::music_thread_comm::{MusicThreadCommSender, MusicThreadCommand};
-use crate::song::yaml_patch_reader::{parse_patch_from_yaml, YamlPatchFile};
 
 pub struct ServerRequestManager {
     music_thread_comm_sender: MusicThreadCommSender,
@@ -23,9 +24,9 @@ impl ServerRequestManager {
                 // TODO: Maybe this is useless since Server should keep Clients periodically updated...
                 "PLAY QUEUE info..".into()
             }
-            Some(WSClientRequest::ApplyPatch(yaml_patch_file)) => {
+            Some(WSClientRequest::ApplyPatch(volca_drum_patch)) => {
                 self.music_thread_comm_sender
-                    .send(MusicThreadCommand::ApplyVolcaDrumPatch(yaml_patch_file));
+                    .send(MusicThreadCommand::ApplyVolcaDrumPatch(volca_drum_patch));
 
                 "PATCH APPLIED".into()
             }
@@ -46,7 +47,7 @@ impl ServerRequestManager {
 enum WSClientRequest {
     PlaySong,
     GetPlayQueueState,
-    ApplyPatch(YamlPatchFile),
+    ApplyPatch(VolcaDrumPatch),
     ReadMusicLibrary,
 }
 fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
@@ -66,7 +67,8 @@ fn sanitize_client_request(request: String) -> Option<WSClientRequest> {
             match parse_patch_from_yaml(potential_yaml) {
                 Some(yaml_patch_file) => {
                     // println!("PATCH SET! {:?}", yaml_patch_file);
-                    return Some(WSClientRequest::ApplyPatch(yaml_patch_file));
+                    let volca_drum_patch = yaml_patch_file.get_volca_drum_patch();
+                    return Some(WSClientRequest::ApplyPatch(volca_drum_patch));
                 }
                 None => {
                     println!("Unable to parse YAML string: {}", potential_yaml);

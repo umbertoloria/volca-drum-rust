@@ -1,7 +1,7 @@
 use crate::devices::volca_drum::volca_drum::{VolcaDrum, DRUM_CH_HH, DRUM_CH_KICK, DRUM_CH_SNARE};
-use crate::song::yaml_patch_reader::{
-    YamlPatchFile, YamlPatchLayout, YamlPatchLayoutAmpEg, YamlPatchLayoutModulationType,
-    YamlPatchLayoutSoundSrcType,
+use crate::devices::volca_drum::volca_drum_patch::{
+    VolcaDrumPatch, VolcaDrumPatchLayout, VolcaDrumPatchLayoutAmpEg, VolcaDrumPatchLayoutModType,
+    VolcaDrumPatchLayoutSoundSrcType,
 };
 
 // CC NUMBERS
@@ -14,7 +14,7 @@ impl<'a> SoundPanel<'a> {
     pub fn new(volca_drum: &'a mut VolcaDrum) -> SoundPanel<'a> {
         Self { volca_drum }
     }
-    pub fn set_from_patch(&mut self, patch: YamlPatchFile) {
+    pub fn set_from_patch(&mut self, patch: VolcaDrumPatch) {
         self.config_patch_onto_channel_and_layout1(DRUM_CH_KICK, patch.kick);
         self.disable_layout_2_sounds(DRUM_CH_KICK);
 
@@ -45,32 +45,15 @@ impl<'a> SoundPanel<'a> {
     pub fn config_patch_onto_channel_and_layout1(
         &mut self,
         channel: u8,
-        patch_layout: YamlPatchLayout,
+        patch_layout: VolcaDrumPatchLayout,
     ) {
         // println!("Applying patch: {:?}", patch_layout);
-        let source_sound_type = match patch_layout.sound_src_type {
-            YamlPatchLayoutSoundSrcType::WaveSine => SoundSourceType::WaveSine,
-            YamlPatchLayoutSoundSrcType::WaveSaw => SoundSourceType::WaveSaw,
-            YamlPatchLayoutSoundSrcType::WaveNoiseHPF => SoundSourceType::WaveNoiseHPF,
-            YamlPatchLayoutSoundSrcType::WaveNoiseLPF => SoundSourceType::WaveNoiseLPF,
-            YamlPatchLayoutSoundSrcType::WaveNoiseBPF => SoundSourceType::WaveNoiseBPF,
-        };
-        let modulation_type = match patch_layout.mod_type {
-            YamlPatchLayoutModulationType::ModExp => ModulationType::ModExp,
-            YamlPatchLayoutModulationType::ModTri => ModulationType::ModTri,
-            YamlPatchLayoutModulationType::ModRand => ModulationType::ModRand,
-        };
-        let amp_eg = match patch_layout.amp_eg {
-            YamlPatchLayoutAmpEg::EnvAd => AmpEg::EnvAd,
-            YamlPatchLayoutAmpEg::EnvExp => AmpEg::EnvExp,
-            YamlPatchLayoutAmpEg::EnvMul => AmpEg::EnvMul,
-        };
         self.set_sound_patch(
             channel,
             CC_NUMBER_LAYOUT_1_SOUND,
-            source_sound_type,
-            modulation_type,
-            amp_eg,
+            patch_layout.sound_src_type,
+            patch_layout.mod_type,
+            patch_layout.amp_eg,
         );
         self.set_param_level(channel, ParamSoundType::Level1, patch_layout.level as u8);
         self.set_param_level(channel, ParamSoundType::Pitch1, patch_layout.pitch as u8);
@@ -104,26 +87,26 @@ impl<'a> SoundPanel<'a> {
         &mut self,
         channel: u8,
         cc_number: u8,
-        sound_source_type: SoundSourceType,
-        modulation_type: ModulationType,
-        amp_eg: AmpEg,
+        sound_source_type: VolcaDrumPatchLayoutSoundSrcType,
+        modulation_type: VolcaDrumPatchLayoutModType,
+        amp_eg: VolcaDrumPatchLayoutAmpEg,
     ) {
         let source_type_value = match sound_source_type {
-            SoundSourceType::WaveSine => 0,
-            SoundSourceType::WaveSaw => 26,
-            SoundSourceType::WaveNoiseHPF => 52,
-            SoundSourceType::WaveNoiseLPF => 77,
-            SoundSourceType::WaveNoiseBPF => 103,
+            VolcaDrumPatchLayoutSoundSrcType::WaveSine => 0,
+            VolcaDrumPatchLayoutSoundSrcType::WaveSaw => 26,
+            VolcaDrumPatchLayoutSoundSrcType::WaveNoiseHPF => 52,
+            VolcaDrumPatchLayoutSoundSrcType::WaveNoiseLPF => 77,
+            VolcaDrumPatchLayoutSoundSrcType::WaveNoiseBPF => 103,
         };
         let modulation_type_value = match modulation_type {
-            ModulationType::ModExp => 0,
-            ModulationType::ModTri => 9,
-            ModulationType::ModRand => 18,
+            VolcaDrumPatchLayoutModType::ModExp => 0,
+            VolcaDrumPatchLayoutModType::ModTri => 9,
+            VolcaDrumPatchLayoutModType::ModRand => 18,
         };
         let amp_eg_value = match amp_eg {
-            AmpEg::EnvAd => 0,
-            AmpEg::EnvExp => 3,
-            AmpEg::EnvMul => 6,
+            VolcaDrumPatchLayoutAmpEg::EnvAd => 0,
+            VolcaDrumPatchLayoutAmpEg::EnvExp => 3,
+            VolcaDrumPatchLayoutAmpEg::EnvMul => 6,
         };
         let value = source_type_value + modulation_type_value + amp_eg_value;
         self.volca_drum.send_cc_message(channel, cc_number, value);
@@ -144,23 +127,6 @@ impl<'a> SoundPanel<'a> {
     }
 }
 
-enum SoundSourceType {
-    WaveSine,
-    WaveSaw,
-    WaveNoiseHPF,
-    WaveNoiseLPF,
-    WaveNoiseBPF,
-}
-enum ModulationType {
-    ModExp,
-    ModTri,
-    ModRand,
-}
-enum AmpEg {
-    EnvAd,
-    EnvExp,
-    EnvMul,
-}
 pub enum ParamSoundType {
     // Layout 1
     Level1,
