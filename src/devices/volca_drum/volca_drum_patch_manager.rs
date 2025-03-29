@@ -6,12 +6,20 @@ use crate::devices::volca_drum::volca_drum_patch::{
 use crate::midi::midi_device::MidiDevice;
 
 type BoxMidiDevice = Box<dyn MidiDevice>;
-pub struct VolcaDrumPatchManager {}
+pub struct VolcaDrumPatchManager {
+    patch: VolcaDrumPatch,
+}
 impl VolcaDrumPatchManager {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(device: &mut BoxMidiDevice, volca_drum_patch: VolcaDrumPatch) -> Self {
+        let mut result = Self {
+            patch: volca_drum_patch.clone(),
+        };
+        result.apply_sound(device, volca_drum_patch);
+        result
     }
-    pub fn apply_sound(&self, device: &mut BoxMidiDevice, volca_drum_patch: VolcaDrumPatch) {
+    pub fn apply_sound(&mut self, device: &mut BoxMidiDevice, volca_drum_patch: VolcaDrumPatch) {
+        self.patch = volca_drum_patch.clone();
+
         self.apply_patch_on_layout_1(device, DRUM_CH_KICK, volca_drum_patch.kick);
         self.mute_layer_2(device, DRUM_CH_KICK);
 

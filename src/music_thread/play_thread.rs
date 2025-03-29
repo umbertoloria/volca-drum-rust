@@ -196,7 +196,7 @@ fn create_instrument_threads(
 
         let midi_device = MidiDeviceConcrete::new(init_midi_controller("DRUMS", Some(1)).unwrap());
         // let midi_device = MidiDeviceGhost::new(false);
-        let mut volca_drum = VolcaDrum::new(midi_device);
+        let mut volca_drum = VolcaDrum::new(Box::new(midi_device));
 
         // Sounds
         let patch1 = get_volca_drum_patch_1();

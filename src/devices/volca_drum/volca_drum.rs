@@ -1,5 +1,6 @@
 use crate::devices::volca_drum::volca_drum_patch::VolcaDrumPatch;
 use crate::devices::volca_drum::volca_drum_patch_manager::VolcaDrumPatchManager;
+use crate::devices::volca_drum::volca_drum_patches::get_volca_drum_patch_1;
 use crate::midi::midi_device::MidiDevice;
 
 pub const DRUM_CH_KICK: u8 = 0;
@@ -13,10 +14,12 @@ pub struct VolcaDrum {
     pub patch_manager: VolcaDrumPatchManager,
 }
 impl VolcaDrum {
-    pub fn new(device: impl MidiDevice + 'static) -> Self {
+    pub fn new(mut device: Box<dyn MidiDevice>) -> Self {
+        let default_volca_drum_patch = get_volca_drum_patch_1();
+        let patch_manager = VolcaDrumPatchManager::new(&mut device, default_volca_drum_patch);
         Self {
-            device: Box::new(device),
-            patch_manager: VolcaDrumPatchManager::new(),
+            device,
+            patch_manager,
         }
     }
 
