@@ -1,5 +1,6 @@
 use crate::devices::volca_drum::volca_drum_patch::{
-    VolcaDrumPatchLayoutAmpEg, VolcaDrumPatchLayoutModType, VolcaDrumPatchLayoutSoundSrcType,
+    VolcaDrumPatch, VolcaDrumPatchLayout, VolcaDrumPatchLayoutAmpEg, VolcaDrumPatchLayoutModType,
+    VolcaDrumPatchLayoutSoundSrcType,
 };
 use crate::midi::midi_device::MidiDevice;
 
@@ -47,6 +48,34 @@ impl VolcaDrum {
     }
 
     // SOUNDS (Layout 1 only)
+    pub fn apply_sound(&mut self, volca_drum_patch: VolcaDrumPatch) {
+        self.apply_patch_on_layout_1(DRUM_CH_KICK, volca_drum_patch.kick);
+        self.mute_layer_2(DRUM_CH_KICK);
+
+        self.apply_patch_on_layout_1(DRUM_CH_HH, volca_drum_patch.hh);
+        self.mute_layer_2(DRUM_CH_HH);
+
+        self.apply_patch_on_layout_1(DRUM_CH_SNARE, volca_drum_patch.snare);
+        self.mute_layer_2(DRUM_CH_SNARE);
+
+        // TODO: Use the other 3 sounds
+    }
+    fn apply_patch_on_layout_1(&mut self, channel: u8, patch_layout: VolcaDrumPatchLayout) {
+        // println!("Applying patch layout: {:?}", patch_layout);
+        self.set_patch_sound(
+            channel,
+            patch_layout.sound_src_type,
+            patch_layout.mod_type,
+            patch_layout.amp_eg,
+        );
+        self.set_patch_level(channel, patch_layout.level as u8);
+        self.set_patch_pitch(channel, patch_layout.pitch as u8);
+        self.set_patch_eg_att(channel, patch_layout.eg_attack as u8);
+        self.set_patch_eg_rel(channel, patch_layout.eg_release as u8);
+        self.set_patch_mod_amount(channel, patch_layout.mod_amount as u8);
+        self.set_patch_mod_rate(channel, patch_layout.mod_rate as u8);
+    }
+    // SOUND FOR CHANNEL
     pub fn set_patch_sound(
         &mut self,
         channel: u8,
