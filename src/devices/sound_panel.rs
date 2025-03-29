@@ -47,34 +47,30 @@ impl<'a> SoundPanel<'a> {
         channel: u8,
         patch_layout: YamlPatchLayout,
     ) {
-        self.set_sound_source_type(
+        // println!("Applying patch: {:?}", patch_layout);
+        let source_sound_type = match patch_layout.sound_src_type {
+            YamlPatchLayoutSoundSrcType::WaveSine => SoundSourceType::WaveSine,
+            YamlPatchLayoutSoundSrcType::WaveSaw => SoundSourceType::WaveSaw,
+            YamlPatchLayoutSoundSrcType::WaveNoiseHPF => SoundSourceType::WaveNoiseHPF,
+            YamlPatchLayoutSoundSrcType::WaveNoiseLPF => SoundSourceType::WaveNoiseLPF,
+            YamlPatchLayoutSoundSrcType::WaveNoiseBPF => SoundSourceType::WaveNoiseBPF,
+        };
+        let modulation_type = match patch_layout.mod_type {
+            YamlPatchLayoutModulationType::ModExp => ModulationType::ModExp,
+            YamlPatchLayoutModulationType::ModTri => ModulationType::ModTri,
+            YamlPatchLayoutModulationType::ModRand => ModulationType::ModRand,
+        };
+        let amp_eg = match patch_layout.amp_eg {
+            YamlPatchLayoutAmpEg::EnvAd => AmpEg::EnvAd,
+            YamlPatchLayoutAmpEg::EnvExp => AmpEg::EnvExp,
+            YamlPatchLayoutAmpEg::EnvMul => AmpEg::EnvMul,
+        };
+        self.set_sound_patch(
             channel,
             CC_NUMBER_LAYOUT_1_SOUND,
-            match patch_layout.sound_src_type {
-                YamlPatchLayoutSoundSrcType::WaveSine => SoundSourceType::WaveSine,
-                YamlPatchLayoutSoundSrcType::WaveSaw => SoundSourceType::WaveSaw,
-                YamlPatchLayoutSoundSrcType::WaveNoiseHPF => SoundSourceType::WaveNoiseHPF,
-                YamlPatchLayoutSoundSrcType::WaveNoiseLPF => SoundSourceType::WaveNoiseLPF,
-                YamlPatchLayoutSoundSrcType::WaveNoiseBPF => SoundSourceType::WaveNoiseBPF,
-            },
-        );
-        self.set_modulation_type(
-            channel,
-            CC_NUMBER_LAYOUT_1_SOUND,
-            match patch_layout.mod_type {
-                YamlPatchLayoutModulationType::ModExp => ModulationType::ModExp,
-                YamlPatchLayoutModulationType::ModTri => ModulationType::ModTri,
-                YamlPatchLayoutModulationType::ModRand => ModulationType::ModRand,
-            },
-        );
-        self.set_amp_eg(
-            channel,
-            CC_NUMBER_LAYOUT_1_SOUND,
-            match patch_layout.amp_eg {
-                YamlPatchLayoutAmpEg::EnvAd => AmpEg::EnvAd,
-                YamlPatchLayoutAmpEg::EnvExp => AmpEg::EnvExp,
-                YamlPatchLayoutAmpEg::EnvMul => AmpEg::EnvMul,
-            },
+            source_sound_type,
+            modulation_type,
+            amp_eg,
         );
         self.set_param_level(channel, ParamSoundType::Level1, patch_layout.level as u8);
         self.set_param_level(channel, ParamSoundType::Pitch1, patch_layout.pitch as u8);
@@ -104,62 +100,47 @@ impl<'a> SoundPanel<'a> {
     }
 
     // Manual set
-    fn set_sound_source_type(
+    fn set_sound_patch(
         &mut self,
         channel: u8,
         cc_number: u8,
         sound_source_type: SoundSourceType,
+        modulation_type: ModulationType,
+        amp_eg: AmpEg,
     ) {
-        self.volca_drum.send_cc_message(
-            channel,
-            cc_number,
-            match sound_source_type {
-                SoundSourceType::WaveSine => 24,
-                SoundSourceType::WaveSaw => 50,
-                SoundSourceType::WaveNoiseHPF => 76,
-                SoundSourceType::WaveNoiseLPF => 101,
-                SoundSourceType::WaveNoiseBPF => 127,
-            },
-        );
-    }
-    fn set_modulation_type(&mut self, channel: u8, cc_number: u8, modulation_type: ModulationType) {
-        self.volca_drum.send_cc_message(
-            channel,
-            cc_number,
-            match modulation_type {
-                ModulationType::ModExp => 109,
-                ModulationType::ModTri => 118,
-                ModulationType::ModRand => 127,
-            },
-        );
-    }
-    fn set_amp_eg(&mut self, channel: u8, cc_number: u8, amp_eg: AmpEg) {
-        self.volca_drum.send_cc_message(
-            channel,
-            cc_number,
-            match amp_eg {
-                AmpEg::EnvAd => 121,
-                AmpEg::EnvExp => 124,
-                AmpEg::EnvMul => 127,
-            },
-        );
+        let source_type_value = match sound_source_type {
+            SoundSourceType::WaveSine => 0,
+            SoundSourceType::WaveSaw => 26,
+            SoundSourceType::WaveNoiseHPF => 52,
+            SoundSourceType::WaveNoiseLPF => 77,
+            SoundSourceType::WaveNoiseBPF => 103,
+        };
+        let modulation_type_value = match modulation_type {
+            ModulationType::ModExp => 0,
+            ModulationType::ModTri => 9,
+            ModulationType::ModRand => 18,
+        };
+        let amp_eg_value = match amp_eg {
+            AmpEg::EnvAd => 0,
+            AmpEg::EnvExp => 3,
+            AmpEg::EnvMul => 6,
+        };
+        let value = source_type_value + modulation_type_value + amp_eg_value;
+        self.volca_drum.send_cc_message(channel, cc_number, value);
     }
     fn set_param_level(&mut self, channel: u8, param: ParamSoundType, value: u8) {
-        self.volca_drum.send_cc_message(
-            channel,
-            match param {
-                // Layout 1
-                ParamSoundType::Level1 => 17,
-                ParamSoundType::Pitch1 => 26,
-                ParamSoundType::EgAttack1 => 20,
-                ParamSoundType::EgRelease1 => 23,
-                ParamSoundType::ModAmount1 => 29,
-                ParamSoundType::ModRate1 => 46,
-                // Layout 2
-                ParamSoundType::Level2 => 18, // Used for disabling layout 2 sounds (for now).
-            },
-            value,
-        );
+        let cc_number = match param {
+            // Layout 1
+            ParamSoundType::Level1 => 17,
+            ParamSoundType::Pitch1 => 26,
+            ParamSoundType::EgAttack1 => 20,
+            ParamSoundType::EgRelease1 => 23,
+            ParamSoundType::ModAmount1 => 29,
+            ParamSoundType::ModRate1 => 46,
+            // Layout 2
+            ParamSoundType::Level2 => 18, // Layout 2 Level is only used to disable Layout 2.
+        };
+        self.volca_drum.send_cc_message(channel, cc_number, value);
     }
 }
 
