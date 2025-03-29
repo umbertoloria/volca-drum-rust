@@ -64,12 +64,12 @@ impl YamlPatchLayout {
                 YamlPatchLayoutAmpEg::EnvExp => VolcaDrumPatchLayoutAmpEg::EnvExp,
                 YamlPatchLayoutAmpEg::EnvMul => VolcaDrumPatchLayoutAmpEg::EnvMul,
             },
-            level: self.level,
-            pitch: self.pitch,
-            eg_attack: self.eg_attack,
-            eg_release: self.eg_release,
-            mod_amount: self.mod_amount,
-            mod_rate: self.mod_rate,
+            level: self.level as u8,
+            pitch: self.pitch as u8,
+            eg_attack: self.eg_attack as u8,
+            eg_release: self.eg_release as u8,
+            mod_amount: self.mod_amount as u8,
+            mod_rate: self.mod_rate as u8,
         }
     }
 }

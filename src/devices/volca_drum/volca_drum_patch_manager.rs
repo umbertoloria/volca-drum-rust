@@ -171,7 +171,15 @@ impl VolcaDrumPatchManager {
     }
 
     // LOW LEVEL
-    fn send_cc_message(&self, device: &mut BoxMidiDevice, channel: u8, cc_number: u8, value: u8) {
+    fn send_cc_message(
+        &self,
+        device: &mut BoxMidiDevice,
+        channel: u8,
+        cc_number: u8,
+        value_up_to_255: u8,
+    ) {
+        let safe_value = value_up_to_255 / 2;
+        // println!(" -> send {}", safe_value);
         self.send_plain_message(
             device,
             // 1
@@ -179,7 +187,7 @@ impl VolcaDrumPatchManager {
             // 2
             cc_number & 0x7f,
             // 3
-            value & 0x7f,
+            safe_value & 0x7f,
         );
     }
     fn send_plain_message(&self, device: &mut BoxMidiDevice, a: u8, b: u8, c: u8) {
