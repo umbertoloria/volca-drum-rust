@@ -16,6 +16,19 @@ fn get_volca_drum_patch_kick_acoustic_1() -> VolcaDrumPatchLayout {
         mod_rate: 188,
     }
 }
+fn get_volca_drum_patch_kick_funny() -> VolcaDrumPatchLayout {
+    VolcaDrumPatchLayout {
+        sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveNoiseLPF,
+        mod_type: VolcaDrumPatchLayoutModType::ModExp,
+        amp_eg: VolcaDrumPatchLayoutAmpEg::EnvExp,
+        level: 255,
+        pitch: 59,
+        eg_attack: 47,
+        eg_release: 139,
+        mod_amount: 255,
+        mod_rate: 0,
+    }
+}
 fn get_volca_drum_patch_hh_acoustic_1() -> VolcaDrumPatchLayout {
     VolcaDrumPatchLayout {
         sound_src_type: VolcaDrumPatchLayoutSoundSrcType::WaveNoiseHPF,
